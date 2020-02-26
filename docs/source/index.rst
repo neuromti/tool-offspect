@@ -9,9 +9,9 @@ Welcome to offline-inspect's documentation!
 .. toctree::
    :maxdepth: 2
 
-   architecture   
+   architecture
    workflow
-   fileformats
+   inputfiles
 
 
 Indices and tables
