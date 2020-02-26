@@ -1,0 +1,36 @@
+   digraph G{
+        
+    compound=true;
+    #rankdir = LR;
+    splines=ortho
+
+    subgraph cluster0 {
+      label = "Preparation:\nselect fileformat"
+      
+      axdf[label="Automated .xdf"]
+      nxdf[label="Manual .xdf"]
+      cnt[label="Robotic TMS"]
+      mat[label="Matlab Protocol"]
+      }
+
+    subgraph cluster1{
+    rank = 1
+     label= "Populate:\nevent and data cache"
+     yaml[label="events-file"]     
+     npy[label="traces-file"]
+    }
+       
+    
+    subgraph cluster2{
+      rank = 10
+     label= "Inspect:\nannotate during inspection"     
+     ayaml[label="annotated events-file"]
+    }
+        
+    axdf -> yaml[ltail=cluster0] [label="prepare", color="blue"];
+    yaml -> npy [label="populate", color="blue"];
+    npy -> ayaml[ltail=cluster1, lhead=cluster2] [label="inspect", color="blue"];
+
+    ayaml -> yaml[ltail=cluster2] [label="fork", color="blue"];
+
+   }
