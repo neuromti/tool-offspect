@@ -1,9 +1,8 @@
 Workflow
 --------
 
-The workflow is described in the figure below. After setting the
+The workflow is described in the figure below. 
 
 
 .. graphviz:: workflow.dot
   :name: workflow
-  :layout: dot

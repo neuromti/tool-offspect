@@ -8,7 +8,6 @@ Welcome to offline-inspect's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    architecture   
    workflow
