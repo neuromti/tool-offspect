@@ -24,6 +24,7 @@ traces:
             { magnitude_uv : -21.1, latency_ms : 14.2} ,
             { magnitude_uv : 36.4, latency_ms : 37.7},
       ],      
+      zcr_latency_ms : 20.8,
       reject: !!bool False,
       comment: !!str ,
     }
@@ -40,6 +41,7 @@ traces:
             { magnitude_uv : -32.6, latency_ms : 15.1} ,
             { magnitude_uv : 26.1, latency_ms : 33.2},
       ],      
+      zcr_latency_ms : 22.1,
       reject: !!bool True,
       comment: !!str "subject fell asleep",
     }
@@ -69,6 +71,7 @@ traces:
             { magnitude_uv : -16.2, latency_ms : 15.2} ,
             { magnitude_uv : 32.3, latency_ms : 32.7},
       ],      
+      zcr_latency_ms : 26.2,
       reject: !!bool False,
       comment: !!str ,
     }
