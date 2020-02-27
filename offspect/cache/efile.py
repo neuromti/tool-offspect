@@ -3,23 +3,15 @@ from pathlib import Path
 from typing import Union, Dict, List
 
 
-def snippet():
-    fname = Path(__file__).parent / "../templates/events_<identifier>.yml"
-    with fname.open() as f:
-        tmp = f.read()
-        yml = [x for x in yaml.load_all(tmp, Loader=yaml.Loader)][0]
-
-    def print_yml(yml: dict, offset: int = 0, shift: int = 15):
-        off = " "
-        for key, val in yml.items():
-            if type(val) is dict:
-                print(f"{key:{shift}}:{{")
-                print_yml(val, offset=offset + shift + 2, shift=1)
-                print(" " * (offset + shift), "}")
-            else:
-                print(f"{off*offset}{key:{shift}}:", val)
-
-    print_yml(yml)
+def print_yml(yml: dict, offset: int = 0, shift: int = 15):
+    off = " "
+    for key, val in yml.items():
+        if type(val) is dict:
+            print(f"{key:{shift}}:{{")
+            print_yml(val, offset=offset + shift + 2, shift=1)
+            print(" " * (offset + shift), "}")
+        else:
+            print(f"{off*offset}{key:{shift}}:", val)
 
 
 def load(fname: Union[str, Path]) -> List[Dict]:

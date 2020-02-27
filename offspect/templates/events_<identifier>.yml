@@ -1,4 +1,4 @@
----
+--- 
 tracefile: "template_<identifier>.npz"
 provenance: 
   {
@@ -43,7 +43,7 @@ traces:
       reject: !!bool True,
       comment: !!str "subject fell asleep",
     }
----
+--- #second yml starts, because eventfiles were merged
 tracefile: "template_<identifier>.npz"
 provenance: 
   {
