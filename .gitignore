@@ -2,3 +2,8 @@
 docs/build
 **/__pycache__/*
 *.egg*/*
+htmlcov/*
+.coverage
+.env
+build/*
+dist/*

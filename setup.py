@@ -5,9 +5,11 @@ from pathlib import Path
 with (Path(__file__).parent / "readme.md").open("r") as f:
     long_description = f.read()
 
+packages = setuptools.find_namespace_packages(exclude=["tests*", "docs*", "htmlcov*"])
+
 setup(
-    name="offline-inspect",
-    version="0.0.1",
+    name="offspect",
+    version="0.0.2",
     description="Visually inspect evoked responses",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -16,8 +18,9 @@ setup(
     url="https://github.com/pyreiz/ctrl-localite",
     download_url="https://github.com/pyreiz/ctrl-localite",
     license="MIT",
-    packages=["offspect"],
+    packages=packages,
     entry_points={"console_scripts": ["offspect-populate=offspect.cli:populate",],},
+    install_requires=["pyyaml", "numpy"],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
