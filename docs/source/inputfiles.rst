@@ -54,10 +54,14 @@ recordings at the start of our 2019 stroke trial would also have been recorded
 as .cnt.
 
 During robotic TMS, the 64 EEG channels and the 8 EMG channels are stored in
-separate :code:`.cnt` files.  The coordinates are stored in one or multiple
+separate :code:`.cnt` files.  The target coordinates are stored in one or multiple
 :code:`targets_*.sav`-files in xml format. The filename of this save file
 encodes experiment, subject pseudonym, date and hour, e.g.:
-:code:`targets_<experiment>_<VvNn>_20190603_1624.sav`
+:code:`targets_<experiment>_<VvNn>_20190603_1624.sav`. Yet, the actual
+coordinates stimulated during the intervention are stored in plaintext in a
+:code:`documentation.txt` file in the same folder as the :code:`.sav`-files.
+
+Documentation of the syntax for these :code:`.txt` files will follow.
 
 
 

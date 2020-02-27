@@ -1,0 +1,46 @@
+---
+tracefile: "template_<identifier>.npz"
+provenance: 
+  {
+    filename: template.mat, 
+    filedate: !!timestamp 1970-01-01T23:59:59
+  }
+subject: VnNn
+channel: EDC_L
+samplingrate: 1000
+samples_pre_event:  1000
+samples_post_event:  1000
+traces:
+  - {
+      id: template.mat_0,
+      event_name: "[S  1]",
+      event_sample: 11732,       
+      event_time: 11.732002,
+      xyz_coords: [37.0, 54.2, 22.8],
+      time_since_last_pulse_in_ms : ,
+      stimulation_intensity_mso : 54,
+      stimulation_intensity_didt : 36,
+      peaks : [
+            { magnitude_uv : -21.1, latency_ms : 14.2} ,
+            { magnitude_uv : 36.4, latency_ms : 37.7},
+      ],      
+      reject: !!bool False,
+      comment: !!str ,
+    }
+  - {
+      id: template.mat_1,
+      event_name: "[S  1]",
+      event_sample: 21746,       
+      event_time: 21.746001,
+      xyz_coords: [37.2, 54.0, 22.7],
+      time_since_last_pulse_in_s : 10.014,
+      stimulation_intensity_mso : 54,
+      stimulation_intensity_didt : 36,
+      peaks : [
+            { magnitude_uv : -32.6, latency_ms : 15.1} ,
+            { magnitude_uv : 26.1, latency_ms : 33.2},
+      ],      
+      reject: !!bool False,
+      comment: !!str ,
+    }
+---

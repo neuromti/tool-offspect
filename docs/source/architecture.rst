@@ -19,10 +19,10 @@ The event-file is a yaml-formatted ascii-encoded file -> :code:`events_<identifi
 
 Saving and loading can be implement with `pyyaml <https://pyyaml.org/wiki/PyYAMLDocumentation>`_.
 
-Traces-file
-***********
+Trace-file
+**********
 
-The traces-file is a binary file containing a set of numpy.ndarrays in
+The trace-file is a binary file containing a set of numpy.ndarrays in
 binary format.
 
 
