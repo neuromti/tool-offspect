@@ -8,7 +8,9 @@ from functools import partial
 
 VALID_SUFFIX = ".hdf5"
 
-read_file = partial(h5py.File, mode="r", libver="latest", swmr=True)
+read_file = partial(
+    h5py.File, mode="r", libver="latest", swmr=True
+)  #: open an hdf5 file in single-write-multiple-reader mode
 
 
 def _get_cachefile_template() -> List[Dict]:
@@ -77,17 +79,19 @@ def check_valid_suffix(fname: Path):
 
 
 class CacheFile:
+    """instantiate a new cachefile from HDD
+    
+    args
+    ----
+    fname: Union[str, Path]
+        path to the file            
+    """
+
     def __init__(self, fname: Union[str, Path]):
         self.fname = Path(fname).absolute().expanduser()
         if self.fname.exists() == False:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
-
-    @property
-    def origins(self):
-        with read_file(self.fname) as f:
-            origins = list(f.keys())
-        return origins
 
     def _yield_trdata(self):
         with read_file(self.fname) as f:
@@ -120,6 +124,13 @@ class CacheFile:
                 yield (a, t)
             except StopIteration:
                 return
+
+    @property
+    def origins(self) -> List[str]:
+        "returns a list of original files used in creating this cachefile"
+        with read_file(self.fname) as f:
+            origins = list(f.keys())
+        return origins
 
     @property
     def traces(self) -> List[Tuple[Dict, ndarray]]:

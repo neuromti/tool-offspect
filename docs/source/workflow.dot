@@ -1,11 +1,11 @@
    digraph G{
         
     compound=true;
-    #rankdir = LR;
-    splines=ortho
+    rankdir = LR;    
+    # splines=ortho
 
     subgraph cluster0 {
-      label = "Preparation:\nselect fileformat"
+      label = "init\nfrom different fileformats"
       
       axdf[label="Automated .xdf"]
       nxdf[label="Manual .xdf"]
@@ -14,23 +14,20 @@
       }
 
     subgraph cluster1{
-    rank = 1
-     label= "Populate:\nevent and data cache"
-     yaml[label="events-file"]     
-     npy[label="traces-file"]
-    }
-       
-    
-    subgraph cluster2{
-      rank = 10
-     label= "Inspect:\nannotate during inspection"     
-     ayaml[label="annotated events-file"]
+    rank = 1     
+     events
+     traces
     }
         
-    axdf -> yaml[ltail=cluster0] [label="prepare", color="blue"];
-    yaml -> npy [label="populate", color="blue"];
-    npy -> ayaml[ltail=cluster1, lhead=cluster2] [label="inspect", color="blue"];
 
-    ayaml -> yaml[ltail=cluster2] [label="fork", color="blue"];
+    cache[label="annotated cachefile"]
 
+    axdf -> events[ltail=cluster0] [label="init", color="blue"];    
+    events -> traces [label="collect", color="blue"];
+    traces -> cache[ltail=cluster1, lhead=cluster2] [label="combine", color="blue"];
+    cache -> traces [lhead=cluster1] [label="fork", color="magenta"];
+  
+  
+    cache -> cache [label="inspect"]
+    
    }
