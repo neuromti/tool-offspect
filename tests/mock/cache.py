@@ -12,6 +12,46 @@ def get_cachefile_template() -> List[Dict]:
     return settings
 
 
+def create_fake_trace(
+    neg_peak_magnitude_uv: float = -20.8,
+    neg_peak_latency_ms: float = 16.2,
+    pos_peak_magnitude_uv: float = 32.6,
+    pos_peak_latency_ms: float = 32.7,
+    zcr_latency_ms: float = 23.4,
+    samplingrate: int = 1000,
+    samples_pre_event: int = 1000,
+    samples_post_event: int = 1000,
+    channel_labels: List[str] = ["EDC_L"],
+    **kwargs,
+):
+    samples = samples_pre_event + samples_post_event
+    channels = len(channel_labels)
+
+    xraw = [
+        zcr_latency_ms - neg_peak_latency_ms,
+        neg_peak_latency_ms,
+        zcr_latency_ms,
+        pos_peak_latency_ms,
+        pos_peak_latency_ms + zcr_latency_ms,
+    ]
+    x = [x + samples_pre_event * samplingrate / 1000 for x in xraw]
+    y = [0, neg_peak_magnitude_uv, 0, pos_peak_magnitude_uv, 0]
+    win = np.hanning(25 * samplingrate / 1000)
+    win = win / sum(win)
+
+    ax = [x + samples_pre_event * samplingrate / 1000 for x in [-1, 0, 1, 5]]
+
+    traces = []
+    for chan in range(channels):
+        trace = np.interp(np.arange(samples), x, y)
+        trace = np.convolve(trace, win, "same")
+        ay = np.random.lognormal(4, 0.3, 4) * ([0, 1, -1, 0])
+        trace += np.interp(np.arange(samples), ax, ay)
+        traces.append(trace)
+    traces = np.asanyarray(traces).T
+    return traces
+
+
 def create_test_cachefile(fname: Union[str, Path], settings: dict) -> Path:
     """create a cachefile for testing and development
 
@@ -42,13 +82,10 @@ def create_test_cachefile(fname: Union[str, Path], settings: dict) -> Path:
             ofile.attrs.modify(str(key), str(val))
         # fill with traces and trace-attributes
         traces = ofile.create_group("traces")
-        samples = (
-            settings["attrs"]["samples_pre_event"]
-            + settings["attrs"]["samples_post_event"]
-        )
-        channels = len(settings["attrs"]["channel_labels"])
+
         for tix, tattr in enumerate(settings["traces"]):
-            data = np.ones((samples, channels)) * tix
+            tattr.update(**attrs)
+            data = create_fake_trace(**tattr)
             idx = str(tattr["id"])
             trace = traces.create_dataset(idx, data=data)
             for k, v in tattr.items():
