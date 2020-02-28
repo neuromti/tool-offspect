@@ -19,10 +19,18 @@ def test_cachefile_recover(cachefile0):
     cachefile, settings = cachefile0
     cf = hdf.CacheFile(cachefile)
     events, traces = recover_parts(cf)
+    assert len(events) == 1  # comes only from a single source file
+    assert len(traces) == 1  # comes only from a single source file
+
+    # lets reduce indexing for later comparions
+    events = events[0]
+    traces = traces[0]
+    # assert recovery was succesfull for the event info
     assert events["origin"] == settings["origin"]
     for key in events["attrs"].keys():
         assert events["attrs"][key] == settings["attrs"][key]
     for rec, orig in zip(events["traces"], settings["traces"]):
         for key in rec.keys():
             assert rec[key] == orig[key]
+    # assert recovery was succesfull for the traced data
     assert len(traces) == len(settings["traces"])

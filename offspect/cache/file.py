@@ -75,23 +75,12 @@ class CacheFile:
 
     @property
     def traces(self) -> List[Tuple[Dict, ndarray]]:
-        "return attributes and data for all traces in the file"
+        "return attributes and data for all traces in the file in consecutive fashion"
         return list(self._yield_traces())
 
 
-def merge(dest: Union[str, Path], sources: List[Union[str, Path]]):
-    sources = [Path(source).expanduser().absolute() for source in sources]
-    dest = Path(dest).expanduser().absolute()
-    if dest.exists():
-        raise FileExistsError(f"{dest.name} already exists")
-    check_valid_suffix(dest)
-
-    for source in sources:
-        events, traces = recover_parts(source)
-
-
 def parse_attrs(attrs: h5py.AttributeManager) -> Dict:
-    "parse attributes from a cachefile"
+    "parse attributes from a cachefile and return it as dictionary"
     d = dict(attrs)
     for key, val in d.items():
         try:
@@ -102,11 +91,27 @@ def parse_attrs(attrs: h5py.AttributeManager) -> Dict:
 
 
 def parse_trace(dset: h5py.Dataset) -> ndarray:
+    "parse a cachefile dataset and return it as a trace"
     return np.asanyarray(dset, dtype=float)
 
 
-def recover_parts(cf: CacheFile) -> Tuple[Dict, List[ndarray]]:
+def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
+    """recover the two parts of a cachefile, i.e. events and traces
+    
+    args
+    ----
+    cf: CacheFile
+        the cachefile from which to recover
+
+    returns:
+    events: List[Dict]
+        a dictionary describing the metadata for all original files  in the cachefile
+    traces: List[List[ndarray]]
+        a list of the traces of all original files saved in the cachefile 
+
+    """
     with read_file(cf.fname) as f:
+        events, traces = [], []
         for origin in f.keys():
             yml = dict()
             yml["origin"] = origin
@@ -120,4 +125,18 @@ def recover_parts(cf: CacheFile) -> Tuple[Dict, List[ndarray]]:
                 trace_attrs.append(parse_attrs(dset.attrs))
                 trace_data.append(parse_trace(dset))
             yml["traces"] = trace_attrs
-    return yml, trace_data
+        events.append(yml)
+        traces.append(trace_data)
+    return events, traces
+
+
+def merge(dest: Union[str, Path], sources: List[Union[str, Path]]):
+    sources = [Path(source).expanduser().absolute() for source in sources]
+    dest = Path(dest).expanduser().absolute()
+    if dest.exists():
+        raise FileExistsError(f"{dest.name} already exists")
+    check_valid_suffix(dest)
+
+    e, t = [], []
+    for source in sources:
+        events, traces = recover_parts(source)
