@@ -42,3 +42,48 @@ traces:
     reject: False,
     comment: "subject fell asleep" ,
     }
+---
+origin: template_R002.xdf
+attrs : {
+        filedate: "1970-01-01T23:59:59",
+        subject: VnNn,
+        samplingrate: 1000,
+        samples_pre_event:  1000,
+        samples_post_event:  1000,
+        channel_labels : [EDC_L],
+        }
+traces: 
+  - {
+    id: 0,
+    event_name: "[S  1]",
+    event_sample: 6671,       
+    event_time: 6.6710,
+    xyz_coords: [37.2, 53.9, 23.2],
+    time_since_last_pulse_in_s : ,
+    stimulation_intensity_mso : 54,
+    stimulation_intensity_didt : 37,
+    neg_peaks_magnitude_uv : -20.8, 
+    neg_peak_latency_ms : 16.2,
+    pos_peak_magnitude_uv : 32.6,
+    pos_peak_latency_ms : 32.7,      
+    zcr_latency_ms : 23.4,
+    reject: False,
+    comment: "" ,
+    }
+  - {
+    id: 1,
+    event_name: "[S  1]",
+    event_sample: 8521,       
+    event_time: 8.5210,
+    time_since_last_pulse_in_s : 1.850,
+    xyz_coords: [37.2, 54.3, 21.9],      
+    stimulation_intensity_mso : 54,
+    stimulation_intensity_didt : 36,
+    neg_peaks_magnitude_uv : -24.3, 
+    neg_peak_latency_ms : 16.2,
+    pos_peak_magnitude_uv : 34.7,
+    pos_peak_latency_ms : 31.2,      
+    zcr_latency_ms : 22.1,
+    reject: False,
+    comment: "" ,
+    }
