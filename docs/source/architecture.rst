@@ -15,5 +15,5 @@ the traces-file.
 Cache Manipulation
 ******************
 
-.. automodule:: offspect.cache.hdf
+.. automodule:: offspect.cache.file
    :members: CacheFile

@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from offspect.cache import hdf
+from offspect.cache import file as hdf
 
 
 @pytest.fixture(scope="module")
