@@ -7,3 +7,4 @@ htmlcov/*
 .env
 build/*
 dist/*
+.mypy_cache/*

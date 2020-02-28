@@ -1,6 +1,6 @@
 import pytest
 from offspect.cache import file as hdf
-from offspect.cache.file import recover_parts
+from offspect.cache.file import recover_parts, check_valid_suffix
 
 
 def test_cachefile_creation(cachefile0, cachefile1):
@@ -13,6 +13,12 @@ def test_cachefile_creation(cachefile0, cachefile1):
         # exp_trace_count = sum([len(settings["traces"]) for yml in settings])
         exp_trace_count = len(settings["traces"])
         assert exp_trace_count == len(cf.traces)
+
+
+def test_check_valid_suffix():
+    with pytest.raises(ValueError):
+        check_valid_suffix("test.wrong")
+    assert check_valid_suffix("test.hdf5") == None
 
 
 def test_cachefile_recover(cachefile0):

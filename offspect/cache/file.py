@@ -14,8 +14,9 @@ read_file = partial(
 )  #: open an hdf5 file in single-write-multiple-reader mode
 
 
-def check_valid_suffix(fname: Path):
+def check_valid_suffix(fname: Union[Path, str]):
     "check whether the cachefile has a valid suffix"
+    fname = Path(fname)
     if fname.suffix != VALID_SUFFIX:
         raise ValueError(f"{fname.suffix} is not a valid cachefile suffix")
 
@@ -31,7 +32,7 @@ class CacheFile:
 
     def __init__(self, fname: Union[str, Path]):
         self.fname = Path(fname).absolute().expanduser()
-        if self.fname.exists() == False:
+        if self.fname.exists() == False:  # pragma no cover
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
 
@@ -137,6 +138,7 @@ def merge(dest: Union[str, Path], sources: List[Union[str, Path]]):
         raise FileExistsError(f"{dest.name} already exists")
     check_valid_suffix(dest)
 
-    e, t = [], []
+    e: List[Dict] = []
+    t: List[ndarray] = []
     for source in sources:
-        events, traces = recover_parts(source)
+        events, traces = recover_parts(CacheFile(source))
