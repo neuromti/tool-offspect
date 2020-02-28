@@ -20,6 +20,6 @@ def test_cache_tmp_attributes(cachefile):
     cf = hdf.CacheFile(cachefile)
     ymls = hdf._get_cachefile_template()
     assert len(ymls) == len(ymls)
-    assert ymls[0]["origin"] == cf.attrs[0]["origin"]
+    assert ymls[0]["origin"] == cf.traces[0][0]["origin"]
     exp_trace_count = sum([len(yml["traces"]) for yml in ymls])
-    assert exp_trace_count == len(cf.attrs)
+    assert exp_trace_count == len(cf.traces)

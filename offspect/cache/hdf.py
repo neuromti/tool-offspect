@@ -1,8 +1,9 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple
 from pathlib import Path
 import h5py
 import yaml
 import numpy as np
+from numpy import ndarray
 from functools import partial
 
 VALID_SUFFIX = ".hdf5"
@@ -88,27 +89,40 @@ class CacheFile:
             origins = list(f.keys())
         return origins
 
+    def _yield_trdata(self):
+        with read_file(self.fname) as f:
+            for origin in f.keys():
+                for idx in f[origin]["traces"]:
+                    dset = f[origin]["traces"][idx]
+                    dset.id.refresh()  # load data fresh from file
+                    yield np.asanyarray(dset, dtype=float)
+
     def _yield_trattrs(self):
         with read_file(self.fname) as f:
             for origin in f.keys():
                 for idx in f[origin]["traces"]:
-                    oattrs = dict(f[origin].attrs)
-                    oattrs["origin"] = origin
-                    tattrs = dict(f[origin]["traces"][idx].attrs)
-                    oattrs["trace"] = tattrs
-                    yield oattrs
+                    yml = dict()
+                    yml["origin"] = origin
+                    yml["attrs"] = dict(f[origin].attrs)
+                    dset = f[origin]["traces"][idx]
+                    dset.id.refresh()  # load fresh from file
+                    tattrs = dict(dset.attrs)
+                    yml["trace"] = tattrs
+                    yield yml
 
     def _yield_traces(self):
-        with read_file(self.fname) as f:
-            for origin in f.keys():
-                for idx in f[origin]["traces"]:
-
-                    oattrs = dict(f[origin].attrs)
-                    oattrs["origin"] = origin
-                    tattrs = dict(f[origin]["traces"][idx].attrs)
-                    oattrs["trace"] = tattrs
-                    yield oattrs
+        attrs = self._yield_trattrs()
+        traces = self._yield_trdata()
+        while True:
+            try:
+                a = next(attrs)
+                t = next(traces)
+                yield (a, t)
+            except StopIteration:
+                return
 
     @property
-    def attrs(self):
-        return list(self._yield_trattrs())
+    def traces(self) -> List[Tuple[Dict, ndarray]]:
+        "return attributes and data for all traces in the file"
+        return list(self._yield_traces())
+
