@@ -106,9 +106,10 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
 
     returns:
     events: List[Dict]
-        a dictionary describing the metadata for all original files  in the cachefile
+        a list of dictionary of the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
     traces: List[List[ndarray]]
-        a list of the traces of all original files saved in the cachefile 
+        a list of the traces of all sourcefiles saved in the cachefile 
+        organized as [sourcefiles][traces][ndarray-data]
 
     """
     with read_file(cf.fname) as f:
