@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from offspect.cache.hdf import create_test_cachefile, CacheFile
+from offspect.cache import hdf
 
 
 @pytest.fixture(scope="module")
@@ -10,11 +10,16 @@ def cachefile():
         tf = Path(_tf.name)
         tf.unlink()
         assert tf.exists() == False
-        create_test_cachefile(tf)
+        hdf.create_test_cachefile(tf)
         yield tf
     assert tf.exists() == False
 
 
-def test_cache_tmp_exists(cachefile):
+def test_cache_tmp_attributes(cachefile):
     assert cachefile.exists()
-    cf = CacheFile(cachefile)
+    cf = hdf.CacheFile(cachefile)
+    ymls = hdf._get_cachefile_template()
+    assert len(ymls) == len(ymls)
+    assert ymls[0]["origin"] == cf.attrs[0]["origin"]
+    exp_trace_count = sum([len(yml["traces"]) for yml in ymls])
+    assert exp_trace_count == len(cf.attrs)

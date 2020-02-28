@@ -1,8 +1,20 @@
-from typing import Union
+from typing import Union, List, Dict
 from pathlib import Path
 import h5py
 import yaml
 import numpy as np
+from functools import partial
+
+VALID_SUFFIX = ".hdf5"
+
+read_file = partial(h5py.File, mode="r", libver="latest", swmr=True)
+
+
+def _get_cachefile_template() -> List[Dict]:
+    with (Path(__file__).parent / "cache_template.yml").open("r") as f:
+        settings = f.read()
+    ymls = list(yaml.load_all(settings, Loader=yaml.Loader))
+    return ymls
 
 
 def create_test_cachefile(fname: Union[str, Path], settings: str = None) -> Path:
@@ -24,16 +36,15 @@ def create_test_cachefile(fname: Union[str, Path], settings: str = None) -> Path
 
     # load the default settings if not set
     if settings is None:
-        with (Path(__file__).parent / "cache_template.yml").open("r") as f:
-            settings = f.read()
-    ymls = list(yaml.load_all(settings, Loader=yaml.Loader))
+        ymls = _get_cachefile_template()
+    else:
+        ymls = list(yaml.load_all(settings, Loader=yaml.Loader))
 
     # check whether the filename conforms
     tf = Path(fname).absolute().expanduser()
     if tf.exists():
         raise FileExistsError(f"{tf.name} already exists")
-    if tf.suffix != ".hdf5":
-        raise ValueError(f"{tf.suffix} is not a valid cachefile suffix")
+    check_valid_suffix(tf)
 
     # populate the cachefile
     with h5py.File(tf, "w") as f:
@@ -42,7 +53,7 @@ def create_test_cachefile(fname: Union[str, Path], settings: str = None) -> Path
             # fill with ofile-attributes
             attrs = yml["attrs"]
             for key, val in attrs.items():
-                ofile.attrs.modify(key, val)
+                ofile.attrs.modify(str(key), str(val))
             # fill with traces and trace-attributes
             traces = ofile.create_group("traces")
             samples = (
@@ -52,8 +63,16 @@ def create_test_cachefile(fname: Union[str, Path], settings: str = None) -> Path
             for tix, tattr in enumerate(yml["traces"]):
                 data = np.ones((samples, channels)) * tix
                 idx = str(tattr["id"])
-                traces.create_dataset(idx, data=data)
+                trace = traces.create_dataset(idx, data=data)
+                for k, v in tattr.items():
+                    trace.attrs.modify(str(k), str(v))
     return fname
+
+
+def check_valid_suffix(fname: Path):
+    "check whether the cachefile has a valid suffix"
+    if fname.suffix != VALID_SUFFIX:
+        raise ValueError(f"{fname.suffix} is not a valid cachefile suffix")
 
 
 class CacheFile:
@@ -61,16 +80,35 @@ class CacheFile:
         self.fname = Path(fname).absolute().expanduser()
         if self.fname.exists() == False:
             raise FileNotFoundError(f"{self.fname} does not exist")
-        if self.fname.suffix != ".hdf5":
-            raise ValueError(f"{self.fname} has invalid file type")
-
-        with h5py.File(self.fname, "r") as f:
-            origins = f.keys()
-            for origin in origins:
-                traces = f[origin].keys()
+        check_valid_suffix(fname)
 
     @property
     def origins(self):
-        with h5py.File(self.fname, "r") as f:
-            origins = f.keys()
-        return list(origins)
+        with read_file(self.fname) as f:
+            origins = list(f.keys())
+        return origins
+
+    def _yield_trattrs(self):
+        with read_file(self.fname) as f:
+            for origin in f.keys():
+                for idx in f[origin]["traces"]:
+                    oattrs = dict(f[origin].attrs)
+                    oattrs["origin"] = origin
+                    tattrs = dict(f[origin]["traces"][idx].attrs)
+                    oattrs["trace"] = tattrs
+                    yield oattrs
+
+    def _yield_traces(self):
+        with read_file(self.fname) as f:
+            for origin in f.keys():
+                for idx in f[origin]["traces"]:
+
+                    oattrs = dict(f[origin].attrs)
+                    oattrs["origin"] = origin
+                    tattrs = dict(f[origin]["traces"][idx].attrs)
+                    oattrs["trace"] = tattrs
+                    yield oattrs
+
+    @property
+    def attrs(self):
+        return list(self._yield_trattrs())
