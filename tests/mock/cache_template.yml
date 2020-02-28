@@ -1,7 +1,7 @@
 origin: template_R001.xdf
 attrs : {
         filedate: "1970-01-01T00:01:01",
-        subject: VnNn,
+        subject: "VnNn",
         samplingrate: 1000,
         samples_pre_event:  1000,
         samples_post_event:  1000,
