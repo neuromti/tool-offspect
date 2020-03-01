@@ -69,6 +69,8 @@ def create_test_cachefile(fname: Union[str, Path], settings: dict) -> Path:
     """
 
     # check whether the filename conforms
+    print(fname)
+
     tf = Path(fname).absolute().expanduser()
     if tf.exists():
         raise FileExistsError(f"{tf.name} already exists")
@@ -91,4 +93,15 @@ def create_test_cachefile(fname: Union[str, Path], settings: dict) -> Path:
             for k, v in tattr.items():
                 trace.attrs.modify(str(k), str(v))
     return fname
+
+
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 3:
+        exit()
+    settings = get_cachefile_template()
+    for setting, fname in zip(settings, sys.argv[1:]):
+
+        create_test_cachefile(fname=fname, settings=setting)
 
