@@ -79,6 +79,26 @@ class CacheFile:
         "return attributes and data for all traces in the file in consecutive fashion"
         return list(self._yield_traces())
 
+    def __str__(self):
+        self.traces
+        s = ""
+        gap = 20
+        for attrs in recover_annotations(self):
+            o = "Origin file: {0:s}\n".format(attrs["origin"])
+            o += "-" * len(o)
+            o += "\n"
+
+            a = ""
+            for k, v in attrs["attrs"].items():
+                a += f"{k:{gap}s} : {v}\n"
+
+            v = len(attrs["traces"])
+            k = "traces_count"
+            tc = f"{k:{gap}s} : {v}\n"
+
+            s += "".join((o, a, tc))
+        return s
+
 
 def parse_attrs(attrs: h5py.AttributeManager) -> Dict:
     "parse attributes from a cachefile and return it as dictionary"
@@ -96,6 +116,37 @@ def parse_trace(dset: h5py.Dataset) -> ndarray:
     return np.asanyarray(dset, dtype=float)
 
 
+def recover_annotations(cf: CacheFile) -> List[Dict]:
+    """"recover the file and event annotations from a cachefile
+
+    args
+    ----
+    cf: CacheFile
+        the cachefile from which to recover
+
+    returns
+    -------
+    annotations: List[Dict]
+        a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
+    """
+
+    with read_file(cf.fname) as f:
+        events = []
+        for origin in f.keys():
+            yml = dict()
+            yml["origin"] = origin
+            yml["attrs"] = parse_attrs(f[origin].attrs)
+
+            trace_attrs = []
+            for idx in f[origin]["traces"]:
+                dset = f[origin]["traces"][idx]
+                dset.id.refresh()  # load fresh from file
+                trace_attrs.append(parse_attrs(dset.attrs))
+            yml["traces"] = trace_attrs
+        events.append(yml)
+    return events
+
+
 def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
     """recover the two parts of a cachefile, i.e. events and traces
     
@@ -104,9 +155,10 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
     cf: CacheFile
         the cachefile from which to recover
 
-    returns:
-    events: List[Dict]
-        a list of dictionary of the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
+    returns
+    -------
+    annotations: List[Dict]
+        a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
     traces: List[List[ndarray]]
         a list of the traces of all sourcefiles saved in the cachefile 
         organized as [sourcefiles][traces][ndarray-data]
