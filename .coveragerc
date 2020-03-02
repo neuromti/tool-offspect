@@ -1,0 +1,6 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+omit = 
+[html]
+directory = htmlcov
