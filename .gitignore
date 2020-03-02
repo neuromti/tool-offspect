@@ -8,3 +8,4 @@ htmlcov/*
 build/*
 dist/*
 .mypy_cache/*
+.mypy_report/*

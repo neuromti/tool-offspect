@@ -9,12 +9,14 @@ import ast
 
 VALID_SUFFIX = ".hdf5"
 
+FileName = Union[str, Path]
+
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
 )  #: open an hdf5 file in single-write-multiple-reader mode
 
 
-def check_valid_suffix(fname: Union[Path, str]):
+def check_valid_suffix(fname: FileName):
     "check whether the cachefile has a valid suffix"
     fname = Path(fname)
     if fname.suffix != VALID_SUFFIX:
@@ -26,11 +28,11 @@ class CacheFile:
     
     args
     ----
-    fname: Union[str, Path]
+    fname: FileName
         path to the file            
     """
 
-    def __init__(self, fname: Union[str, Path]):
+    def __init__(self, fname: FileName):
         self.fname = Path(fname).absolute().expanduser()
         if self.fname.exists() == False:  # pragma no cover
             raise FileNotFoundError(f"{self.fname} does not exist")
@@ -191,7 +193,7 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
 
 
 def populate(
-    tf: Union[Path, str], annotations: List[Dict], traceslist: List[List[ndarray]]
+    tf: FileName, annotations: List[Dict], traceslist: List[List[ndarray]]
 ) -> str:
     tf = Path(tf).expanduser().absolute()
     # populate the cachefile
@@ -209,7 +211,7 @@ def populate(
             # fill with trace-data and trace-attributes
             tracegrp = ofile.create_group("traces")
 
-            for tix, (tattr, trace) in enumerate(zip(settings["traces"], traces)):
+            for tattr, trace in zip(settings["traces"], traces):
                 tattr.update(**attrs)
                 idx = str(tattr["id"])
                 trace = tracegrp.create_dataset(idx, data=trace)
@@ -218,7 +220,42 @@ def populate(
     return tf.name
 
 
-def merge(to: Union[str, Path], sources: List[Union[str, Path]]) -> str:
+def check_consistency(annotations: List[Dict]):
+    """check whether a list of annotations is consistent
+    
+    For a list of attributes to be consistents, every origin file must be unique, and data may only come from a single subject. Additionally, channel_labels, samples pre/post, sampling must be identical for all traces"
+    """
+    o = [a["origin"] for a in annotations]
+    if len(set(o)) != len(o):
+        raise Exception(f"Origins are not unique {o}")
+    keys = [
+        "channel_labels",
+        "samples_post_event",
+        "samples_pre_event",
+        "samplingrate",
+        "subject",
+    ]
+    for key in keys:
+        check = [str(a["attrs"][key]) for a in annotations]
+        if len(set(check)) != 1:
+            raise Exception(f"{key} is inconsistent: {check}")
+
+
+def merge(to: FileName, sources: List[FileName]) -> str:
+    """merge one or more cachefiles into one file
+
+    args
+    ----
+    to: FileName
+        the name of the file to be written into. Will be overwritten, if already existing
+    from: List[FileName]
+        a list of source files from which we will read traces and annotations
+
+    returns
+    -------
+    fname: FileName
+        the name of the target file
+    """
     sources = [Path(source).expanduser().absolute() for source in sources]
     to = Path(to).expanduser().absolute()
     check_valid_suffix(to)
@@ -232,6 +269,8 @@ def merge(to: Union[str, Path], sources: List[Union[str, Path]]) -> str:
         attrs, traces = recover_parts(CacheFile(source))
         a.extend(attrs)
         t.extend(traces)
+
+    check_consistency(a)
     fname = populate(tf=to, annotations=a, traceslist=t)
     return fname
 
