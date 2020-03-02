@@ -6,3 +6,9 @@ File format to implement
 - [ ] eego .cnt
 - [ ] .xdf
 - [ ] .mat
+
+
+Mock
+----
+
+Mock two xdf5 files using `python tests/mock/cache.py fname1.hdf5 fname2.hdf5` from the project root.

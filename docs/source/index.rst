@@ -12,7 +12,7 @@ Welcome to offline-inspect's documentation!
    architecture
    workflow
    inputfiles
-
+   develop
 
 Indices and tables
 ==================
