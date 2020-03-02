@@ -23,7 +23,7 @@ TraceAttributes = Dict[
 ]  #:  Collapsed annotations with information on origin, origin attributes and a specific trace all in one Dictionary
 
 
-IMPLEMENTED_READOUTS = ["contralateral_mep"]  #: currently implemented readout measures
+VALID_READOUTS = ["contralateral_mep"]  #: currently implemented readout measures
 VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
 
 
@@ -55,3 +55,56 @@ def check_valid_suffix(fname: FileName):
     fname = Path(fname)
     if fname.suffix != VALID_SUFFIX:
         raise ValueError(f"{fname.suffix} has no valid suffix. Must be {VALID_SUFFIX}")
+
+
+isint = lambda x: isinstance(x, int)
+isfloat = lambda x: isinstance(x, float)
+isnumeric = lambda x: (isint(x) or isfloat(x))
+isstr = lambda x: isinstance(x, str)
+islist = lambda x: isinstance(x, list)
+iscoords = lambda x: islist(x) and len(x) == 3 and all((isnumeric(x) for x in x))
+isTsince = lambda x: (isnumeric(x) and x > 0) or x == None or x == ""
+isbool = lambda x: isinstance(x, bool)
+
+GENERIC_TRACEKEYS = {
+    "id": isint,
+    "event_name": isstr,
+    "event_sample": isint,
+    "event_time": isfloat,
+    "xyz_coords": iscoords,
+    "onset_shift": isint,
+    "reject": isbool,
+    "comment": isstr,
+    "examiner": isstr,
+}
+
+TRACEKEYS = dict()
+TRACEKEYS["contralateral_mep"] = {
+    "time_since_last_pulse_in_s": isTsince,
+    "stimulation_intensity_mso": isnumeric,
+    "stimulation_intensity_didt": isnumeric,
+    "neg_peak_magnitude_uv": isnumeric,
+    "neg_peak_latency_ms": isnumeric,
+    "pos_peak_magnitude_uv": isnumeric,
+    "pos_peak_latency_ms": isnumeric,
+    "zcr_latency_ms": isnumeric,
+}
+
+
+def check_trace_attributes(readout: str, attributes: TraceAttributes):
+    """check whether all attributes of a trace are correctly formatted 
+    according to readout"""
+    if readout not in VALID_READOUTS:
+        raise NotImplementedError(f"{readout} is not implemented")
+
+    TKEYS = GENERIC_TRACEKEYS.copy()
+    TKEYS.update(**TRACEKEYS[readout])
+    for key, foo in TKEYS.items():
+        try:
+            if not foo(attributes[key]):
+                raise ValueError(f"{attributes[key]} has invalid type")
+        except KeyError:
+            raise KeyError(f"{key} not in the attributes keys")
+        except Exception as e:
+            raise e
+

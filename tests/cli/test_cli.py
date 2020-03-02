@@ -1,13 +1,13 @@
 from subprocess import Popen, PIPE
 import pytest
 import time
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from pathlib import Path
 
 
 def test_cli_merge(cachefile0, cachefile1):
-    with NamedTemporaryFile(suffix=".hdf5", mode="wb") as _tf:
-        tf = Path(_tf.name)
+    with TemporaryDirectory() as folder:
+        tf = Path(folder) / "test.hdf5"
         p = Popen(
             [
                 "offspect",
@@ -16,18 +16,19 @@ def test_cli_merge(cachefile0, cachefile1):
                 str(cachefile0[0]),
                 str(cachefile1[0]),
                 "-t",
-                tf.name,
+                str(tf),
                 "-v",
             ],
             stdout=PIPE,
             stderr=PIPE,
         )
-        assert tf.exists()
         time.sleep(1)
+        assert tf.exists()
         o, e = p.communicate()
         assert tf.name in o.decode()  # successfull merge
         assert cachefile0[1]["origin"] in o.decode()  # successfull peek
         assert e == b""  # no errors
+    assert tf.exists() is False
 
 
 def test_cli_peek(cachefile0):

@@ -9,6 +9,7 @@ import ast
 from .check import (
     check_consistency,
     check_valid_suffix,
+    check_trace_attributes,
     FileName,
     MetaValue,
     MetaData,
@@ -97,6 +98,7 @@ def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
                 yml["trace"] = parse_attrs(dset.attrs)
+                check_trace_attributes(yml["attrs"]["readout"], yml["trace"])
                 yield yml
 
 
@@ -148,12 +150,14 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
             yml = dict()
             yml["origin"] = origin
             yml["attrs"] = parse_attrs(f[origin].attrs)
-
+            readout = yml["attrs"]["readout"]
             trace_attrs = []
             for idx in f[origin]["traces"]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                trace_attrs.append(parse_attrs(dset.attrs))
+                tattr = parse_attrs(dset.attrs)
+                check_trace_attributes(readout, tattr)
+                trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
             events.append(yml)
     return events
