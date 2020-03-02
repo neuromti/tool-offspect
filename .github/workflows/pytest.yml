@@ -16,7 +16,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip                        
-        pip install .
+        pip install -r dev-requirements.txt
+        pip install -e .
     - name: Lint with flake8
       run: |
         pip install -U flake8
@@ -26,17 +27,13 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install -U coverage
-        pip install -U pytest-cov
-        pip install -U pytest
-        pytest
+        pytest --cov offspect        
     - name: Test with mypy
-      run: |
-        pip install -U mypy
+      run: |        
         mypy
     - name: Submit coverage report
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALL_SECRET }}
-      run: |
-        pip install coveralls
+      run: |        
+        coverage html
         coveralls
