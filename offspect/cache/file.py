@@ -75,6 +75,11 @@ class CacheFile:
         return origins
 
     @property
+    def annotations(self) -> List[dict]:
+        "returns a list of annotations within this cachefile"
+        return recover_annotations(self)
+
+    @property
     def traces(self) -> List[Tuple[Dict, ndarray]]:
         "return attributes and data for all traces in the file in consecutive fashion"
         return list(self._yield_traces())
@@ -118,7 +123,7 @@ def parse_trace(dset: h5py.Dataset) -> ndarray:
 
 
 def recover_annotations(cf: CacheFile) -> List[Dict]:
-    """"recover the file and event annotations from a cachefile
+    """"recover the file and annotations from a cachefile
 
     args
     ----
@@ -144,12 +149,12 @@ def recover_annotations(cf: CacheFile) -> List[Dict]:
                 dset.id.refresh()  # load fresh from file
                 trace_attrs.append(parse_attrs(dset.attrs))
             yml["traces"] = trace_attrs
-        events.append(yml)
+            events.append(yml)
     return events
 
 
 def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
-    """recover the two parts of a cachefile, i.e. events and traces
+    """recover the two parts of a cachefile, i.e. annotations and traces
     
     args
     ----
@@ -185,14 +190,48 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
     return events, traces
 
 
-def merge(dest: Union[str, Path], sources: List[Union[str, Path]]):
-    sources = [Path(source).expanduser().absolute() for source in sources]
-    dest = Path(dest).expanduser().absolute()
-    if dest.exists():
-        raise FileExistsError(f"{dest.name} already exists")
-    check_valid_suffix(dest)
+def populate(
+    tf: Union[Path, str], annotations: List[Dict], traceslist: List[List[ndarray]]
+) -> str:
+    tf = Path(tf).expanduser().absolute()
+    # populate the cachefile
+    with h5py.File(tf, "w") as f:
+        print(f"Merging into {tf.name} from:")
+        for settings, traces in zip(annotations, traceslist):
+            print("   -", settings["origin"])
 
-    e: List[Dict] = []
+            ofile = f.create_group(settings["origin"])
+            # fill with ofile-attributes
+            attrs = settings["attrs"]
+            for key, val in attrs.items():
+                ofile.attrs.modify(str(key), str(val))
+
+            # fill with trace-data and trace-attributes
+            tracegrp = ofile.create_group("traces")
+
+            for tix, (tattr, trace) in enumerate(zip(settings["traces"], traces)):
+                tattr.update(**attrs)
+                idx = str(tattr["id"])
+                trace = tracegrp.create_dataset(idx, data=trace)
+                for k, v in tattr.items():
+                    trace.attrs.modify(str(k), str(v))
+    return tf.name
+
+
+def merge(to: Union[str, Path], sources: List[Union[str, Path]]) -> str:
+    sources = [Path(source).expanduser().absolute() for source in sources]
+    to = Path(to).expanduser().absolute()
+    check_valid_suffix(to)
+    if to.exists():
+        print(f"MERGE:WARNING: {to.name} already exists and will be overwritten")
+        to.unlink()
+
+    a: List[Dict] = []
     t: List[ndarray] = []
     for source in sources:
-        events, traces = recover_parts(CacheFile(source))
+        attrs, traces = recover_parts(CacheFile(source))
+        a.extend(attrs)
+        t.extend(traces)
+    fname = populate(tf=to, annotations=a, traceslist=t)
+    return fname
+
