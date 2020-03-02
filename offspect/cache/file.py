@@ -20,7 +20,7 @@ def check_valid_suffix(fname: FileName):
     "check whether the cachefile has a valid suffix"
     fname = Path(fname)
     if fname.suffix != VALID_SUFFIX:
-        raise ValueError(f"{fname.suffix} is not a valid cachefile suffix")
+        raise ValueError(f"{fname.suffix} has no valid suffix. Must be {VALID_SUFFIX}")
 
 
 class CacheFile:
@@ -248,7 +248,7 @@ def merge(to: FileName, sources: List[FileName]) -> str:
     ----
     to: FileName
         the name of the file to be written into. Will be overwritten, if already existing
-    from: List[FileName]
+    sources: List[FileName]
         a list of source files from which we will read traces and annotations
 
     returns

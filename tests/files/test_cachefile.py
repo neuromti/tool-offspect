@@ -1,6 +1,14 @@
 import pytest
 from offspect.cache import file as hdf
-from offspect.cache.file import recover_parts, check_valid_suffix
+from offspect.cache.file import (
+    recover_parts,
+    check_valid_suffix,
+    merge,
+    check_consistency,
+    CacheFile,
+)
+import tempfile
+from pathlib import Path
 
 
 def test_cachefile_creation(cachefile0, cachefile1):
@@ -40,3 +48,49 @@ def test_cachefile_recover(cachefile0):
             assert rec[key] == orig[key]
     # assert recovery was succesfull for the traced data
     assert len(traces) == len(settings["traces"])
+
+
+def test_print_cachefile(cachefile0):
+    "test whether the printout from cachefile contains info about origin file, and the original attributes"
+    cf, a = cachefile0
+    s = str(CacheFile(cf))
+    assert a["origin"] in s
+    for k, v in a["attrs"].items():
+        assert str(k) in s
+        assert str(v) in s
+
+
+def test_merge_in_order(cachefile0, cachefile1):
+    """test whether merge succeeds sucessfully if the two sources are consistent with each other"""
+    cf0, a0 = cachefile0
+    cf1, a1 = cachefile1
+    with tempfile.NamedTemporaryFile(suffix=".hdf5", mode="wb") as tf:
+        sources = [cf0, cf1]
+        merge(to=tf.name, sources=sources)
+        cf = CacheFile(tf.name)
+        a = cf.annotations
+        assert len(a) == 2
+        assert a0 == a[0]
+        assert a1 == a[1]
+
+
+def test_merge_inconsistent_origins(cachefile0):
+    "test that merge raises an exception if the sourcesfiles are equal"
+    cf0, a0 = cachefile0
+    with tempfile.NamedTemporaryFile(suffix=".hdf5", mode="wb", delete=False) as tf:
+        sources = [cf0, cf0]
+        with pytest.raises(Exception):
+            merge(to=tf.name, sources=sources)
+        assert Path(tf.name).exists() == False
+
+
+def test_merge_inconsistent_attrs(cachefile0, cachefile0inconsistent):
+    "test that merge raises an exception if the sourcesfiles are equal"
+    cf0, a0 = cachefile0
+    cf1, a1 = cachefile0inconsistent
+    with tempfile.NamedTemporaryFile(suffix=".hdf5", mode="wb", delete=False) as tf:
+        sources = [cf0, cf1]
+        with pytest.raises(Exception):
+            merge(to=tf.name, sources=sources)
+        assert Path(tf.name).exists() == False
+
