@@ -1,4 +1,4 @@
-from typing import Union, List, Dict, Tuple
+from typing import Union, List, Dict, Tuple, Iterator
 from pathlib import Path
 import h5py
 import yaml
@@ -6,21 +6,21 @@ import numpy as np
 from numpy import ndarray
 from functools import partial
 import ast
+from .check import (
+    check_consistency,
+    check_valid_suffix,
+    FileName,
+    MetaValue,
+    MetaData,
+    Annotations,
+    Trace,
+    TraceAttributes,
+)
 
-VALID_SUFFIX = ".hdf5"
-
-FileName = Union[str, Path]
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
 )  #: open an hdf5 file in single-write-multiple-reader mode
-
-
-def check_valid_suffix(fname: FileName):
-    "check whether the cachefile has a valid suffix"
-    fname = Path(fname)
-    if fname.suffix != VALID_SUFFIX:
-        raise ValueError(f"{fname.suffix} has no valid suffix. Must be {VALID_SUFFIX}")
 
 
 class CacheFile:
@@ -29,7 +29,8 @@ class CacheFile:
     args
     ----
     fname: FileName
-        path to the file            
+        path to the file      
+          
     """
 
     def __init__(self, fname: FileName):
@@ -37,37 +38,6 @@ class CacheFile:
         if self.fname.exists() == False:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
-
-    def _yield_trdata(self):
-        with read_file(self.fname) as f:
-            for origin in f.keys():
-                for idx in f[origin]["traces"]:
-                    # load data fresh from file
-                    f[origin]["traces"][idx].id.refresh()
-                    yield parse_trace(f[origin]["traces"][idx])
-
-    def _yield_trattrs(self):
-        with read_file(self.fname) as f:
-            for origin in f.keys():
-                for idx in f[origin]["traces"]:
-                    yml = dict()
-                    yml["origin"] = origin
-                    yml["attrs"] = parse_attrs(f[origin].attrs)
-                    dset = f[origin]["traces"][idx]
-                    dset.id.refresh()  # load fresh from file
-                    yml["trace"] = parse_attrs(dset.attrs)
-                    yield yml
-
-    def _yield_traces(self):
-        attrs = self._yield_trattrs()
-        traces = self._yield_trdata()
-        while True:
-            try:
-                a = next(attrs)
-                t = next(traces)
-                yield (a, t)
-            except StopIteration:
-                return
 
     @property
     def origins(self) -> List[str]:
@@ -77,16 +47,16 @@ class CacheFile:
         return origins
 
     @property
-    def annotations(self) -> List[dict]:
+    def annotations(self) -> List[Annotations]:
         "returns a list of annotations within this cachefile"
         return recover_annotations(self)
 
     @property
-    def traces(self) -> List[Tuple[Dict, ndarray]]:
+    def traces(self) -> List[Tuple[TraceAttributes, Trace]]:
         "return attributes and data for all traces in the file in consecutive fashion"
-        return list(self._yield_traces())
+        return list(yield_traces(self))
 
-    def __str__(self):
+    def __str__(self) -> str:
         self.traces
         s = ""
         h = "-" * 79 + "\n"
@@ -108,8 +78,42 @@ class CacheFile:
         return s
 
 
-def parse_attrs(attrs: h5py.AttributeManager) -> Dict:
-    "parse attributes from a cachefile and return it as dictionary"
+def yield_trdata(cf: CacheFile) -> Iterator:
+    with read_file(cf.fname) as f:
+        for origin in f.keys():
+            for idx in f[origin]["traces"]:
+                # load data fresh from file
+                f[origin]["traces"][idx].id.refresh()
+                yield parse_trace(f[origin]["traces"][idx])
+
+
+def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
+    with read_file(cf.fname) as f:
+        for origin in f.keys():
+            for idx in f[origin]["traces"]:
+                yml = dict()
+                yml["origin"] = origin
+                yml["attrs"] = parse_attrs(f[origin].attrs)
+                dset = f[origin]["traces"][idx]
+                dset.id.refresh()  # load fresh from file
+                yml["trace"] = parse_attrs(dset.attrs)
+                yield yml
+
+
+def yield_traces(cf: CacheFile) -> Iterator[Trace]:
+    attrs = yield_trattrs(cf)
+    traces = yield_trdata(cf)
+    while True:
+        try:
+            a = next(attrs)
+            t = next(traces)
+            yield (a, t)
+        except StopIteration:
+            return
+
+
+def parse_attrs(attrs: h5py.AttributeManager) -> MetaData:
+    "parse any metadata from a cachefile and return it as Dict"
     d = dict(attrs)
     for key, val in d.items():
         try:
@@ -119,12 +123,12 @@ def parse_attrs(attrs: h5py.AttributeManager) -> Dict:
     return d
 
 
-def parse_trace(dset: h5py.Dataset) -> ndarray:
-    "parse a cachefile dataset and return it as a trace"
+def parse_trace(dset: h5py.Dataset) -> Trace:
+    "parse a hdf5 dataset from a cachefile and return it as a trace"
     return np.asanyarray(dset, dtype=float)
 
 
-def recover_annotations(cf: CacheFile) -> List[Dict]:
+def recover_annotations(cf: CacheFile) -> List[Annotations]:
     """"recover the file and annotations from a cachefile
 
     args
@@ -134,8 +138,8 @@ def recover_annotations(cf: CacheFile) -> List[Dict]:
 
     returns
     -------
-    annotations: List[Dict]
-        a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
+    annotations: List[Annotations]
+        a list of annotations, where annotations are the collapsed metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Annotations] :class:`~.offspect.cache.file.Annotations`
     """
 
     with read_file(cf.fname) as f:
@@ -155,7 +159,7 @@ def recover_annotations(cf: CacheFile) -> List[Dict]:
     return events
 
 
-def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
+def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[Trace]]]:
     """recover the two parts of a cachefile, i.e. annotations and traces
     
     args
@@ -165,11 +169,11 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
 
     returns
     -------
-    annotations: List[Dict]
-        a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Dict]
-    traces: List[List[ndarray]]
+    annotations: List[Annotations]
+        a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Annotations]
+    traces: List[List[Trace]]
         a list of the traces of all sourcefiles saved in the cachefile 
-        organized as [sourcefiles][traces][ndarray-data]
+        organized as [sourcefiles][traceidx][Trace]
 
     """
     with read_file(cf.fname) as f:
@@ -193,8 +197,25 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Dict], List[List[ndarray]]]:
 
 
 def populate(
-    tf: FileName, annotations: List[Dict], traceslist: List[List[ndarray]]
-) -> str:
+    tf: FileName, annotations: List[Annotations], traceslist: List[List[Trace]]
+) -> FileName:
+    """create a new cachefile from a annotations and traces
+    
+    args
+    ----
+    tf: FileName
+        the name of the file to be created. will overwrite an existing file
+    annotations: List[Attributes]
+        a list of annotation dictionaries
+    traceslist: List[List[Traces]]
+        a list of list of traces
+    
+    returns
+    -------
+    fname: FileName
+        the path to the freshly populated cachefile
+    
+    """
     tf = Path(tf).expanduser().absolute()
     # populate the cachefile
     with h5py.File(tf, "w") as f:
@@ -217,31 +238,10 @@ def populate(
                 trace = tracegrp.create_dataset(idx, data=trace)
                 for k, v in tattr.items():
                     trace.attrs.modify(str(k), str(v))
-    return tf.name
+    return tf
 
 
-def check_consistency(annotations: List[Dict]):
-    """check whether a list of annotations is consistent
-    
-    For a list of attributes to be consistents, every origin file must be unique, and data may only come from a single subject. Additionally, channel_labels, samples pre/post, sampling must be identical for all traces"
-    """
-    o = [a["origin"] for a in annotations]
-    if len(set(o)) != len(o):
-        raise Exception(f"Origins are not unique {o}")
-    keys = [
-        "channel_labels",
-        "samples_post_event",
-        "samples_pre_event",
-        "samplingrate",
-        "subject",
-    ]
-    for key in keys:
-        check = [str(a["attrs"][key]) for a in annotations]
-        if len(set(check)) != 1:
-            raise Exception(f"{key} is inconsistent: {check}")
-
-
-def merge(to: FileName, sources: List[FileName]) -> str:
+def merge(to: FileName, sources: List[FileName]) -> FileName:
     """merge one or more cachefiles into one file
 
     args

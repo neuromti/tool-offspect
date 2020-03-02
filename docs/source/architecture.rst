@@ -16,4 +16,14 @@ Cache Manipulation
 ******************
 
 .. automodule:: offspect.cache.file
-   :members: CacheFile
+   :members: CacheFile, merge
+
+.. automodule:: offspect.cache.check
+   :members: check_consistency, check_valid_suffix
+
+Types
+*****
+
+.. automodule:: offspect.cache.check
+   :noindex:
+   :members: MetaData, MetaValue, Annotations, TraceAttributes, Trace, FileName

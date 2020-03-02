@@ -5,7 +5,10 @@ attrs : {
         samplingrate: 1000,
         samples_pre_event:  100,
         samples_post_event:  100,
-        channel_labels : [EDC_L],
+        channel_labels : [EDC_L],        
+        readout : "contralateral_mep",
+        comment : "patient was tired",
+        history : "",
         }
 traces: 
   - {
@@ -22,8 +25,10 @@ traces:
     pos_peak_magnitude_uv : 36.4,
     pos_peak_latency_ms : 37.7,      
     zcr_latency_ms : 20.8,
+    onset_shift : -1,
     reject: False,
     comment: "" ,
+    examiner : "algorithm_findpeaks",
     }
   - {
     id: 1,
@@ -39,8 +44,10 @@ traces:
     pos_peak_magnitude_uv : 33.2,
     pos_peak_latency_ms : 33.8,      
     zcr_latency_ms : 19.2,
+    onset_shift : 0, 
     reject: False,
     comment: "subject fell asleep" ,
+    examiner : "HiWi",
     }
 ---
 origin: template_R002.xdf
@@ -51,6 +58,9 @@ attrs : {
         samples_pre_event:  100,
         samples_post_event:  100,
         channel_labels : [EDC_L],
+        readout : "contralateral_mep",
+        comment : "",
+        history : "",
         }
 traces: 
   - {
@@ -67,8 +77,10 @@ traces:
     pos_peak_magnitude_uv : 32.6,
     pos_peak_latency_ms : 32.7,      
     zcr_latency_ms : 23.4,
+    onset_shift : 2, 
     reject: False,
     comment: "" ,
+    examiner : "algorithm_findpeaks",
     }
   - {
     id: 1,
@@ -84,6 +96,8 @@ traces:
     pos_peak_magnitude_uv : 34.7,
     pos_peak_latency_ms : 31.2,      
     zcr_latency_ms : 22.1,
+    onset_shift : -3,  
     reject: False,
     comment: "" ,
+    examiner : "HiWi",
     }

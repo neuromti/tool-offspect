@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 from pathlib import Path
-from mock.cache import create_test_cachefile, get_cachefile_template
+from .mock.cache import create_test_cachefile, get_cachefile_template
 
 # import sys
 # sys.path.append(Path(__file__).parent)
