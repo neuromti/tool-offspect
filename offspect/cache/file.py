@@ -34,7 +34,7 @@ class CacheFile:
 
     def __init__(self, fname: FileName):
         self.fname = Path(fname).absolute().expanduser()
-        if self.fname.exists() == False:  # pragma no cover
+        if self.fname.exists() == False:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
 

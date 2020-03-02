@@ -23,6 +23,11 @@ def test_cachefile_creation(cachefile0, cachefile1):
         assert exp_trace_count == len(cf.traces)
 
 
+def test_cachefile_doesnotexist():
+    with pytest.raises(FileNotFoundError):
+        CacheFile("doesnotexist.hdf5")
+
+
 def test_check_valid_suffix():
     with pytest.raises(ValueError):
         check_valid_suffix("test.wrong")
