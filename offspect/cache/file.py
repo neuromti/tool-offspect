@@ -82,11 +82,12 @@ class CacheFile:
     def __str__(self):
         self.traces
         s = ""
+        h = "-" * 79 + "\n"
         gap = 20
         for attrs in recover_annotations(self):
-            o = "Origin file: {0:s}\n".format(attrs["origin"])
-            o += "-" * len(o)
-            o += "\n"
+            k = "origin"
+            v = attrs[k]
+            o = f"{k:{gap}s} : {v}\n"
 
             a = ""
             for k, v in attrs["attrs"].items():
@@ -96,7 +97,7 @@ class CacheFile:
             k = "traces_count"
             tc = f"{k:{gap}s} : {v}\n"
 
-            s += "".join((o, a, tc))
+            s += "".join((h, o, a, tc))
         return s
 
 

@@ -8,6 +8,10 @@ def cli_peek(args: argparse.Namespace):
     print(CacheFile(args.fname))
 
 
+def cli_merge(args: argparse.Namespace):
+    pass
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="offspect",
@@ -21,7 +25,7 @@ def main():
     )
     peek.add_argument("fname", help="filename to peek into", type=str)
 
-    # eventually, parse -------------------------------------------------------
+    # eventually, parse and run respective subcommand -------------------------
     args, _ = parser.parse_known_args()
     if args.sub == "peek":
         cli_peek(args)
