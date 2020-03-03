@@ -1,7 +1,9 @@
 from typing import List, Dict, Union, Any
 from pathlib import Path
 from numpy import ndarray
-
+import yaml
+import re
+import datetime
 
 Trace = ndarray  #: A trace, i.e. an array of samples for one or more channels stored in a cachefile
 
@@ -57,14 +59,67 @@ def check_valid_suffix(fname: FileName):
         raise ValueError(f"{fname.suffix} has no valid suffix. Must be {VALID_SUFFIX}")
 
 
-isint = lambda x: isinstance(x, int)
-isfloat = lambda x: isinstance(x, float)
-isnumeric = lambda x: (isint(x) or isfloat(x))
-isstr = lambda x: isinstance(x, str)
-islist = lambda x: isinstance(x, list)
-iscoords = lambda x: islist(x) and len(x) == 3 and all((isnumeric(x) for x in x))
-isTsince = lambda x: (isnumeric(x) and x > 0) or x == None or x == ""
-isbool = lambda x: isinstance(x, bool)
+def isint(x):
+    return isinstance(x, int)
+
+
+def isfloat(x) -> bool:
+    return isinstance(x, float)
+
+
+def isnumeric(x) -> bool:
+    return isint(x) or isfloat(x)
+
+
+def isstr(x) -> bool:
+    return isinstance(x, str)
+
+
+def islist(x) -> bool:
+    return isinstance(x, list)
+
+
+def iscoords(x) -> bool:
+    return islist(x) and len(x) == 3 and all((isnumeric(x) for x in x))
+
+
+def isTsince(x) -> bool:
+    return (isnumeric(x) and x > 0) or x == None or x == ""
+
+
+def isbool(x) -> bool:
+    return isinstance(x, bool)
+
+
+def ischanlist(x) -> bool:
+    return islist(x) and all(isstr(c) for c in x)
+
+
+def isversion(x) -> bool:
+    r = re.compile("[0-9]+[.][0-9]+[.][0-9]+[a-zA-Z]{0,1}")
+    try:
+        return r.fullmatch(x) != None
+    except:
+        return False
+
+
+def isfiledate(x) -> bool:
+    d = yaml.load(f"filedate: {x}", Loader=yaml.Loader)["filedate"]
+    return type(d) == datetime.datetime or type(d) == datetime.date
+
+
+ORIGINKEYS = {
+    "channel_labels": ischanlist,
+    "samples_post_event": isint,
+    "samples_pre_event": isint,
+    "samplingrate": isint,
+    "subject": isstr,
+    "readout": isstr,
+    "comment": isstr,
+    "filedate": isfiledate,
+    "history": isstr,
+    "version": isversion,
+}  #
 
 GENERIC_TRACEKEYS = {
     "id": isint,
@@ -76,10 +131,12 @@ GENERIC_TRACEKEYS = {
     "reject": isbool,
     "comment": isstr,
     "examiner": isstr,
-}
+}  #: A dictionary containing generics keys for the TraceAttributes implemented for all readouts
 
-TRACEKEYS = dict()
-TRACEKEYS["contralateral_mep"] = {
+SPECIFIC_TRACEKEYS = (
+    dict()
+)  #: A dictionary containing for all mmplemented readouts their specific  keys for the TraceAttributes and as values a functions checking the validity of the respective TraceAttributes value
+CONTRALATERAL_MEP_KEYS = {
     "time_since_last_pulse_in_s": isTsince,
     "stimulation_intensity_mso": isnumeric,
     "stimulation_intensity_didt": isnumeric,
@@ -88,17 +145,22 @@ TRACEKEYS["contralateral_mep"] = {
     "pos_peak_magnitude_uv": isnumeric,
     "pos_peak_latency_ms": isnumeric,
     "zcr_latency_ms": isnumeric,
-}
+}  #: the keys and types for this readout
+
+SPECIFIC_TRACEKEYS["contralateral_mep"] = CONTRALATERAL_MEP_KEYS
 
 
 def check_trace_attributes(readout: str, attributes: TraceAttributes):
     """check whether all attributes of a trace are correctly formatted 
-    according to readout"""
+    according to readout see :data:`~.offspect.cache.check.GENERIC_TRACEKEYS` and :data:`~.SPECIFIC_TRACEKEYS`
+    
+    """
     if readout not in VALID_READOUTS:
         raise NotImplementedError(f"{readout} is not implemented")
 
     TKEYS = GENERIC_TRACEKEYS.copy()
-    TKEYS.update(**TRACEKEYS[readout])
+    TKEYS.update(**SPECIFIC_TRACEKEYS[readout])
+    TKEYS.update(**ORIGINKEYS)
     for key, foo in TKEYS.items():
         try:
             if not foo(attributes[key]):

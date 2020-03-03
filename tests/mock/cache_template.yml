@@ -1,6 +1,6 @@
 origin: template_R001.xdf
 attrs : {
-        filedate: "1970-01-01T00:01:01",
+        filedate: "1970-01-01 00:01:01",
         subject: "VnNn",
         samplingrate: 1000,
         samples_pre_event:  100,
@@ -9,6 +9,7 @@ attrs : {
         readout : "contralateral_mep",
         comment : "patient was tired",
         history : "",
+        version : "0.0.1",
         }
 traces: 
   - {
@@ -52,7 +53,7 @@ traces:
 ---
 origin: template_R002.xdf
 attrs : {
-        filedate: "1970-01-01T23:59:59",
+        filedate: "1970-01-01 23:59:59",
         subject: VnNn,
         samplingrate: 1000,
         samples_pre_event:  100,
@@ -61,6 +62,7 @@ attrs : {
         readout : "contralateral_mep",
         comment : "",
         history : "",
+        version : "0.0.1",
         }
 traces: 
   - {
