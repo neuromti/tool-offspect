@@ -26,7 +26,7 @@ of the new readout. Additionally, readout should be added to
 Mock
 ****
 
-Mock two xdf5 files using
+Mock two CaheFiles (hdf5) using
 :code:`python tests/mock/cache.py fname1.hdf5 fname2.hdf5` from the project
 root.
 
