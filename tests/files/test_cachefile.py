@@ -11,10 +11,10 @@ def test_cachefile_creation(cachefile0, cachefile1):
         assert cachefile.exists()
         cf = CacheFile(cachefile)
         assert len(cf.origins) == 1
-        assert settings["origin"] == cf.traces[0][0]["origin"]
+        assert settings["origin"] == recover_annotations(cf)[0]["origin"]
         # exp_trace_count = sum([len(settings["traces"]) for yml in settings])
         exp_trace_count = len(settings["traces"])
-        assert exp_trace_count == len(cf.traces)
+        assert exp_trace_count == len(cf)
 
 
 def test_cachefile_doesnotexist():
@@ -67,7 +67,7 @@ def test_merge_in_order(cachefile0, cachefile1):
         sources = [cf0, cf1]
         merge(to=tf.name, sources=sources)
         cf = CacheFile(tf.name)
-        a = cf.annotations
+        a = recover_annotations(cf)
         assert len(a) == 2
         assert a0 == a[0]
         assert a1 == a[1]
@@ -93,16 +93,6 @@ def test_merge_inconsistent_attrs(cachefile0, cachefile0inconsistent):
         with pytest.raises(Exception):
             merge(to=tf.name, sources=sources)
         assert Path(tf.name).exists() == False
-
-
-def test_origin_attrs(cachefile0):
-    cf0, a0 = cachefile0
-    c = CacheFile(cf0)
-
-    o = c.origins[0]
-    a = c.attrs[o]
-    assert len(c.attrs) == 1
-    assert type(a) is dict
 
 
 def test_update_trace_attributes(cachefile0):
@@ -136,7 +126,7 @@ def test_read_index_errors(cachefile0):
     for i in range(len(cf)):
         attrs = read_trace(cf, i)
         assert attrs["original_index"] == i
-        assert attrs["original_file"] == cf.fname
+        assert attrs["original_file"] == str(cf.fname)
 
     with pytest.raises(ValueError):
         read_trace(cf, 0.1)
@@ -175,4 +165,12 @@ def test_cachefile_getter_setter(cachefile0):
     cf = CacheFile(cachefile0[0])
     data = cf.get_trace_data(0)
     attrs = cf.get_trace_attrs(0)
-    cf.set_trace_attrs(attrs)
+    cf.set_trace_attrs(0, attrs)
+    with pytest.raises(ValueError):
+        cf.set_trace_attrs(1, attrs)
+    with pytest.raises(ValueError):
+        attrs["original_file"] = "invalid_filename.hdf5"
+        cf.set_trace_attrs(1, attrs)
+    with pytest.raises(ValueError):
+        del attrs["original_file"]
+        cf.set_trace_attrs(1, attrs)

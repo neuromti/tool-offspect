@@ -171,8 +171,25 @@ def check_metadata(readout: str, attributes: TraceAttributes):
             raise e
 
 
-def filter_traceattrs(attrs: TraceAttributes) -> TraceAttributes:
-    readout = attrs["readout"]
+def filter_trace_attrs(attrs: TraceAttributes) -> TraceAttributes:
+    """"discard all fields from TraceAttributes that are not valid for its readout
+    
+    args
+    ----
+    attrs: TraceAttributes
+        the raw TraceAttributes with possibly superfluous or invalid fields
+
+    returns
+    -------
+    filtered: TraceAttributes
+        the filtered TraceAttributes
+
+
+    .. note::
+        will raise an Exception if the type of the fields are not in correspondence with the :data:`GENERIC_TRACEKEYS` and the :data:`SPECIFIC_TRACEKEYS` for the attributes readout
+
+    """
+    readout = str(attrs["readout"])
     TKEYS = GENERIC_TRACEKEYS.copy()
     TKEYS.update(**SPECIFIC_TRACEKEYS[readout])
     check_metadata(readout, attrs)

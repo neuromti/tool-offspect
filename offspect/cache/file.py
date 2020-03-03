@@ -6,6 +6,7 @@ import numpy as np
 from numpy import ndarray
 from functools import partial
 import ast
+from functools import lru_cache
 from .check import (
     check_consistency,
     check_valid_suffix,
@@ -16,9 +17,9 @@ from .check import (
     Annotations,
     TraceData,
     TraceAttributes,
-    filter_traceattrs,
+    filter_trace_attrs,
 )
-from functools import lru_cache
+
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
@@ -29,7 +30,7 @@ write_file = partial(
     h5py.File, mode="r+", libver="latest", swmr=True
 )  #: open an hdf5 file in single-write-multiple-reader mode
 
-
+# -----------------------------------------------------------------------------
 class CacheFile:
     """instantiate a new cachefile from HDD
     
@@ -48,19 +49,100 @@ class CacheFile:
 
     def get_trace_data(self, idx: int) -> TraceData:
         """return TraceData for a specific traces in the file
+                
+        args
+        ----
+        idx: int
+            which trace to pick.
+
+        returns
+        -------
+        attrs: TraceData 
+            the date stored for this trace.
+
         
+        .. note::
+           This is a read-only attribute, and raw data can never be overwritten with the CacheFile interface. If you need to perform
+           any preprocessing steps, manage the TraceData with a low-level interface, e.g. :func:`~.populate`.
+
+
         """
         return read_trace(self, idx=idx, what="data")
 
     def get_trace_attrs(self, idx: int) -> TraceAttributes:
-        """return TraceAttributes for a specific traces in the file
+        """read the TraceAttributes for a specific traces in the file
         
+        args
+        ----
+        idx: int
+            which trace to pick.
+
+        returns
+        -------
+        attrs: TraceAttributes 
+            the collapsed attributes for this trace.
+        
+    
+        Example::
+
+            cf = CacheFile("example.hdf5")
+            for i in len(cf):
+                attrs = cf.get_trace_attrs(i)
+
+
+        .. note::
+           The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'original_file' and the 'original_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and/or discarded.
+
         """
         return read_trace(self, idx=idx, what="attrs")
 
-    def set_trace_attrs(self, attrs: TraceAttributes):
-        if not self.fname == attrs["original_file"]:
-            raise ValueError("These attributes did not originate from this CachFile")
+    def set_trace_attrs(self, idx: int, attrs: TraceAttributes):
+        """update the attributes of a specific trace
+        
+
+        args
+        ----
+        idx: int
+            at which index to overwrite
+        attrs: TraceAttributes
+            with which attributes to overwrite
+
+
+        Example::
+
+            import datetime
+            now = str(datetime.datetime.now())
+            cf = CacheFile("example.hdf5")
+            attrs = cf.get_trace_attrs(0)
+            attrs["comment"] = now
+            cf.set_trace_attrs(0, attrs)
+
+
+        .. note::
+           Because we expect the TraceAttributes to originate from a CacheFiles
+           :meth:`~.get_trace_attrs` method, we expect them to have information
+           about their original file and index included. For safety reasons,
+           you have to specify the index when calling this setter. Additionally, the original file must be this instance of CacheFile.
+           If you want to directly overwrite an arbitrary attribute without
+           this safety checks, update the values for original_file and original_index and use :func:`~.update_trace_attributes`. 
+
+           Additionally, please note that while :meth:`~.get_trace_attrs`
+           returns a complete dictionary of attributes, including thise that apply to the whole group or origin file, only valid fields for 
+           trace metadata will be saved, i.e. those fields which are in correspondence with the "readout" parameter (see :func:`~.filter_trace_attrs`).
+
+
+        """
+        if not "original_file" in attrs.keys() or not "original_index" in attrs.keys():
+            raise ValueError(
+                "This attributes do not originate from a CacheFile. Information about its origin is missing"
+            )
+
+        if not str(self.fname) == attrs["original_file"]:
+            raise ValueError("These attributes did not originate from this CacheFile")
+        if not idx == attrs["original_index"]:
+            raise ValueError(
+                "These attributes did originate from a different trace in this CacheFile"
+            )
         update_trace_attributes(attrs)
 
     @property
@@ -69,34 +151,6 @@ class CacheFile:
         with read_file(self.fname) as f:
             origins = list(f.keys())
         return origins
-
-    @property
-    def annotations(self) -> List[Annotations]:
-        """returns a list of annotations within this cachefile
-        
-        """
-        return recover_annotations(self)
-
-    @property
-    def attrs(self) -> Dict[str, MetaData]:
-        "return a dictionary of metadata for each origin"
-        a = recover_annotations(self)
-        d = dict()
-        for key, anno in zip(self.origins, a):
-            d[key] = anno["attrs"]
-        return d
-
-    @property
-    def traces(self) -> List[Tuple[TraceAttributes, TraceData]]:
-        """return a list of paired TraceAttributes and TraceData for all traces in the file
-        
-        Example::
-
-            for (attrs, data) in c.traces: 
-                pass
-            print(attrs)
-        """
-        return list(yield_traces(self))
 
     def __str__(self) -> str:
         s = ""
@@ -129,47 +183,27 @@ class CacheFile:
         return int(cnt)
 
 
-def yield_trdata(cf: CacheFile) -> Iterator:
-    with read_file(cf.fname) as f:
-        for origin in f.keys():
-            for idx in f[origin]["traces"]:
-                # load data fresh from file
-                f[origin]["traces"][idx].id.refresh()
-                yield parse_tracedata(f[origin]["traces"][idx])
-
-
-def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
-    with read_file(cf.fname) as f:
-        for origin in f.keys():
-            for idx in f[origin]["traces"]:
-                yml = dict()
-                yml["origin"] = origin
-                yml["attrs"] = parse_traceattrs(f[origin].attrs)
-                dset = f[origin]["traces"][idx]
-                dset.id.refresh()  # load fresh from file
-                yml["trace"] = parse_traceattrs(dset.attrs)
-                check_metadata(yml["attrs"]["readout"], yml["trace"])
-                yield yml
-
-
-def yield_traces(cf: CacheFile) -> Iterator[TraceData]:
-    attrs = yield_trattrs(cf)
-    traces = yield_trdata(cf)
-    while True:
-        try:
-            a = next(attrs)
-            t = next(traces)
-            yield (a, t)
-        except StopIteration:
-            return
+# -----------------------------------------------------------------------------
 
 
 def update_trace_attributes(attrs: TraceAttributes):
-    index = attrs["original_index"]
-    fname = attrs["original_file"]
-    attrs = filter_traceattrs(attrs)
+    """overwrite the traceattributes for a trace
+    
+    the original file and index of the trace are specified as field within the
+    TraceAttributes
+
+    args
+    ----
+    attrs: TraceAttributes
+
+    """
+    index: int
+    index = attrs["original_index"]  # type: ignore
     if type(index) != int:
         raise ValueError("Index must be an integer")
+    fname = attrs["original_file"]
+    attrs = filter_trace_attrs(attrs)
+
     if index >= 0:
         cnt = -1
         with write_file(fname) as f:
@@ -212,9 +246,9 @@ def read_trace(
                         dset.id.refresh()  # load fresh from file
                         if what == "attrs":
                             attrs = parse_traceattrs(dset.attrs)
-                            attrs["original_file"] = cf.fname
+                            attrs["original_file"] = str(cf.fname)
                             attrs["original_index"] = idx
-                            check_metadata(attrs["readout"], attrs)
+                            check_metadata(str(attrs["readout"]), attrs)
                             return attrs
                         elif what == "data":
                             data = parse_tracedata(dset)
