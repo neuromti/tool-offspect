@@ -32,6 +32,10 @@ author = "Robert Guggenberger"
 # The full version, including alpha/beta/rc tags
 release = "0.0.1"
 
+from offspect.cli.__main__ import create_cli_rst
+
+create_cli_rst("cli.rst")
+
 
 # -- General configuration ---------------------------------------------------
 

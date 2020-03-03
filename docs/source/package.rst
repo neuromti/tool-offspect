@@ -1,7 +1,7 @@
-API
----
+Cache
+*****
 
-The main API of all functions in offspect
+The documentation of the functions in this package
 
 .. autosummary::
    :toctree: _autosummary

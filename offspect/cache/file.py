@@ -1,3 +1,18 @@
+"""
+CacheFile
+---------
+
+The python interface to the :py:class:`~.CacheFile` which checks for filename
+validity during instantiation. When one of its properties are called, it loads
+and parses the metadata and datasets fresh from the hdf5 and aggregatates them.
+
+Example::
+
+   from offspect.api import CacheFile
+   cf = CacheFile("example.hdf5")
+   print(cf)
+
+"""
 from typing import Union, List, Dict, Tuple, Iterator
 from pathlib import Path
 import h5py
@@ -39,6 +54,9 @@ class CacheFile:
     fname: FileName
         path to the file      
           
+
+    For each readout, a specific set of fields must be in the metadata of a trace. Whenever attributes are read or written, the validity of the metadata will automatically be checked to be consistent with its 'readout'.
+
     """
 
     def __init__(self, fname: FileName):

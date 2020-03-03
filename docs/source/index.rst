@@ -15,16 +15,9 @@ Content
    architecture
    workflow
    develop
+   cli
 
 
-
-API
----
-
-.. toctree::
-   :maxdepth: 1
-
-   api
 
 Indices and tables
 ==================
