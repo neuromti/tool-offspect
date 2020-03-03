@@ -17,9 +17,9 @@ Python standard library for safe parsing.
 This means, the strings can be of any type which can be parsed with
 :func:`ast.literal_eval`.
 
-It is the responsibility of the developer to add the respective definitions as 
-one value to :data:`~.SPECIFIC_TRACEKEYS`, with the key being the string-name of
-the new readout. Additionally, readout should be added to 
+It is the responsibility of the developer to add the respective definitions as
+one value to :data:`~.SPECIFIC_TRACEKEYS`, with the key being the string-name
+of the new readout. Additionally, readout should be added to
 :data:`~.VALID_READOUTS`.
 
 

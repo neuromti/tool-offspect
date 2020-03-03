@@ -99,3 +99,13 @@ def test_merge_inconsistent_attrs(cachefile0, cachefile0inconsistent):
             merge(to=tf.name, sources=sources)
         assert Path(tf.name).exists() == False
 
+
+def test_origin_attrs(cachefile0):
+    cf0, a0 = cachefile0
+    c = CacheFile(cf0)
+
+    o = c.origins[0]
+    a = c.attrs[o]
+    assert len(c.attrs) == 1
+    assert type(a) is dict
+
