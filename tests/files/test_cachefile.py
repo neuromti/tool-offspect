@@ -170,3 +170,9 @@ def test_cachefile_len(cachefile0):
     cf = CacheFile(fname)
     assert len(cf) == 2
 
+
+def test_cachefile_getter_setter(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    data = cf.get_trace_data(0)
+    attrs = cf.get_trace_attrs(0)
+    cf.set_trace_attrs(attrs)

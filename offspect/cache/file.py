@@ -46,6 +46,23 @@ class CacheFile:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
 
+    def get_trace_data(self, idx: int) -> TraceData:
+        """return TraceData for a specific traces in the file
+        
+        """
+        return read_trace(self, idx=idx, what="data")
+
+    def get_trace_attrs(self, idx: int) -> TraceAttributes:
+        """return TraceAttributes for a specific traces in the file
+        
+        """
+        return read_trace(self, idx=idx, what="attrs")
+
+    def set_trace_attrs(self, attrs: TraceAttributes):
+        if not self.fname == attrs["original_file"]:
+            raise ValueError("These attributes did not originate from this CachFile")
+        update_trace_attributes(attrs)
+
     @property
     def origins(self) -> List[str]:
         "returns a list of original files used in creating this cachefile"
