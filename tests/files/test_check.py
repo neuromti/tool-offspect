@@ -2,41 +2,41 @@ import pytest
 from offspect.cache.check import *
 
 
-def test_check_trace_attributes_are_valid(cachefile0):
+def test_check_metadata_are_valid(cachefile0):
     cf, annotations = cachefile0
     readout = annotations["attrs"]["readout"]
     assert readout in VALID_READOUTS
     for traceattrs in annotations["traces"]:
-        assert check_trace_attributes(readout, traceattrs) is None
+        assert check_metadata(readout, traceattrs) is None
 
 
-def test_check_trace_attributes_invalid_readout(cachefile0):
+def test_check_metadata_invalid_readout(cachefile0):
     cf, annotations = cachefile0
     readout = "invalid_readout"
     assert readout not in VALID_READOUTS
     with pytest.raises(NotImplementedError):
         for traceattrs in annotations["traces"]:
-            assert check_trace_attributes(readout, traceattrs) is None
+            assert check_metadata(readout, traceattrs) is None
 
 
-def test_check_trace_attributes_key_missing(cachefile0):
+def test_check_metadata_key_missing(cachefile0):
     cf, annotations = cachefile0
     del annotations["traces"][0]["pos_peak_latency_ms"]
     readout = annotations["attrs"]["readout"]
     assert readout in VALID_READOUTS
     with pytest.raises(KeyError):
         for traceattrs in annotations["traces"]:
-            assert check_trace_attributes(readout, traceattrs) is None
+            assert check_metadata(readout, traceattrs) is None
 
 
-def test_check_trace_attributes_wrong_type(cachefile0):
+def test_check_metadata_wrong_type(cachefile0):
     cf, annotations = cachefile0
     annotations["traces"][0]["xyz_coords"] = ""
     readout = annotations["attrs"]["readout"]
     assert readout in VALID_READOUTS
     with pytest.raises(ValueError):
         for traceattrs in annotations["traces"]:
-            assert check_trace_attributes(readout, traceattrs) is None
+            assert check_metadata(readout, traceattrs) is None
 
 
 @pytest.mark.parametrize("x", [0.0, -1.0, 1.0, None, ""])

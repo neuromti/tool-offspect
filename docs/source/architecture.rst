@@ -12,26 +12,8 @@ This will be implemented for various `file-formats <inputfiles.html>`_.
 Following the `workflow <workflow.html>`_ prepares the event-file and populates
 the traces-file.
 
-Cache Manipulation
-******************
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: offspect.cache.file
-   :members: CacheFile, merge
-
-.. automodule:: offspect.cache.check
-   :members: check_consistency, check_valid_suffix, check_trace_attributes
-
-Types
-*****
-
-.. automodule:: offspect.cache.check
-   :noindex:
-   :members: MetaData, MetaValue, Annotations, TraceAttributes, Trace, FileName
-
-
-Valid Readouts
-**************
-
-.. automodule:: offspect.cache.check
-   :noindex:
-   :members: VALID_READOUTS, GENERIC_TRACEKEYS, SPECIFIC_TRACEKEYS
+   cachefile
+   inputfiles

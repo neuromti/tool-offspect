@@ -6,13 +6,25 @@
 Welcome to offline-inspect's documentation!
 ===========================================
 
+Content
+-------
+
 .. toctree::
    :maxdepth: 2
 
    architecture
    workflow
-   inputfiles
    develop
+
+
+
+API
+---
+
+.. toctree::
+   :maxdepth: 1
+
+   api
 
 Indices and tables
 ==================

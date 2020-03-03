@@ -5,7 +5,7 @@ import yaml
 import re
 import datetime
 
-Trace = ndarray  #: A trace, i.e. an array of samples for one or more channels stored in a cachefile
+TraceData = ndarray  #: A trace, i.e. an array of samples for one or more channels stored in a cachefile
 
 
 FileName = Union[str, Path]  #: The name of a file in the operating system
@@ -119,7 +119,7 @@ ORIGINKEYS = {
     "filedate": isfiledate,
     "history": isstr,
     "version": isversion,
-}  #
+}  #: A dictionary specifying the keys and required types which all origin attributes  must implement, independent of the readout used
 
 GENERIC_TRACEKEYS = {
     "id": isint,
@@ -131,7 +131,7 @@ GENERIC_TRACEKEYS = {
     "reject": isbool,
     "comment": isstr,
     "examiner": isstr,
-}  #: A dictionary containing generics keys for the TraceAttributes implemented for all readouts
+}  #: A dictionary specifying the keys and required types which all TraceAttributes  must implement, independent of the readout used
 
 SPECIFIC_TRACEKEYS = (
     dict()
@@ -145,12 +145,12 @@ CONTRALATERAL_MEP_KEYS = {
     "pos_peak_magnitude_uv": isnumeric,
     "pos_peak_latency_ms": isnumeric,
     "zcr_latency_ms": isnumeric,
-}  #: the keys and types for this readout
+}  #: A dictionary specifying the keys and required types if the readout is "contralateral_mep"
 
 SPECIFIC_TRACEKEYS["contralateral_mep"] = CONTRALATERAL_MEP_KEYS
 
 
-def check_trace_attributes(readout: str, attributes: TraceAttributes):
+def check_metadata(readout: str, attributes: TraceAttributes):
     """check whether all attributes of a trace are correctly formatted 
     according to readout see :data:`~.offspect.cache.check.GENERIC_TRACEKEYS` and :data:`~.SPECIFIC_TRACEKEYS`
     

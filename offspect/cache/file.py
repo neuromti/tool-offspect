@@ -9,12 +9,12 @@ import ast
 from .check import (
     check_consistency,
     check_valid_suffix,
-    check_trace_attributes,
+    check_metadata,
     FileName,
     MetaValue,
     MetaData,
     Annotations,
-    Trace,
+    TraceData,
     TraceAttributes,
 )
 
@@ -35,7 +35,7 @@ class CacheFile:
     """
 
     def __init__(self, fname: FileName):
-        self.fname = Path(fname).absolute().expanduser()
+        self.fname = Path(fname).expanduser().absolute()
         if self.fname.exists() == False:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
@@ -49,12 +49,30 @@ class CacheFile:
 
     @property
     def annotations(self) -> List[Annotations]:
-        "returns a list of annotations within this cachefile"
+        """returns a list of annotations within this cachefile
+        
+        """
         return recover_annotations(self)
 
     @property
-    def traces(self) -> List[Tuple[TraceAttributes, Trace]]:
-        "return attributes and data for all traces in the file in consecutive fashion"
+    def attrs(self) -> Dict[str, MetaData]:
+        "return a dictionary of metadata for each origin"
+        a = recover_annotations(self)
+        d = dict()
+        for key, anno in zip(self.origins, a):
+            d[key] = anno["attrs"]
+        return d
+
+    @property
+    def traces(self) -> List[Tuple[TraceAttributes, TraceData]]:
+        """return a list of paired TraceAttributes and TraceData for all traces in the file
+        
+        Example::
+
+            for (attrs, data) in c.traces: 
+                pass
+            print(attrs)
+        """
         return list(yield_traces(self))
 
     def __str__(self) -> str:
@@ -98,11 +116,11 @@ def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
                 yml["trace"] = parse_attrs(dset.attrs)
-                check_trace_attributes(yml["attrs"]["readout"], yml["trace"])
+                check_metadata(yml["attrs"]["readout"], yml["trace"])
                 yield yml
 
 
-def yield_traces(cf: CacheFile) -> Iterator[Trace]:
+def yield_traces(cf: CacheFile) -> Iterator[TraceData]:
     attrs = yield_trattrs(cf)
     traces = yield_trdata(cf)
     while True:
@@ -115,7 +133,8 @@ def yield_traces(cf: CacheFile) -> Iterator[Trace]:
 
 
 def parse_attrs(attrs: h5py.AttributeManager) -> MetaData:
-    "parse any metadata from a cachefile and return it as Dict"
+    """parse any metadata from a cachefile and return it as Dict    
+    """
     d = dict(attrs)
     for key, val in d.items():
         try:
@@ -125,7 +144,7 @@ def parse_attrs(attrs: h5py.AttributeManager) -> MetaData:
     return d
 
 
-def parse_trace(dset: h5py.Dataset) -> Trace:
+def parse_trace(dset: h5py.Dataset) -> TraceData:
     "parse a hdf5 dataset from a cachefile and return it as a trace"
     return np.asanyarray(dset, dtype=float)
 
@@ -156,14 +175,14 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
                 tattr = parse_attrs(dset.attrs)
-                check_trace_attributes(readout, tattr)
+                check_metadata(readout, tattr)
                 trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
             events.append(yml)
     return events
 
 
-def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[Trace]]]:
+def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData]]]:
     """recover the two parts of a cachefile, i.e. annotations and traces
     
     args
@@ -175,9 +194,9 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[Trace]]]:
     -------
     annotations: List[Annotations]
         a list of annotations, i.e the metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Annotations]
-    traces: List[List[Trace]]
+    traces: List[List[TraceData]]
         a list of the traces of all sourcefiles saved in the cachefile 
-        organized as [sourcefiles][traceidx][Trace]
+        organized as [sourcefiles][traceidx][TraceData]
 
     """
     with read_file(cf.fname) as f:
@@ -201,7 +220,7 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[Trace]]]:
 
 
 def populate(
-    tf: FileName, annotations: List[Annotations], traceslist: List[List[Trace]]
+    tf: FileName, annotations: List[Annotations], traceslist: List[List[TraceData]]
 ) -> FileName:
     """create a new cachefile from a annotations and traces
     
@@ -211,7 +230,7 @@ def populate(
         the name of the file to be created. will overwrite an existing file
     annotations: List[Attributes]
         a list of annotation dictionaries
-    traceslist: List[List[Traces]]
+    traceslist: List[List[TraceData]]
         a list of list of traces
     
     returns

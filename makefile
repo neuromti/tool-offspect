@@ -2,7 +2,7 @@ SHELL := /bin/bash #to be able to execute `source`
 
 .PHONY: docs
 docs:
-	make -C docs html
+	make -C docs clean html
 
 .PHONY: build
 build: clean
