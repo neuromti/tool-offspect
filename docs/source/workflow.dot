@@ -1,7 +1,7 @@
    digraph G{
         
     compound=true;
-    rankdir = LR;    
+    #rankdir = LR;    
     # splines=ortho
 
     subgraph cluster0 {
@@ -15,19 +15,33 @@
 
     subgraph cluster1{
     rank = 1     
-     events
-     traces
+     Annotations
+     TraceData
+    }
+    
+    subgraph cluster2{
+    rank = 1     
+     ForkedAnnotations
+     ForkedTraceData
     }
         
 
-    cache[label="annotated cachefile"]
+    cache[label="annotated CacheFile"]
+    cache1[label="another CacheFile"]
+    merged[label="merged CacheFile"]
 
-    axdf -> events[ltail=cluster0] [label="init", color="blue"];    
-    events -> traces [label="collect", color="blue"];
-    traces -> cache[ltail=cluster1, lhead=cluster2] [label="combine", color="blue"];
-    cache -> traces [lhead=cluster1] [label="fork", color="magenta"];
+    merge[shape="rect", color=magenta]
+    cache -> merge[color=magenta]
+    cache1 -> merge[color=magenta]
+    merge -> merged
+
+    cnt -> Annotations[ltail=cluster0] [label="init", color="blue"];    
+    Annotations -> TraceData [label="collect", color="blue"];
+    TraceData -> cache[ltail=cluster1, lhead=cluster2] [label="populate", color="blue"];
+    cache -> ForkedAnnotations [lhead=cluster1] [label="fork", color="magenta"];
   
-  
-    cache -> cache [label="inspect"]
+    ForkedAnnotations -> ForkedTraceData [label="collect", color="blue"];
+
+    cache -> cache [label="inspect", color=blue]
     
    }
