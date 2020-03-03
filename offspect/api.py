@@ -1,1 +1,1 @@
-from .cache.file import CacheFile
+from .cache.file import CacheFile  # pragma no cover
