@@ -65,8 +65,10 @@ def main():
 
 # ----------------------------------------------------------------------------
 
+from typing import Iterator
 
-def format_help(parser) -> str:  # pragma no cover
+
+def format_help(parser) -> Iterator[str]:  # pragma no cover
     cb = ".. code-block:: none\n\n"
 
     title = parser.prog + "\n" + "~" * len(parser.prog)
