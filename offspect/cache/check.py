@@ -1,4 +1,4 @@
-from typing import List, Dict, Union, Any
+from typing import List, Dict, Union, Any, Callable
 from pathlib import Path
 from numpy import ndarray
 import yaml
@@ -169,3 +169,16 @@ def check_metadata(readout: str, attributes: TraceAttributes):
             raise KeyError(f"{key} not in the attributes keys")
         except Exception as e:
             raise e
+
+
+def filter_traceattrs(attrs: TraceAttributes) -> TraceAttributes:
+    readout = attrs["readout"]
+    TKEYS = GENERIC_TRACEKEYS.copy()
+    TKEYS.update(**SPECIFIC_TRACEKEYS[readout])
+    check_metadata(readout, attrs)
+    filtered = attrs.copy()
+    for key in attrs.keys():
+        if key not in TKEYS.keys():
+            filtered.pop(key)
+    return filtered
+

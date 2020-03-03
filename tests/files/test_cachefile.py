@@ -1,21 +1,15 @@
 import pytest
-from offspect.cache import file as hdf
-from offspect.cache.file import (
-    recover_parts,
-    check_valid_suffix,
-    merge,
-    check_consistency,
-    CacheFile,
-)
+from offspect.cache.file import *
 import tempfile
 from pathlib import Path
+import datetime
 
 
 def test_cachefile_creation(cachefile0, cachefile1):
     for cache in [cachefile0, cachefile1]:
         cachefile, settings = cache
         assert cachefile.exists()
-        cf = hdf.CacheFile(cachefile)
+        cf = CacheFile(cachefile)
         assert len(cf.origins) == 1
         assert settings["origin"] == cf.traces[0][0]["origin"]
         # exp_trace_count = sum([len(settings["traces"]) for yml in settings])
@@ -36,7 +30,7 @@ def test_check_valid_suffix():
 
 def test_cachefile_recover(cachefile0):
     cachefile, settings = cachefile0
-    cf = hdf.CacheFile(cachefile)
+    cf = CacheFile(cachefile)
     events, traces = recover_parts(cf)
     assert len(events) == 1  # comes only from a single source file
     assert len(traces) == 1  # comes only from a single source file
@@ -77,6 +71,7 @@ def test_merge_in_order(cachefile0, cachefile1):
         assert len(a) == 2
         assert a0 == a[0]
         assert a1 == a[1]
+        assert len(cf) == 4
 
 
 def test_merge_inconsistent_origins(cachefile0):
@@ -108,4 +103,70 @@ def test_origin_attrs(cachefile0):
     a = c.attrs[o]
     assert len(c.attrs) == 1
     assert type(a) is dict
+
+
+def test_update_trace_attributes(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    attrs = read_trace(cf, what="attrs", idx=0)
+    now = str(datetime.datetime.now())
+    attrs["comment"] = now
+    update_trace_attributes(attrs)
+    new_attrs = read_trace(cf, what="attrs", idx=0)
+    assert new_attrs["comment"] == now
+
+
+def test_read_index_tracedata(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    for i in range(len(cf)):
+        data = read_trace(cf, idx=i, what="data")
+        assert type(data) == ndarray
+        assert data[0:50].mean() == 0.0  # baseline model, no signal
+        assert data[50:150].mean() != 0.0  # we modeled a signal
+
+
+def test_read_index_raises(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    with pytest.raises(NotImplementedError):
+        data = read_trace(cf, idx=0, what="notimplemented")
+
+
+def test_read_index_errors(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    # we can iterate across all traces
+    for i in range(len(cf)):
+        attrs = read_trace(cf, i)
+        assert attrs["original_index"] == i
+        assert attrs["original_file"] == cf.fname
+
+    with pytest.raises(ValueError):
+        read_trace(cf, 0.1)
+
+    with pytest.raises(IndexError):
+        read_trace(cf, -1)
+
+    with pytest.raises(IndexError):
+        read_trace(cf, len(cf))
+
+
+def test_update_index_errors(cachefile0):
+    cf = CacheFile(cachefile0[0])
+    attrs = read_trace(cf, 0)  # need this for overwriting
+
+    with pytest.raises(ValueError):
+        attrs["original_index"] = 0.1
+        update_trace_attributes(attrs)
+
+    with pytest.raises(IndexError):
+        attrs["original_index"] = -1
+        update_trace_attributes(attrs)
+
+    with pytest.raises(IndexError):
+        attrs["original_index"] = len(cf)
+        update_trace_attributes(attrs)
+
+
+def test_cachefile_len(cachefile0):
+    fname, default_attrs = cachefile0
+    cf = CacheFile(fname)
+    assert len(cf) == 2
 

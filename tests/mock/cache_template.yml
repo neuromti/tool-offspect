@@ -7,7 +7,7 @@ attrs : {
         samples_post_event:  100,
         channel_labels : [EDC_L],        
         readout : "contralateral_mep",
-        comment : "patient was tired",
+        global_comment : "patient was tired",
         history : "",
         version : "0.0.1",
         }
@@ -60,7 +60,7 @@ attrs : {
         samples_post_event:  100,
         channel_labels : [EDC_L],
         readout : "contralateral_mep",
-        comment : "",
+        global_comment : "",
         history : "",
         version : "0.0.1",
         }

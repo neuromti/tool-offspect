@@ -16,11 +16,17 @@ from .check import (
     Annotations,
     TraceData,
     TraceAttributes,
+    filter_traceattrs,
 )
 from functools import lru_cache
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
+)  #: open an hdf5 file in single-write-multiple-reader mode
+
+
+write_file = partial(
+    h5py.File, mode="r+", libver="latest", swmr=True
 )  #: open an hdf5 file in single-write-multiple-reader mode
 
 
@@ -105,21 +111,6 @@ class CacheFile:
                 cnt = idx
         return int(cnt)
 
-    def get_trace(self, idx: int):
-        """random access interface to a specific trace 
-        
-        For this approach, all traces within the whole cachefile are considered
-        to be from a continuous collection
-        """
-
-        pass
-
-
-class Trace:
-    def __init__(self, source, attrs: TraceAttributes, data: TraceData):
-        self._attrs = attrs
-        self._data = data
-
 
 def yield_trdata(cf: CacheFile) -> Iterator:
     with read_file(cf.fname) as f:
@@ -156,28 +147,66 @@ def yield_traces(cf: CacheFile) -> Iterator[TraceData]:
             return
 
 
-def parse_trace(dset):
-    dset.id.refresh()  # load fresh from file
-    attrs = parse_traceattrs(dset.attrs)
-    data = parse_tracedata(dset)
-    check_metadata(attrs["readout"], attrs)
-    return attrs, data
-
-
-def pick_trace(cf: CacheFile, index: int) -> Tuple[TraceAttributes, TraceData]:
+def update_trace_attributes(attrs: TraceAttributes):
+    index = attrs["original_index"]
+    fname = attrs["original_file"]
+    attrs = filter_traceattrs(attrs)
     if type(index) != int:
         raise ValueError("Index must be an integer")
     if index >= 0:
         cnt = -1
-        with read_file(cf.fname) as f:
+        with write_file(fname) as f:
             for origin in f.keys():
                 for idx, key in enumerate(f[origin]["traces"], start=cnt + 1):
                     if idx == index:
                         dset = f[origin]["traces"][key]
-                        return dset
+                        for key in attrs.keys():
+                            dset.attrs[str(key)] = str(attrs[key])
+                        return
                     cnt = idx
 
     raise IndexError(f"{index} not in cachefile")
+
+
+def read_trace(
+    cf: CacheFile, idx: int, what: str = "attrs"
+) -> Union[TraceData, TraceAttributes]:
+    """read either metadata or attributes for a specific trace
+    
+    args
+    ----
+    cf: CacheFile
+        for which file
+    idx: int
+        which trace to load
+    what: str 
+        whether to load 'data' or 'attrs'. defaults to attrs
+    
+    """
+    if type(idx) != int:
+        raise ValueError("Index must be an integer")
+    if idx >= 0:
+        cnt = -1
+        with read_file(cf.fname) as f:
+            for origin in f.keys():
+                for ix, key in enumerate(f[origin]["traces"], start=cnt + 1):
+                    if idx == ix:
+                        dset = f[origin]["traces"][key]
+                        dset.id.refresh()  # load fresh from file
+                        if what == "attrs":
+                            attrs = parse_traceattrs(dset.attrs)
+                            attrs["original_file"] = cf.fname
+                            attrs["original_index"] = idx
+                            check_metadata(attrs["readout"], attrs)
+                            return attrs
+                        elif what == "data":
+                            data = parse_tracedata(dset)
+                            return data
+                        else:
+                            raise NotImplementedError(f"{what} can not be loaded")
+                    cnt = idx
+
+    raise IndexError(f"{idx} not in cachefile")
 
 
 def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
