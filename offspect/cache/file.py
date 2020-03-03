@@ -17,7 +17,7 @@ from .check import (
     TraceData,
     TraceAttributes,
 )
-
+from functools import lru_cache
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
@@ -76,7 +76,6 @@ class CacheFile:
         return list(yield_traces(self))
 
     def __str__(self) -> str:
-        self.traces
         s = ""
         h = "-" * 79 + "\n"
         gap = 20
@@ -96,6 +95,31 @@ class CacheFile:
             s += "".join((h, o, a, tc))
         return s
 
+    @lru_cache(maxsize=1)
+    def __len__(self) -> int:
+        cnt = 0
+        with read_file(self.fname) as f:
+            for origin in f.keys():
+                for idx, _ in enumerate(f[origin]["traces"], start=cnt + 1):
+                    pass
+                cnt = idx
+        return int(cnt)
+
+    def get_trace(self, idx: int):
+        """random access interface to a specific trace 
+        
+        For this approach, all traces within the whole cachefile are considered
+        to be from a continuous collection
+        """
+
+        pass
+
+
+class Trace:
+    def __init__(self, source, attrs: TraceAttributes, data: TraceData):
+        self._attrs = attrs
+        self._data = data
+
 
 def yield_trdata(cf: CacheFile) -> Iterator:
     with read_file(cf.fname) as f:
@@ -103,7 +127,7 @@ def yield_trdata(cf: CacheFile) -> Iterator:
             for idx in f[origin]["traces"]:
                 # load data fresh from file
                 f[origin]["traces"][idx].id.refresh()
-                yield parse_trace(f[origin]["traces"][idx])
+                yield parse_tracedata(f[origin]["traces"][idx])
 
 
 def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
@@ -112,10 +136,10 @@ def yield_trattrs(cf: CacheFile) -> Iterator[TraceAttributes]:
             for idx in f[origin]["traces"]:
                 yml = dict()
                 yml["origin"] = origin
-                yml["attrs"] = parse_attrs(f[origin].attrs)
+                yml["attrs"] = parse_traceattrs(f[origin].attrs)
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                yml["trace"] = parse_attrs(dset.attrs)
+                yml["trace"] = parse_traceattrs(dset.attrs)
                 check_metadata(yml["attrs"]["readout"], yml["trace"])
                 yield yml
 
@@ -132,7 +156,31 @@ def yield_traces(cf: CacheFile) -> Iterator[TraceData]:
             return
 
 
-def parse_attrs(attrs: h5py.AttributeManager) -> MetaData:
+def parse_trace(dset):
+    dset.id.refresh()  # load fresh from file
+    attrs = parse_traceattrs(dset.attrs)
+    data = parse_tracedata(dset)
+    check_metadata(attrs["readout"], attrs)
+    return attrs, data
+
+
+def pick_trace(cf: CacheFile, index: int) -> Tuple[TraceAttributes, TraceData]:
+    if type(index) != int:
+        raise ValueError("Index must be an integer")
+    if index >= 0:
+        cnt = -1
+        with read_file(cf.fname) as f:
+            for origin in f.keys():
+                for idx, key in enumerate(f[origin]["traces"], start=cnt + 1):
+                    if idx == index:
+                        dset = f[origin]["traces"][key]
+                        return dset
+                    cnt = idx
+
+    raise IndexError(f"{index} not in cachefile")
+
+
+def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
     """parse any metadata from a cachefile and return it as Dict    
     """
     d = dict(attrs)
@@ -144,7 +192,7 @@ def parse_attrs(attrs: h5py.AttributeManager) -> MetaData:
     return d
 
 
-def parse_trace(dset: h5py.Dataset) -> TraceData:
+def parse_tracedata(dset: h5py.Dataset) -> TraceData:
     "parse a hdf5 dataset from a cachefile and return it as a trace"
     return np.asanyarray(dset, dtype=float)
 
@@ -168,13 +216,13 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
         for origin in f.keys():
             yml = dict()
             yml["origin"] = origin
-            yml["attrs"] = parse_attrs(f[origin].attrs)
+            yml["attrs"] = parse_traceattrs(f[origin].attrs)
             readout = yml["attrs"]["readout"]
             trace_attrs = []
             for idx in f[origin]["traces"]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                tattr = parse_attrs(dset.attrs)
+                tattr = parse_traceattrs(dset.attrs)
                 check_metadata(readout, tattr)
                 trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
@@ -204,15 +252,15 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData
         for origin in f.keys():
             yml = dict()
             yml["origin"] = origin
-            yml["attrs"] = parse_attrs(f[origin].attrs)
+            yml["attrs"] = parse_traceattrs(f[origin].attrs)
 
             trace_attrs = []
             trace_data = []
             for idx in f[origin]["traces"]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                trace_attrs.append(parse_attrs(dset.attrs))
-                trace_data.append(parse_trace(dset))
+                trace_attrs.append(parse_traceattrs(dset.attrs))
+                trace_data.append(parse_tracedata(dset))
             yml["traces"] = trace_attrs
         events.append(yml)
         traces.append(trace_data)

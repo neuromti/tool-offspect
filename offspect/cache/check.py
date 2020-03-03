@@ -169,4 +169,3 @@ def check_metadata(readout: str, attributes: TraceAttributes):
             raise KeyError(f"{key} not in the attributes keys")
         except Exception as e:
             raise e
-
