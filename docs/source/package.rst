@@ -1,6 +1,3 @@
-Cache
-*****
-
 The documentation of the functions in this package
 
 .. autosummary::
@@ -9,3 +6,4 @@ The documentation of the functions in this package
 
    offspect.cache.file
    offspect.cache.check
+   offspect.types
