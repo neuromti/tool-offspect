@@ -15,7 +15,7 @@ protocol. In the following paragraphs these challenges are described.
    :maxdepth: 2
    :glob:
 
-   from/*
+   input/*
 
 
 

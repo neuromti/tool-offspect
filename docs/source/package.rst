@@ -7,3 +7,6 @@ The documentation of the functions in this package
    offspect.cache.file
    offspect.cache.check
    offspect.types
+   offspect.input.tms.smartmove
+   offspect.input.tms.xdfprot
+   offspect.input.tms.matprot

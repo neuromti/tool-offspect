@@ -1,5 +1,5 @@
 from numpy import ndarray
-from typing import Union, List, Dict, Any
+from typing import Union, List, Dict, Any, Tuple
 from pathlib import Path
 
 TraceData = ndarray  #: A trace, i.e. an array of samples for one or more channels stored in a cachefile
@@ -20,3 +20,5 @@ Annotations = Dict[
 TraceAttributes = Dict[
     str, MetaValue
 ]  #:  Collapsed annotations with information on origin, origin attributes and a specific trace all in one Dictionary
+
+Coords = Dict[int, Tuple[float, float, float]]

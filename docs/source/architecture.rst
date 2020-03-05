@@ -20,4 +20,4 @@ metadata and the data for each trace.
    :maxdepth: 2
 
    cachefile
-   from
+   input

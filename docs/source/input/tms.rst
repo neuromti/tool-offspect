@@ -2,17 +2,14 @@ TMS recordings
 --------------
 
 
-.. automodule:: offspect.from.tms.smartmove
-   :noindex:
-   :members:
+.. toctree::
+   :maxdepth: 1
+   :caption: Protocols
 
-.. automodule:: offspect.from.tms.matprot
-   :noindex:
-   :members:
+   Smartmove robot </_autosummary/offspect.input.tms.smartmove>
+   XDF protocol </_autosummary/offspect.input.tms.xdfprot>
+   Matlab protocol </_autosummary/offspect.input.tms.matprot>
 
-.. automodule:: offspect.from.tms.xdfprot
-   :noindex:
-   :members:
 
 .. _support-link-coords:
 
