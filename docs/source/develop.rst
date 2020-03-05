@@ -1,13 +1,14 @@
 Development
 -----------
 
-Development can concern one of the four aspects of this package. Either the GUI,
-the CLI, the loadable fileformats or the readouts allowed in the cachefile.
+Development can concern one of the four aspects of this package. Either the GUI, the CLI, the loadable fileformats or the readouts allowed in the cachefile.
+
+.. _devreadout:
 
 Developing Readouts
 *******************
 
-Currently implemented readouts can be found at :data:`~.VALID_READOUTS`.
+Currently implemented readouts can be found at :data:`~.VALID_READOUTS`. 
 Each readout comes with a definition of its :class:`~.TraceAttributes`, i.e.
 a specific set of keys and types for their required values. HDF5 can only store
 strings as keys and values, but during loading, every metadata will be parsed

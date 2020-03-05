@@ -7,9 +7,9 @@
     subgraph cluster0 {
       label = "init\nfrom different fileformats"
       
-      axdf[label="Automated .xdf"]
-      nxdf[label="Manual .xdf"]
-      cnt[label="Robotic TMS"]
+      axdf[label="Automated.xdf"]
+      nxdf[label="Manual.xdf"]
+      smartmove[label="smartmove TMS"]
       mat[label="Matlab Protocol"]
       }
 
@@ -35,7 +35,7 @@
     cache1 -> merge[color=magenta]
     merge -> merged
 
-    cnt -> Annotations[ltail=cluster0] [label="init", color="blue"];    
+    smartmove -> Annotations[ltail=cluster0] [label="init", color="blue"];    
     Annotations -> TraceData [label="collect", color="blue"];
     TraceData -> cache[ltail=cluster1, lhead=cluster2] [label="populate", color="blue"];
     cache -> ForkedAnnotations [lhead=cluster1] [label="fork", color="magenta"];
