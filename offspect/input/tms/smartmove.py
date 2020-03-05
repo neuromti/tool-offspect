@@ -31,6 +31,7 @@ from offspect.types import FileName, Coords
 from pathlib import Path
 from ast import literal_eval
 from typing import List
+from libeep import cnt_file
 
 
 def load_documentation_txt(fname: FileName) -> Coords:
@@ -73,3 +74,9 @@ def load_documentation_txt(fname: FileName) -> Coords:
         else:  # info not complete, we need to collect more lines
             target.append(line.strip())
     return coords
+
+
+def load_cnt(fname: FileName):
+
+    c = cnt_file(fname)
+

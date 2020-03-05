@@ -7,7 +7,8 @@ with (Path(__file__).parent / "readme.md").open("r") as f:
     long_description = f.read()
 
 with (Path(__file__).parent / "requirements.txt").open("r") as f:
-    requirements = f.readlines()
+    requirements = [l for l in f.readlines() if not "http" in l]
+
 
 packages = setuptools.find_namespace_packages(exclude=["tests*", "docs*", "htmlcov*"])
 
