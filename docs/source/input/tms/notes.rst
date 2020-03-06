@@ -1,16 +1,3 @@
-TMS recordings
---------------
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Protocols
-
-   Smartmove robot </_autosummary/offspect.input.tms.smartmove>
-   XDF protocol </_autosummary/offspect.input.tms.xdfprot>
-   Matlab protocol </_autosummary/offspect.input.tms.matprot>
-
-
 .. _support-link-coords:
 
 Manually linking the coordinates

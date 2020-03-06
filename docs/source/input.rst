@@ -11,11 +11,17 @@ number of files, or even within one file, different internal structures.
 Therefore, we face different challenges for each implementation of each
 protocol. In the following paragraphs these challenges are described.
 
+
+
+TMS Mappings
+************
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1  
    :glob:
 
-   input/*
+   input/tms/*prot
+   input/tms/notes
 
 
 

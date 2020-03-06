@@ -1,6 +1,6 @@
 """
-Smartmove
----------
+Smartmove robotic
+-----------------
 
 These recordings come from the `smartmove robotic TMS <https://www.ant-neuro.com/products/smartmove>`_. This input format uses three files:
 
@@ -22,12 +22,17 @@ recorded, not the actual coordinates of stimulation. The actual coordinates at t
 
 Documentation of the syntax for these :code:`.txt` files will follow.
 
+.. note::
+
+   Load the :class:`TraceData` with :func:`~.load_ephys_file` and the :class:`Coords` with :func:`load_documentation_txt`.
+
+
 Module Content
 **************
 
 """
 
-from offspect.types import FileName, Coords
+from offspect.types import FileName, Coords, TraceData
 from pathlib import Path
 from ast import literal_eval
 from typing import List, Tuple
@@ -98,11 +103,11 @@ def parse_recording_date(fname: FileName) -> datetime:
     The  eeg cnt-file should have the following format: 
     VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
     """
-    parts = []
+    parts: List[str] = []
     for part in Path(fname).stem.split("_"):
         parts += part.split(" ")
     delements = parts[-2].split("-") + parts[-1].split("-")
-    return datetime(*(int(d) for d in delements))
+    return datetime(*(int(d) for d in delements))  # type: ignore
 
 
 def load_triggers(fname: FileName) -> List[Tuple[str, int]]:
@@ -117,21 +122,37 @@ def load_triggers(fname: FileName) -> List[Tuple[str, int]]:
     return events
 
 
-def load_ephys_filee(
+def load_ephys_file(
     eeg_fname: FileName,
     emg_fname: FileName,
-    pre_in_ms=100,
-    post_in_ms=100,
-    select_events=["0001"],
-    select_channel="Ch1",
-) -> List[List[List[float]]]:
-    """
+    pre_in_ms: float = 100,
+    post_in_ms: float = 100,
+    select_events: List[str] = ["0001"],
+    select_channel: str = "Ch1",
+) -> List[TraceData]:
+    """load the electophysiological data for a specific channel for a smartmove file-pair
 
-    The  emg cnt-file should have the following format: 
-    VvNn<qualifier> YYYY-MM-DD_HH-MM-SS.cnt
+    args
+    ----
+    eeg_fname: FileName
+        the path to the EEG file. The file is expected to have the following format: VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
+    emg_fname: FileName
+        the path to the EMG file. The  file is expected to have the following format: VvNn<qualifier> YYYY-MM-DD_HH-MM-SS.cnt
+    pre_in_ms: float = 100
+        how much time before the TMS
+    post_in_ms: float = 100
+        how much time after the TMS
+    select_events: List[str] = ["0001"]
+        which events indicate the occurence of a TMS-pulse
+    select_channel: str = "Ch1"
+        the channel to use. Note that EMG channel labes only offer a selection of :code:`'Ch1', 'Ch2', 'Ch3', 'Ch4', 'Ch5', 'Ch6', 'Ch7', 'Ch8'`, while EEG channels are recording from a standard wavecap and should offer ['Fp1', 'Fpz', 'Fp2', 'F7', 'F3', 'Fz', 'F4', 'F8', 'FC5', 'FC1', 'FC2', 'FC6', 'M1', 'T7', 'C3', 'Cz', 'C4', 'T8', 'M2', 'CP5', 'CP1', 'CP2', 'CP6', 'P7', 'P3', 'Pz', 'P4', 'P8', 'POz', 'O1', 'O2', 'EOG', 'AF7', 'AF3', 'AF4', 'AF8', 'F5', 'F1', 'F2', 'F6', 'FC3', 'FCz', 'FC4', 'C5', 'C1', 'C2', 'C6', 'CP3', 'CP4', 'P5', 'P1', 'P2', 'P6', 'PO5', 'PO3', 'PO4', 'PO6', 'FT7', 'FT8', 'TP7', 'TP8', 'PO7', 'PO8', 'Oz'] all in reference to Cpz.
 
-    The  eeg cnt-file should have the following format: 
-    VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
+
+    returns
+    -------
+    Traces: List[TraceData]
+        the TraceData for each event fitting to select_events in the file
+    
     """
 
     eeg_fname = "/media/rgugg/tools/python3/offline-inspect/tests/mock/AmWo_AmWo_2019-10-09_15-12-38.cnt"
@@ -164,10 +185,9 @@ def load_ephys_filee(
     fs = cnt.get_sample_frequency()
     pre = int(pre_in_ms * fs / 1000)
     post = int(post_in_ms * fs / 1000)
-    trials = []
+    traces = []
     for event, tstamp in triggers:
         if event in select_events:
-            trial = np.atleast_2d(cnt.get_samples(tstamp - pre, tstamp + post))
-            trials.append(trial[:, cix])
-    trials = np.atleast_2d(trials)
-    return trials
+            trace = np.atleast_2d(cnt.get_samples(tstamp - pre, tstamp + post))
+            traces.append(trace[:, cix])
+    return traces
