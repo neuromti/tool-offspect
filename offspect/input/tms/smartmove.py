@@ -4,6 +4,10 @@ Smartmove robotic
 
 These recordings come from the `smartmove robotic TMS <https://www.ant-neuro.com/products/smartmove>`_. This input format uses three files:
 
+- :code:`.cnt` for EEG
+- :code:`.cnt` for EMG
+- :code:`.txt` for Coordinates
+
 Data
 ****
 
