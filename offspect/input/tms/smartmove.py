@@ -162,9 +162,6 @@ def load_ephys_file(
     
     """
 
-    eeg_fname = "/media/rgugg/tools/python3/offline-inspect/tests/mock/AmWo_AmWo_2019-10-09_15-12-38.cnt"
-    emg_fname = "/media/rgugg/tools/python3/offline-inspect/tests/mock/AmWo3a 2019-10-09_15-12-26.cnt"
-
     if not is_eegfile_valid(eeg_fname):
         raise ValueError(
             f"{eeg_fname} has not the correct file signature for a smartmove eeg file"
