@@ -36,9 +36,12 @@ from offspect.types import FileName, Coords, TraceData
 from pathlib import Path
 from ast import literal_eval
 from typing import List, Tuple
-from libeep import cnt_file
 from datetime import datetime
 import numpy as np
+from os import environ
+
+if not environ.get("READTHEDOCS", False):
+    from libeep import cnt_file
 
 
 def load_documentation_txt(fname: FileName) -> Coords:
