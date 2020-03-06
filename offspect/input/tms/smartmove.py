@@ -30,8 +30,10 @@ Module Content
 from offspect.types import FileName, Coords
 from pathlib import Path
 from ast import literal_eval
-from typing import List
+from typing import List, Tuple
 from libeep import cnt_file
+from datetime import datetime
+import numpy as np
 
 
 def load_documentation_txt(fname: FileName) -> Coords:
@@ -76,7 +78,96 @@ def load_documentation_txt(fname: FileName) -> Coords:
     return coords
 
 
-def load_cnt(fname: FileName):
+def is_eegfile_valid(fname: FileName) -> bool:
+    try:
+        assert Path(fname).suffix == ".cnt"
+        parts = Path(fname).stem.split("_")  # stem, so without the suffix
+        # make sure both subject names are the same
+        assert parts[0] == parts[1]
+        subject = parts[0]
+        assert len(subject) == 4
+        assert subject[0::2].isupper()
+        assert subject[1::2].islower()
+        return True
+    except AssertionError:
+        return False
 
+
+def parse_recording_date(fname: FileName) -> datetime:
+    """
+    The  eeg cnt-file should have the following format: 
+    VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
+    """
+    parts = []
+    for part in Path(fname).stem.split("_"):
+        parts += part.split(" ")
+    delements = parts[-2].split("-") + parts[-1].split("-")
+    return datetime(*(int(d) for d in delements))
+
+
+def load_triggers(fname: FileName) -> List[Tuple[str, int]]:
     c = cnt_file(fname)
+    triggers = [c.get_trigger(i) for i in range(c.get_trigger_count())]
 
+    events = []
+    for t in triggers:
+        m = t[0]
+        idx = t[1]
+        events.append((m, idx))
+    return events
+
+
+def load_ephys_filee(
+    eeg_fname: FileName,
+    emg_fname: FileName,
+    pre_in_ms=100,
+    post_in_ms=100,
+    select_events=["0001"],
+    select_channel="Ch1",
+) -> List[List[List[float]]]:
+    """
+
+    The  emg cnt-file should have the following format: 
+    VvNn<qualifier> YYYY-MM-DD_HH-MM-SS.cnt
+
+    The  eeg cnt-file should have the following format: 
+    VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
+    """
+
+    eeg_fname = "/media/rgugg/tools/python3/offline-inspect/tests/mock/AmWo_AmWo_2019-10-09_15-12-38.cnt"
+    emg_fname = "/media/rgugg/tools/python3/offline-inspect/tests/mock/AmWo3a 2019-10-09_15-12-26.cnt"
+
+    if not is_eegfile_valid(eeg_fname):
+        raise ValueError(
+            f"{eeg_fname} has not the correct file signature for a smartmove eeg file"
+        )
+
+    eeg_day = parse_recording_date(eeg_fname)
+    emg_day = parse_recording_date(emg_fname)
+    assert eeg_day.year == emg_day.year
+    assert eeg_day.month == emg_day.month
+    assert eeg_day.day == emg_day.day
+    triggers = load_triggers(eeg_fname)
+    eeg = cnt_file(eeg_fname)
+    emg = cnt_file(emg_fname)
+    eeg_labels = [eeg.get_channel_info(i)[0] for i in range(eeg.get_channel_count())]
+    emg_labels = [emg.get_channel_info(i)[0] for i in range(emg.get_channel_count())]
+    if select_channel in eeg_labels:
+        cnt = eeg
+        cix = eeg_labels.index(select_channel)
+    elif select_channel in emg_labels:
+        cnt = emg
+        cix = emg_labels.index(select_channel)
+    else:
+        raise IndexError(f"Selected channel {select_channel} not found")
+
+    fs = cnt.get_sample_frequency()
+    pre = int(pre_in_ms * fs / 1000)
+    post = int(post_in_ms * fs / 1000)
+    trials = []
+    for event, tstamp in triggers:
+        if event in select_events:
+            trial = np.atleast_2d(cnt.get_samples(tstamp - pre, tstamp + post))
+            trials.append(trial[:, cix])
+    trials = np.atleast_2d(trials)
+    return trials
