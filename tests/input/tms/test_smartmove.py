@@ -2,12 +2,50 @@ import pytest
 from offspect.input.tms.smartmove import *
 from tempfile import mkdtemp
 from pathlib import Path
+import libeep
 
 
 @pytest.fixture
 def doctxt():
     f = Path(__file__).parent.parent.parent / "mock" / "documentation.txt"
     yield str(f)
+
+
+@pytest.fixture()
+def emg_cnt(tmp_path):
+    d = tmp_path / "tests"
+    d.mkdir(exist_ok=True)
+    fname = Path(d) / "VvNn 2000-12-31_23-59-59.cnt"
+    if fname.exists():
+        fname.unlink()
+    fname = str(fname)
+    rate = 1024
+    channel_count = 8
+    channels = [(f"Ch{i}", "None", "uV") for i in range(1, channel_count + 1, 1)]
+    c = libeep.cnt_out(fname, rate, channels)
+    samples = np.repeat(np.arange(0, 5000), 8).flatten().tolist()
+    c.add_samples(samples)
+    c.close()
+    yield fname
+
+
+@pytest.fixture()
+def eeg_cnt(tmp_path):
+    d = tmp_path / "tests"
+    d.mkdir(exist_ok=True)
+    fname = Path(d) / "VvNn_VvNn_2000-12-31_23-59-59.cnt"
+    if fname.exists():
+        fname.unlink()
+    fname = str(fname)
+    rate = 1000
+    channel_count = 64
+    channels = [(f"Ch{i}", "None", "uV") for i in range(1, channel_count + 1, 1)]
+    c = libeep.cnt_out(fname, rate, channels)
+    samples = np.repeat(np.arange(0, 5000), 8).flatten().tolist()
+    c.add_samples(samples)
+    c.add_trigger(1005, "001")
+    c.close()
+    yield fname
 
 
 def test_load_document_txt_raises(doctxt, tmpdir):
@@ -61,13 +99,6 @@ def test_parse_recording_date():
     assert date.second == 1
 
 
-eeg_fname = "tests/mock/VvNn_VvNn_2000-12-31_23-59-59.cnt"
-
-emg_fname = "tests/mock/VvNn 2000-12-31_23-59-59.cnt"
-
-
-@pytest.mark.iosmartmove
-@pytest.mark.skipif(not Path(eeg_fname).exists(), reason="No files found")
-def test_load_ephys_file():
-    traces = load_ephys_file(eeg_fname, emg_fname)
+def test_load_ephys_file(eeg_cnt, emg_cnt):
+    traces = load_ephys_file(eeg_cnt, emg_cnt)
 
