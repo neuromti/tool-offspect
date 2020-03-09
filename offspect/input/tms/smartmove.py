@@ -176,6 +176,10 @@ def load_ephys_file(
     eeg = cnt_file(eeg_fname)
     emg = cnt_file(emg_fname)
     eeg_labels = [eeg.get_channel_info(i)[0] for i in range(eeg.get_channel_count())]
+
+    # the triggers are always recorded with EEG, so we need this Fs
+    eeg_fs = eeg.get_sample_frequency()
+
     emg_labels = [emg.get_channel_info(i)[0] for i in range(emg.get_channel_count())]
     if select_channel in eeg_labels:
         cnt = eeg
@@ -186,12 +190,14 @@ def load_ephys_file(
     else:
         raise IndexError(f"Selected channel {select_channel} not found")
 
-    fs = cnt.get_sample_frequency()
-    pre = int(pre_in_ms * fs / 1000)
-    post = int(post_in_ms * fs / 1000)
+    trace_fs = cnt.get_sample_frequency()
+    pre = int(pre_in_ms * trace_fs / 1000)
+    post = int(post_in_ms * trace_fs / 1000)
     traces = []
-    for event, tstamp in triggers:
+    for event, sample in triggers:
         if event in select_events:
+            tstamp = int(sample * trace_fs / eeg_fs)
+            # calculate the closest sample
             trace = np.atleast_2d(cnt.get_samples(tstamp - pre, tstamp + post))
             traces.append(trace[:, cix])
     return traces

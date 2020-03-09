@@ -39,13 +39,15 @@ def eeg_cnt(tmp_path):
     fname = str(fname)
     rate = 1000
     channel_count = 64
-    channels = [(f"Ch{i}", "None", "uV") for i in range(1, channel_count + 1, 1)]
+    channels = [(f"EEG{i}", "None", "uV") for i in range(1, channel_count + 1, 1)]
     c = libeep.cnt_out(fname, rate, channels)
     samples = np.repeat(np.arange(0, 5000), 8).flatten().tolist()
     c.add_samples(samples)
-    c.add_trigger(1005, "001")
+    tstamps = (1000, 2048)
+    for t in tstamps:
+        c.add_trigger(t, "0001")
     c.close()
-    yield fname
+    yield fname, tstamps
 
 
 def test_load_document_txt_raises(doctxt, tmpdir):
@@ -100,5 +102,9 @@ def test_parse_recording_date():
 
 
 def test_load_ephys_file(eeg_cnt, emg_cnt):
+    eeg_cnt, tstamps = eeg_cnt
     traces = load_ephys_file(eeg_cnt, emg_cnt)
-
+    assert len(traces) == 2
+    for trace, t in zip(traces, tstamps):
+        assert trace.shape == (204,)
+        assert trace[102] == float(int(t * 1024 / 1000))
