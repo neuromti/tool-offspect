@@ -41,6 +41,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         super(Ui, self).__init__(parent)
         self.setupUi(self)
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
+        self.addToolBar(NavigationToolbar(self.MplWidget2.canvas, self))
         self.plot_mep()
         self.plot_coil_coordinates()
         
@@ -91,7 +92,10 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.MplWidget2.canvas.axes.clear()
         
         im = image.imread('coilpic.png')
-
+        brain = image.imread('brain.png')
+        
+        self.MplWidget2.canvas.axes.imshow(brain, aspect='auto', extent=(-1, 7, -4, 7), zorder=1)
+        
         import itertools
         r = 6
         c = 6
@@ -102,15 +106,18 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         
         current_coil_location = [4,5]
         # plot current coordinates
-        self.MplWidget2.canvas.axes.plot(current_coil_location[0], current_coil_location[1], "ro")
-        coilcoor = (current_coil_location[0],current_coil_location[0]+2, current_coil_location[1]-0.2, current_coil_location[1]+1) 
+        self.MplWidget2.canvas.axes.plot(current_coil_location[0], current_coil_location[1], "ro", zorder=3)
+        coilcoor = (current_coil_location[0],current_coil_location[0]+3, current_coil_location[1]-0.4, current_coil_location[1]+2) 
         self.MplWidget2.canvas.axes.imshow(
-                im, aspect='auto', extent=coilcoor)
+                im, aspect='auto', extent=coilcoor, zorder=2)
         
         # plot grid
-        self.MplWidget2.canvas.axes.scatter(*zip(*pts), marker='o', s=30, color='black')
-        self.MplWidget2.canvas.axes.set_ylabel("Anterior - Posterior")
-        self.MplWidget2.canvas.axes.set_xlabel("Dorsal - Ventral")
+        self.MplWidget2.canvas.axes.scatter(*zip(*pts), marker='o', s=30, color='blue', zorder=3)
+        self.MplWidget2.canvas.axes.set_ylabel("Dorsal - Ventral")
+        self.MplWidget2.canvas.axes.set_xlabel("Anterior - Posterior")
+        
+        self.MplWidget2.canvas.axes.set_xticks([])
+        self.MplWidget2.canvas.axes.set_yticks([])
         
         textstr = str("Location: " + str((current_coil_location[0], current_coil_location[1])))
         props   = dict(boxstyle="round", facecolor="wheat", alpha=1)
@@ -123,7 +130,6 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             fontsize=14,
             verticalalignment="top",
             bbox=props)
-        
         # refresh canvas
         self.MplWidget2.canvas.draw()
 

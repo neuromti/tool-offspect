@@ -8,6 +8,7 @@ Created on Tue Mar 10 09:28:37 2020
 from PyQt5.QtWidgets import *
 from matplotlib.backends.backend_qt5agg import FigureCanvas
 from matplotlib.figure import Figure
+import matplotlib.image as image
 
 class MplWidget1(QWidget):
     
@@ -34,6 +35,5 @@ class MplWidget2(QWidget):
         
         vertical_layout = QVBoxLayout() 
         vertical_layout.addWidget(self.canvas)
-        
-        self.canvas.axes = self.canvas.figure.add_subplot(111) 
+        self.canvas.axes = self.canvas.figure.add_subplot(111)
         self.setLayout(vertical_layout)
