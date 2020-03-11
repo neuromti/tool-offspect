@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Union
-from ..cache.file import CacheFile, merge
+from ..cache.file import CacheFile, merge, populate
 import argparse
 
 
@@ -13,6 +13,42 @@ def cli_merge(args: argparse.Namespace):
     if args.verbose:
         print("Content of target file is now:")
         print(CacheFile(tf))
+
+
+def cli_tms(args: argparse.Namespace):
+    """
+
+    Example::
+
+        offspect tms -t test.hdf5 -f /media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml /media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat -pp 100 100 -r contralateral_mep -c EDC_L
+
+    """
+    # print(args)
+    for s in args.sources:
+        if Path(s).suffix == ".mat":
+            fmt = "matprot"
+
+    print(f"Assuming source data is from {fmt} protocol")
+    if fmt == "matprot":
+        from ..input.tms.matprotconv import prepare_annotations, cut_traces
+
+        for s in args.sources:
+            if Path(s).suffix == ".xml":
+                xmlfile = Path(s)
+            if Path(s).suffix == ".mat":
+                matfile = Path(s)
+
+        annotation = prepare_annotations(
+            xmlfile,
+            matfile,
+            args.readout,
+            args.channel,
+            float(args.prepost[0]),
+            float(args.prepost[1]),
+        )
+        traces = cut_traces(matfile, annotation)
+
+    populate(args.to, [annotation], [traces])
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -47,6 +83,52 @@ def get_parser() -> argparse.ArgumentParser:
         dest="sources",
     )
     merge.add_argument("-verbose", "-v", help="be more verbose", action="store_true")
+
+    # tms ---------------------------------------------------------------------
+    tms = subparsers.add_parser(
+        name="tms", help="prepare cachefiles for a tms protocol"
+    )
+    tms.add_argument(
+        "-t",
+        "--to",
+        help="filename of the cachefile to be populated",
+        type=str,
+        required=True,
+        dest="to",
+    )
+    tms.add_argument(
+        "-f",
+        "--from",
+        nargs="+",
+        help="<Required> list of input files",
+        required=True,
+        dest="sources",
+    )
+    tms.add_argument(
+        "-r",
+        "--readout",
+        type=str,
+        help="the desired readout",
+        required=True,
+        dest="readout",
+    )
+    tms.add_argument(
+        "-c",
+        "--channel",
+        type=str,
+        help="the desired channel",
+        required=True,
+        dest="channel",
+    )
+    tms.add_argument(
+        "-pp",
+        "--prepost",
+        nargs="+",
+        help="<Required> positional arguments of pre and post duration",
+        required=True,
+        dest="prepost",
+    )
+    # ------------------------------------------------------------------------
     return parser
 
 
@@ -59,6 +141,8 @@ def main():
         cli_peek(args)
     elif args.sub == "merge":
         cli_merge(args)
+    elif args.sub == "tms":
+        cli_tms(args)
     else:
         print("No valid subcommand specified")
 

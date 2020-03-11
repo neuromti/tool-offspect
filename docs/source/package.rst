@@ -9,4 +9,4 @@ The documentation of the functions in this package
    offspect.types
    offspect.input.tms.smartmove
    offspect.input.tms.xdfprot
-   offspect.input.tms.matprot
+   offspect.input.tms.matprotconv
