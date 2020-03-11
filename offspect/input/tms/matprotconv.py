@@ -8,6 +8,11 @@ or lz_TMS_v5.m (see `repository <https://github.com/translationalneurosurgery/lo
 - :code:`.mat` storing electrophysiologal data and notes
 - :code:`.xml` storing the coordinates of targets
 
+.. note::
+
+   Load the :class:`TraceData` with :func:`~.cut_traces` and the :class:`~.Annotations` with :func:`prepare_annotations`.
+
+
 Data
 ****
 
@@ -20,17 +25,24 @@ Coordinates
 
 By design, the coordinates of the target-entry pairs were stored  independently from the :code:`mat`-file in an :code:`xml`-file created by localite.  The pairing of coordinates with a specific trace needs to be reconstructed manually (see :ref:`support-link-coords`).  
 
+
+
+
 """
 from offspect import release
-from matprot.convert.coords import convert_xml_to_coords
-from matprot.convert.traces import (
-    convert_mat,
-    get_fs,
-    get_onsets,
-    get_enames,
-)
-from matprot.convert.traces import cut_into_traces as _cut_traces
-from offspect.types import FileName, Coordinate, MetaData, Annotations
+from os import environ
+
+if not environ.get("READTHEDOCS", False):
+    from matprot.convert.coords import convert_xml_to_coords
+    from matprot.convert.traces import (
+        convert_mat,
+        get_fs,
+        get_onsets,
+        get_enames,
+    )
+    from matprot.convert.traces import cut_into_traces as _cut_traces
+
+from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from math import inf, nan
 import datetime
 from pathlib import Path
@@ -56,7 +68,29 @@ def prepare_annotations(
     channel: str,
     pre_in_ms: float,
     post_in_ms: float,
-):
+) -> Annotations:
+    """load xml and matfile and distill annotations from them
+    
+    args
+    ----
+    xmlfile: FileName
+        the xmlfile with the target-entry pairs
+    matfile: FileName
+        the matfile with the physiological data
+    readout: str
+        which readout to use (see :data:`~.VALID_READOUTS`
+    channel: str
+        which channel to pick
+    pre_in_ms: float
+        how many ms to cut before the tms
+    post_in_ms: float
+        how many ms to cut after the tms
+
+    returns
+    -------
+    annotation: Annotations
+        the annotations for this origin files
+    """
     # xmlfile = "/media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml"
     # matfile = "/media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat"
     # channel = "EDC_L"
@@ -128,7 +162,19 @@ def prepare_annotations(
     return anno
 
 
-def cut_traces(matfile: FileName, annotation: Annotations):
+def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
+    """cut the tracedate from a matfile given Annotations
+    args
+    ----
+    matfile: FileName
+        the original matfile. must correspond in name to the one specified in the annotation
+    annotation: Annotations
+        the annotations specifying e.g. onsets as well as pre and post durations
+
+    returns
+    -------
+    traces: List[TraceData]
+    """
     if matfile.name != annotation["origin"]:
         raise ValueError(
             "Matfile does not correspond with original file. Fix manually if you plan to fork this annotations"

@@ -8,6 +8,12 @@ These recordings come from the `smartmove robotic TMS <https://www.ant-neuro.com
 - :code:`.cnt` for EMG
 - :code:`.txt` for Coordinates
 
+
+.. note::
+
+   Load the :class:`TraceData` with :func:`~.load_ephys_file` and the :class:`Coords` with :func:`load_documentation_txt`
+
+
 Data
 ****
 
@@ -24,11 +30,31 @@ file encodes experiment, subject pseudonym, date and hour, e.g.:
 During the mapping procedure, the coordinates of the target positions, i.e. where the robot will be moved to, are saved in a :code:`documentation.txt`-file. Please note that these are the targets for the robotic movement, 
 recorded, not the actual coordinates of stimulation. The actual coordinates at the time of stimulation do not appear to have been stored at all. 
 
-Documentation of the syntax for these :code:`.txt` files will follow.
+.. admonition:: Documentation.txt
 
-.. note::
+    The file documentation.txt stores the coordinates of each target the robot arm moved to. It does not contain information regarding manual adjustments (i.e. adjusting distance of coil to the head) or the actual coil position at the time of stimulation. Target coordinates are given in medical image coordinates (CT / 3D image).
 
-   Load the :class:`TraceData` with :func:`~.load_ephys_file` and the :class:`Coords` with :func:`load_documentation_txt`.
+    - Target counter: Counts the number of successfully reached targets, including this one. 
+    - Target number: Point number in the total list of all targets.
+    - Target label: The ‘name’ of the target point. Usually the same as the target number.
+    - X-vector [<m11> <m21> <m31>]
+    - Y-vector [<m12> <m22> <m32>]
+    - Z-vector [<m13> <m23> <m33>]
+    - Position [<x> <y> <z>]
+    - Date & time point [dd.mm.yy hh:mm:ss]
+    - Experiment name [always ‘TMS exp’]
+    - Subject ID [NnVv]
+
+
+.. admonition:: success.txt
+
+    The file success.txt stores the coordinates of only the last target the robot arm moved to. The first line reads ‘success’ (move ended at desired position), ‘start’ (move started but not ended) or ‘fail’ (move ended before reaching the target due to error). The second line contains the timestamp of when the status was updated. For line 4 to 10, same notation as in documentation.txt.
+
+.. admonition:: target_TMS_exp_[NnVv]_[yyyymmdd_hhmm]
+    
+    The file target_TMS_exp_[NnVv]_[yyyymmdd_hhmm] stores the coordinates of all created targets. It contains the position (<x>, <y> and <z>), matrix operations (<m11>, <m12>... until <m33>) and target label (<label>), each labeled as such.
+
+.
 
 
 Module Content

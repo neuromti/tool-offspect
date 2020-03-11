@@ -12,18 +12,19 @@ offspect
 ~~~~~~~~
 .. code-block:: none
 
-   usage: offspect [-h] {peek,merge} ...
+   usage: offspect [-h] {peek,merge,tms} ...
    
    Create, manipulate and inspect cachefiles for offline inspection of evoked
    potentials
    
    positional arguments:
-     {peek,merge}
-       peek        peek into a cachefile and print essential information
-       merge       merge two cachefiles into one
+     {peek,merge,tms}
+       peek            peek into a cachefile and print essential information
+       merge           merge two cachefiles into one
+       tms             prepare cachefiles for a tms protocol
    
    optional arguments:
-     -h, --help    show this help message and exit
+     -h, --help        show this help message and exit
 
 
 offspect peek
@@ -51,5 +52,26 @@ offspect merge
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of files to merge
      -verbose, -v          be more verbose
+
+
+offspect tms
+~~~~~~~~~~~~
+.. code-block:: none
+
+   usage: offspect tms [-h] -t TO -f SOURCES [SOURCES ...] -r READOUT -c CHANNEL
+                       -pp PREPOST [PREPOST ...]
+   
+   optional arguments:
+     -h, --help            show this help message and exit
+     -t TO, --to TO        filename of the cachefile to be populated
+     -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
+                           <Required> list of input files
+     -r READOUT, --readout READOUT
+                           the desired readout
+     -c CHANNEL, --channel CHANNEL
+                           the desired channel
+     -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
+                           <Required> positional arguments of pre and post
+                           duration
 
 

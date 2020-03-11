@@ -1,4 +1,4 @@
 .. automodule:: offspect.input.tms.matprotconv
    :noindex:
-   :members:
+   :members: cut_traces, prepare_annotations
 
