@@ -24,6 +24,7 @@ setup(
     download_url="https://github.com/pyreiz/ctrl-localite",
     license="MIT",
     packages=packages,
+    package_data={"matprot": ["ml/+tms/lz/*.m"]},
     entry_points={"console_scripts": ["offspect =offspect.cli.__main__:main",],},
     install_requires=requirements,
     classifiers=[
