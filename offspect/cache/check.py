@@ -5,7 +5,7 @@ import yaml
 import re
 import datetime
 from offspect.types import *
-
+from math import inf
 
 VALID_READOUTS = ["contralateral_mep"]  #: currently implemented readout measures
 VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
@@ -66,7 +66,7 @@ def iscoords(x) -> bool:
 
 
 def isTsince(x) -> bool:
-    return (isnumeric(x) and x > 0) or x == None or x == ""
+    return (isnumeric(x) and x > 0) or x == None or x == "" or x == inf
 
 
 def isbool(x) -> bool:
@@ -110,6 +110,7 @@ GENERIC_TRACEKEYS = {
     "event_time": isfloat,
     "xyz_coords": iscoords,
     "onset_shift": isint,
+    "time_since_last_pulse_in_s": isTsince,
     "reject": isbool,
     "comment": isstr,
     "examiner": isstr,
@@ -119,7 +120,6 @@ SPECIFIC_TRACEKEYS = (
     dict()
 )  #: A dictionary containing for all mmplemented readouts their specific  keys for the TraceAttributes and as values a functions checking the validity of the respective TraceAttributes value
 CONTRALATERAL_MEP_KEYS = {
-    "time_since_last_pulse_in_s": isTsince,
     "stimulation_intensity_mso": isnumeric,
     "stimulation_intensity_didt": isnumeric,
     "neg_peak_magnitude_uv": isnumeric,
@@ -146,7 +146,7 @@ def check_metadata(readout: str, attributes: TraceAttributes):
     for key, foo in TKEYS.items():
         try:
             if not foo(attributes[key]):
-                raise ValueError(f"{attributes[key]} has invalid type")
+                raise ValueError(f"{key}:{attributes[key]} has invalid type")
         except KeyError:
             raise KeyError(f"{key} not in the attributes keys")
         except Exception as e:

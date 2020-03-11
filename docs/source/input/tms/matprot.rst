@@ -1,4 +1,4 @@
-.. automodule:: offspect.input.tms.matprot
+.. automodule:: offspect.input.tms.matprotconv
    :noindex:
    :members:
 

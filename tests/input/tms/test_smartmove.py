@@ -106,5 +106,7 @@ def test_load_ephys_file(eeg_cnt, emg_cnt):
     traces = load_ephys_file(eeg_cnt, emg_cnt)
     assert len(traces) == 2
     for trace, t in zip(traces, tstamps):
+        # should be 100ms before and after -> 102 samples
         assert trace.shape == (204,)
+        # because data is 0 -> N, the center value should be the resampled original tstamp
         assert trace[102] == float(int(t * 1024 / 1000))

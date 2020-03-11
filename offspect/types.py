@@ -21,4 +21,7 @@ TraceAttributes = Dict[
     str, MetaValue
 ]  #:  Collapsed annotations with information on origin, origin attributes and a specific trace all in one Dictionary
 
-Coords = Dict[int, Tuple[float, float, float]]
+Coordinate = Tuple[float, float, float]
+
+Coords = Dict[int, Coordinate]
+

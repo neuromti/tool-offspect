@@ -34,7 +34,7 @@ from .check import (
     TraceAttributes,
     filter_trace_attrs,
 )
-
+from math import inf, nan
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
@@ -286,6 +286,10 @@ def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
         try:
             d[key] = ast.literal_eval(val)
         except (SyntaxError, ValueError):  # for subject and filedate
+            if val == "inf":
+                d[key] = inf
+            if val == "nan":
+                d[key] = nan
             pass
     return d
 

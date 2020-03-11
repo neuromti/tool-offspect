@@ -25,12 +25,12 @@ environ[
 
 # -- Project information -----------------------------------------------------
 
-project = "offline-inspect"
+project = "offspect"
 copyright = "2020, Robert Guggenberger"
 author = "Robert Guggenberger"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.1"
+release = pkg_resources.get_distribution(project.lower()).version
 
 from offspect.cli.__main__ import create_cli_rst
 

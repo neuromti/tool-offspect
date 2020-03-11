@@ -3,9 +3,6 @@ import tempfile
 from pathlib import Path
 from .mock.cache import create_test_cachefile, get_cachefile_template
 
-# import sys
-# sys.path.append(Path(__file__).parent)
-
 
 @pytest.fixture(scope="module")
 def cachefile0():
@@ -45,3 +42,13 @@ def cachefile1():
         create_test_cachefile(tf, settings)
         yield tf, settings
     assert tf.exists() == False
+
+
+@pytest.fixture(scope="session")
+def matfile():
+    yield Path(__file__).parent / "map_contralesional.mat"
+
+
+@pytest.fixture(scope="session")
+def xmlfile():
+    yield Path(__file__).parent / "coords_contralesional.xml"
