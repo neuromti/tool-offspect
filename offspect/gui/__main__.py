@@ -6,9 +6,9 @@ Created on Tue Mar 10 09:28:37 2020
 """
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, QtGui, uic
-import visual_inspection_gui
+from offspect.gui import visual_inspection_gui
 import sys
-from os import chdir
+import os
 from pathlib import Path
 from functools import partial
 from matplotlib import pyplot as plt
@@ -42,13 +42,26 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.setupUi(self)
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
         self.addToolBar(NavigationToolbar(self.MplWidget2.canvas, self))
+        self.current_coil_location = [0,0]
         self.plot_mep()
         self.plot_coil_coordinates()
+        self.reject_button.setCheckable(True)
         
-#        self.reject_checkbox.clicked.connect(print('rejected'))
-#        self.previous_button.clicked.connect(print('back'))
+        self.reject_button.clicked.connect(self.update_reject_button)
+#        self.previous_button.clicked.connect()
         self.next_button.clicked.connect(self.plot_mep)
+        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
         
+        self.cwd = os.getcwd()
+    
+    def update_reject_button(self):
+        if self.reject_button.isChecked() == True:
+            self.reject_button.setCheckable(False)
+            self.reject_button.setStyleSheet("background-color: red")
+        elif self.reject_button.isChecked() == False:
+            self.reject_button.setCheckable(True)            
+            self.reject_button.setStyleSheet("background-color: light gray")
+    
     def plot_mep(self):
         
         # discards the old graph
@@ -85,14 +98,26 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
                 
         # refresh canvas
         self.MplWidget1.canvas.draw()
-
+    
+    def update_coil_coordinates(self):
+        a = int(self.coil_coordinate_input.text()[0])
+        b = int(self.coil_coordinate_input.text()[2])
+        if type(a) and type(b) != int:
+            self.next_button.setStyleSheet("QPushButton:pressed { background-color: red }" )
+        else:
+            self.next_button.setStyleSheet("QPushButton:pressed { background-color: light gray }" )
+        self.current_coil_location = [a, b]
+        self.plot_coil_coordinates()
+        
     def plot_coil_coordinates(self):
+        
+        cwd = os.getcwd()
         
         # discards the old graph
         self.MplWidget2.canvas.axes.clear()
         
-        im = image.imread('coilpic.png')
-        brain = image.imread('brain.png')
+        im = image.imread(cwd + '\\coilpic.png')
+        brain = image.imread(cwd + '\\brain.png')
         
         self.MplWidget2.canvas.axes.imshow(brain, aspect='auto', extent=(-1, 7, -4, 7), zorder=1)
         
@@ -104,22 +129,22 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         
         pts = itertools.product(x, y)
         
-        current_coil_location = [4,5]
+        
         # plot current coordinates
-        self.MplWidget2.canvas.axes.plot(current_coil_location[0], current_coil_location[1], "ro", zorder=3)
-        coilcoor = (current_coil_location[0],current_coil_location[0]+3, current_coil_location[1]-0.4, current_coil_location[1]+2) 
+        self.MplWidget2.canvas.axes.plot(self.current_coil_location[0], self.current_coil_location[1], "ro", zorder=3)
+        coilcoor = (self.current_coil_location[0]-0.5, self.current_coil_location[0]+2.5, self.current_coil_location[1]-4, self.current_coil_location[1]+0.4) 
         self.MplWidget2.canvas.axes.imshow(
-                im, aspect='auto', extent=coilcoor, zorder=2)
+                im, aspect='auto', extent=coilcoor, zorder=3)
         
         # plot grid
-        self.MplWidget2.canvas.axes.scatter(*zip(*pts), marker='o', s=30, color='blue', zorder=3)
+        self.MplWidget2.canvas.axes.scatter(*zip(*pts), marker='o', s=30, color='blue', zorder=2)
         self.MplWidget2.canvas.axes.set_ylabel("Dorsal - Ventral")
         self.MplWidget2.canvas.axes.set_xlabel("Anterior - Posterior")
         
         self.MplWidget2.canvas.axes.set_xticks([])
         self.MplWidget2.canvas.axes.set_yticks([])
         
-        textstr = str("Location: " + str((current_coil_location[0], current_coil_location[1])))
+        textstr = str("Location: " + str((self.current_coil_location[0], self.current_coil_location[1])))
         props   = dict(boxstyle="round", facecolor="wheat", alpha=1)
 
         self.MplWidget2.canvas.axes.text(

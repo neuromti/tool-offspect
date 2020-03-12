@@ -1,0 +1,1 @@
+from offspect.gui import __main__
