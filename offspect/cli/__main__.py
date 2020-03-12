@@ -23,6 +23,17 @@ def cli_tms(args: argparse.Namespace):
 
         offspect tms -t test.hdf5 -f /media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml /media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat -pp 100 100 -r contralateral_mep -c EDC_L
 
+
+    .. admonition:: smartmove
+
+        eep-peek /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EEG/AmWo/20190704/AmWo_AmWo_2019-07-04_15-51-55.cnt
+
+        tells you which events are in the cnt file
+
+        offspect tms -t test.hdf5 -f /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EMG/AmWo/20190704/AmWo1\ 2019-07-04_15-51-37.cnt /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EEG/AmWo/20190704/AmWo_AmWo_2019-07-04_15-51-55.cnt /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_Coordinates/AmWo/20190704/documentation.txt -r contralateral_mep -c Ch1 -pp 100 100 -e 1
+
+        populates a cachefile
+
     """
     suffices = []
     for s in args.sources:

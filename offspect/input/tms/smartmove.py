@@ -250,7 +250,7 @@ def load_ephys_file(
             onsets.append(onset)
             tstamps.append(sample / eeg_fs)
             enames.append(event)
-    print("Selected", len(onsets), "of", len(triggers) "trigger events")
+    print("Selected", len(onsets), "of", len(triggers), "trigger events")
 
     time_since_last_pulse = [inf] + [a - b for a, b in zip(tstamps[1:], tstamps[0:-1])]
     info = {
