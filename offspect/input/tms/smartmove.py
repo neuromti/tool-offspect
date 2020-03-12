@@ -104,11 +104,13 @@ def load_documentation_txt(fname: FileName) -> Dict[int, Coordinate]:
                 raise ValueError(f"{fname} is malformed")
 
             # parse the target data and add to the dictionary
+            # take line four according to documentation,see above
             tmp = ", ".join(target[3].split(" "))
             xyz = literal_eval(f"[{tmp}]")
             target = []
             idx += 1
-            coords[idx] = xyz[0:3]  # TODO unclear, discuss with Felix
+            # take the last three entries according to documentation,see above
+            coords[idx] = xyz[-3:]
 
         else:  # info not complete, we need to collect more lines
             target.append(line.strip())
@@ -262,22 +264,6 @@ def load_ephys_file(
 # -----------------------------------------------------------------------------
 
 
-def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
-    """cut the tracedate from a matfile given Annotations
-    args
-    ----
-    cntfile: FileName
-        the cntfile for cutting the data. must correspond in name to the one specified in the annotation
-    annotation: Annotations
-        the annotations specifying e.g. onsets as well as pre and post durations
-
-    returns
-    -------
-    traces: List[TraceData]
-    """
-    pass
-
-
 def prepare_annotations(
     docfile: FileName,
     eegfile: FileName,
@@ -370,3 +356,31 @@ def prepare_annotations(
         "traces": traceattrs,
     }
     return anno
+
+
+def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
+    """cut the tracedate from a matfile given Annotations
+    args
+    ----
+    cntfile: FileName
+        the cntfile for cutting the data. must correspond in name to the one specified in the annotation
+    annotation: Annotations
+        the annotations specifying e.g. onsets as well as pre and post durations
+
+    returns
+    -------
+    traces: List[TraceData]
+    """
+    cnt = cnt_file(cntfile)
+    pre = annotation["attrs"]["samples_pre_event"]
+    post = annotation["attrs"]["samples_post_event"]
+    cix = [cnt.get_channel_info(c)[0] for c in range(cnt.get_channel_count())].index(
+        annotation["attrs"]["channel_labels"][0]
+    )
+    traces = []
+    for attrs in annotation["traces"]:
+        onset = attrs["event_sample"]
+        trace = cnt.get_samples(fro=onset - pre, to=onset + post)
+        trace = np.asanyarray(trace)[:, cix]
+        traces.append(trace)
+    return traces

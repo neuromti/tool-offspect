@@ -4,8 +4,7 @@ from pathlib import Path
 from offspect.input.tms.matprotconv import prepare_annotations, cut_traces
 from offspect.api import populate, CacheFile
 
-
-def test_matprot(tmp_path):
+try:
     matfile = list(
         (Path(pkg_resources.resource_filename("matprot", "")).parent / "tests").glob(
             "*.mat"
@@ -17,6 +16,13 @@ def test_matprot(tmp_path):
             "*.xml"
         )
     )[0]
+    found = True
+except IndexError:
+    found = False
+
+
+@pytest.mark.skipif(found == False, reason="Could not find the test files")
+def test_matprot(tmp_path):
 
     annotation = prepare_annotations(
         xmlfile,
