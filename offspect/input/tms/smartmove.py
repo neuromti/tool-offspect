@@ -81,7 +81,8 @@ def load_documentation_txt(fname: FileName) -> Dict[int, Coordinate]:
 
     with fname.open("r") as f:
         lines = f.readlines()
-    lines.append("\n")  # otherwise, last target is ignored
+    if lines[-1] != "\n":
+        lines.append("\n")  # otherwise, last target is ignored
     coords = dict()
     target: List[str]
     target = []
@@ -154,7 +155,6 @@ def parse_recording_date(fname: FileName) -> datetime:
 def load_triggers(fname: FileName) -> List[Tuple[str, int]]:
     c = cnt_file(fname)
     triggers = [c.get_trigger(i) for i in range(c.get_trigger_count())]
-
     events = []
     for t in triggers:
         m = t[0]
@@ -250,6 +250,7 @@ def load_ephys_file(
             onsets.append(onset)
             tstamps.append(sample / eeg_fs)
             enames.append(event)
+    print("Selected", len(onsets), "of", len(triggers) "trigger events")
 
     time_since_last_pulse = [inf] + [a - b for a, b in zip(tstamps[1:], tstamps[0:-1])]
     info = {
@@ -279,6 +280,7 @@ def prepare_annotations(
     readout: str,
     pre_in_ms: float,
     post_in_ms: float,
+    select_events: List[str] = ["0001"],
 ) -> Annotations:
     """load a documentation.txt and cnt-files and distill annotations from them
     
@@ -313,7 +315,7 @@ def prepare_annotations(
         emg_fname=emgfile,
         pre_in_ms=pre_in_ms,
         post_in_ms=post_in_ms,
-        select_events=["0001"],
+        select_events=select_events,
         select_channel=channel,
     )
     coords = load_documentation_txt(docfile)
@@ -327,12 +329,16 @@ def prepare_annotations(
     event_times = info["event_times"]
     time_since_last_pulse = info["time_since_last_pulse"]
     for idx, t in enumerate(event_samples):
+        try:
+            xyz_coords = coords[idx]
+        except KeyError:
+            xyz_coords = [nan, nan, nan]
         tattr = {
             "id": idx,
             "event_name": f"'{event_names[idx]}'",
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
-            "xyz_coords": coords[idx],
+            "xyz_coords": xyz_coords,
             "time_since_last_pulse_in_s": time_since_last_pulse[idx],
             "stimulation_intensity_mso": stimulation_intensity_mso,
             "stimulation_intensity_didt": stimulation_intensity_didt,

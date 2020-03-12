@@ -5,7 +5,7 @@ import yaml
 import re
 import datetime
 from offspect.types import *
-from math import inf
+from math import inf, isnan
 
 VALID_READOUTS = ["contralateral_mep"]  #: currently implemented readout measures
 VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
@@ -46,7 +46,7 @@ def isint(x):
 
 
 def isfloat(x) -> bool:
-    return isinstance(x, float)
+    return isinstance(x, float) or isnan(x)
 
 
 def isnumeric(x) -> bool:
@@ -62,7 +62,11 @@ def islist(x) -> bool:
 
 
 def iscoords(x) -> bool:
-    return islist(x) and len(x) == 3 and all((isnumeric(x) for x in x))
+    if not (islist(x) and len(x) == 3 and all((isnumeric(x) for x in x))):
+        print(f"{x} is {type(x)}")
+        return False
+    else:
+        return True
 
 
 def isTsince(x) -> bool:

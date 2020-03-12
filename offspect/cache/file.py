@@ -291,6 +291,9 @@ def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
             if val == "nan":
                 d[key] = nan
             pass
+            if key == "xyz_coords":
+                xyz = yaml.load("[nan, nan, nan]", Loader=yaml.Loader)
+                d[key] = [float(p) for p in xyz]
     return d
 
 

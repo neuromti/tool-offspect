@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Union
-from ..cache.file import CacheFile, merge, populate
+from typing import Union, List
+from offspect.cache.file import CacheFile, merge, populate
 import argparse
+from ast import literal_eval
 
 
 def cli_peek(args: argparse.Namespace):
@@ -91,6 +92,7 @@ def cli_tms(args: argparse.Namespace):
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
+            select_events=args.select_events,
         )
         for f in cntfiles:
             if f.name == annotation["origin"]:
@@ -176,6 +178,15 @@ def get_parser() -> argparse.ArgumentParser:
         help="<Required> positional arguments of pre and post duration",
         required=True,
         dest="prepost",
+    )
+    tms.add_argument(
+        "-e",
+        "--events",
+        nargs="+",
+        help="<Required> select event",
+        required=False,
+        type=str,
+        dest="select_events",
     )
     # ------------------------------------------------------------------------
     return parser
