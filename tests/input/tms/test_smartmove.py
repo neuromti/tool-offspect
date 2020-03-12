@@ -102,11 +102,22 @@ def test_parse_recording_date():
 
 
 def test_load_ephys_file(eeg_cnt, emg_cnt):
-    eeg_cnt, tstamps = eeg_cnt
-    traces = load_ephys_file(eeg_cnt, emg_cnt)
-    assert len(traces) == 2
-    for trace, t in zip(traces, tstamps):
-        # should be 100ms before and after -> 102 samples
-        assert trace.shape == (204,)
-        # because data is 0 -> N, the center value should be the resampled original tstamp
-        assert trace[102] == float(int(t * 1024 / 1000))
+    eeg_cnt, onsets = eeg_cnt
+    info = load_ephys_file(eeg_cnt, emg_cnt)
+    assert len(info["event_samples"]) == 2
+    assert info["event_samples"] == [int(o * 1024 / 1000) for o in onsets]
+    # for trace, t in zip(traces, tstamps):
+    #     # should be 100ms before and after -> 102 samples
+    #     assert trace.shape == (204,)
+    #     # because data is 0 -> N, the center value should be the resampled original tstamp
+    #     assert trace[102] == float(int(t * 1024 / 1000))
+
+
+def test_prepare_annotations(eeg_cnt, emg_cnt, doctxt):
+    eeg_cnt, onsets = eeg_cnt
+    anno = prepare_annotations(
+        doctxt, eeg_cnt, emg_cnt, "Ch1", "contralateral_mep", 100, 100
+    )
+    assert anno["origin"] == Path(emg_cnt).name
+    assert len(anno["traces"]) == 2
+    assert [a["event_time"] for a in anno["traces"]] == [o / 1000 for o in onsets]

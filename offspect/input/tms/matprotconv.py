@@ -175,7 +175,7 @@ def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
     -------
     traces: List[TraceData]
     """
-    if matfile.name != annotation["origin"]:
+    if Path(matfile).name != annotation["origin"]:
         raise ValueError(
             "Matfile does not correspond with original file. Fix manually if you plan to fork this annotations"
         )

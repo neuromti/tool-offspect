@@ -23,9 +23,6 @@ separate :code:`.cnt` files.
 Coordinates
 ***********
 
-The coordinates of the targets are stored in one or multiple :code:`targets_*.sav`-files in xml format. The filename of this save
-file encodes experiment, subject pseudonym, date and hour, e.g.:
-:code:`targets_<experiment>_<VvNn>_20190603_1624.sav`. These coordinates are the e.g. the grid of targets predefined before starting the mapping.
 
 During the mapping procedure, the coordinates of the target positions, i.e. where the robot will be moved to, are saved in a :code:`documentation.txt`-file. Please note that these are the targets for the robotic movement, 
 recorded, not the actual coordinates of stimulation. The actual coordinates at the time of stimulation do not appear to have been stored at all. 
@@ -46,35 +43,37 @@ recorded, not the actual coordinates of stimulation. The actual coordinates at t
     - Subject ID [NnVv]
 
 
-.. admonition:: success.txt
+The coordinates of the targets are stored in one or multiple :code:`targets_*.sav`-files in xml format. The filename of this save
+file encodes experiment, subject pseudonym, date and hour, e.g.:
+:code:`targets_<experiment>_<VvNn>_20190603_1624.sav`. These coordinates are the e.g. the grid of targets predefined before starting the mapping.
 
-    The file success.txt stores the coordinates of only the last target the robot arm moved to. The first line reads ‘success’ (move ended at desired position), ‘start’ (move started but not ended) or ‘fail’ (move ended before reaching the target due to error). The second line contains the timestamp of when the status was updated. For line 4 to 10, same notation as in documentation.txt.
 
-.. admonition:: target_TMS_exp_[NnVv]_[yyyymmdd_hhmm]
-    
-    The file target_TMS_exp_[NnVv]_[yyyymmdd_hhmm] stores the coordinates of all created targets. It contains the position (<x>, <y> and <z>), matrix operations (<m11>, <m12>... until <m33>) and target label (<label>), each labeled as such.
+The file success.txt stores the coordinates of only the last target the robot arm moved to. The first line reads ‘success’ (move ended at desired position), ‘start’ (move started but not ended) or ‘fail’ (move ended before reaching the target due to error). The second line contains the timestamp of when the status was updated. For line 4 to 10, same notation as in documentation.txt.
 
-.
+The file target_TMS_exp_[NnVv]_[yyyymmdd_hhmm] stores the coordinates of all created targets. It contains the position (<x>, <y> and <z>), matrix operations (<m11>, <m12>... until <m33>) and target label (<label>), each labeled as such.
 
 
 Module Content
 **************
 
 """
-
-from offspect.types import FileName, Coords, TraceData
+from offspect import release
+from offspect.types import FileName, Coordinate, TraceData, Annotations, MetaData
 from pathlib import Path
 from ast import literal_eval
-from typing import List, Tuple
+from typing import List, Tuple, Dict, Generator, Any
 from datetime import datetime
 import numpy as np
+from math import inf, nan
+from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
+
 from os import environ
 
 if not environ.get("READTHEDOCS", False):
     from libeep import cnt_file
 
 
-def load_documentation_txt(fname: FileName) -> Coords:
+def load_documentation_txt(fname: FileName) -> Dict[int, Coordinate]:
     "load a documentation.txt and return Coords"
     fname = Path(fname).expanduser().absolute()
     if not fname.name == "documentation.txt":
@@ -155,6 +154,14 @@ def load_triggers(fname: FileName) -> List[Tuple[str, int]]:
     return events
 
 
+def assert_equal_recording_day(eeg_fname: FileName, emg_fname: FileName):
+    eeg_day = parse_recording_date(eeg_fname)
+    emg_day = parse_recording_date(emg_fname)
+    assert eeg_day.year == emg_day.year
+    assert eeg_day.month == emg_day.month
+    assert eeg_day.day == emg_day.day
+
+
 def load_ephys_file(
     eeg_fname: FileName,
     emg_fname: FileName,
@@ -162,7 +169,7 @@ def load_ephys_file(
     post_in_ms: float = 100,
     select_events: List[str] = ["0001"],
     select_channel: str = "Ch1",
-) -> List[TraceData]:
+) -> Dict[str, Any]:
     """load the electophysiological data for a specific channel for a smartmove file-pair
 
     args
@@ -185,7 +192,12 @@ def load_ephys_file(
     -------
     Traces: List[TraceData]
         the TraceData for each event fitting to select_events in the file
-    
+    pre_in_samples:int
+        how many samples before the trigger
+    post_in_samples:int
+        how many samples after the trigger
+    sampling_rate: float
+        the sampling rate of the trace
     """
 
     if not is_eegfile_valid(eeg_fname):
@@ -193,37 +205,168 @@ def load_ephys_file(
             f"{eeg_fname} has not the correct file signature for a smartmove eeg file"
         )
 
-    eeg_day = parse_recording_date(eeg_fname)
-    emg_day = parse_recording_date(emg_fname)
-    assert eeg_day.year == emg_day.year
-    assert eeg_day.month == emg_day.month
-    assert eeg_day.day == emg_day.day
-    triggers = load_triggers(eeg_fname)
+    assert_equal_recording_day(eeg_fname, emg_fname)
+    filedate = str(parse_recording_date(eeg_fname))
+
     eeg = cnt_file(eeg_fname)
-    emg = cnt_file(emg_fname)
     eeg_labels = [eeg.get_channel_info(i)[0] for i in range(eeg.get_channel_count())]
 
+    emg = cnt_file(emg_fname)
+    emg_labels = [emg.get_channel_info(i)[0] for i in range(emg.get_channel_count())]
+
     # the triggers are always recorded with EEG, so we need this Fs
+    triggers = load_triggers(eeg_fname)
     eeg_fs = eeg.get_sample_frequency()
 
-    emg_labels = [emg.get_channel_info(i)[0] for i in range(emg.get_channel_count())]
     if select_channel in eeg_labels:
         cnt = eeg
-        cix = eeg_labels.index(select_channel)
     elif select_channel in emg_labels:
         cnt = emg
-        cix = emg_labels.index(select_channel)
     else:
         raise IndexError(f"Selected channel {select_channel} not found")
 
-    trace_fs = cnt.get_sample_frequency()
-    pre = int(pre_in_ms * trace_fs / 1000)
-    post = int(post_in_ms * trace_fs / 1000)
-    traces = []
+    origin = Path(cnt._fname).name
+    subject = (Path(eeg_fname).stem.split("_")[0],)
+    fs = cnt.get_sample_frequency()
+    pre = int(pre_in_ms * fs / 1000)
+    post = int(post_in_ms * fs / 1000)
+    scale = fs / eeg_fs
+    enames = []
+    onsets = []
+    tstamps = []
+
     for event, sample in triggers:
         if event in select_events:
-            tstamp = int(sample * trace_fs / eeg_fs)
-            # calculate the closest sample
-            trace = np.atleast_2d(cnt.get_samples(tstamp - pre, tstamp + post))
-            traces.append(trace[:, cix])
-    return traces
+            onset = int(sample * scale)
+            onsets.append(onset)
+            tstamps.append(sample / eeg_fs)
+            enames.append(event)
+
+    time_since_last_pulse = [inf] + [a - b for a, b in zip(tstamps[1:], tstamps[0:-1])]
+    info = {
+        "origin": origin,
+        "event_samples": onsets,
+        "event_times": tstamps,
+        "event_names": enames,
+        "samples_pre_event": pre,
+        "samples_post_event": post,
+        "samplingrate": fs,
+        "subject": subject,
+        "channel_labels": [select_channel],
+        "time_since_last_pulse": time_since_last_pulse,
+        "filedate": filedate,
+    }
+    return info
+
+
+# -----------------------------------------------------------------------------
+
+
+def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
+    """cut the tracedate from a matfile given Annotations
+    args
+    ----
+    cntfile: FileName
+        the cntfile for cutting the data. must correspond in name to the one specified in the annotation
+    annotation: Annotations
+        the annotations specifying e.g. onsets as well as pre and post durations
+
+    returns
+    -------
+    traces: List[TraceData]
+    """
+    pass
+
+
+def prepare_annotations(
+    docfile: FileName,
+    eegfile: FileName,
+    emgfile: FileName,
+    channel: str,
+    readout: str,
+    pre_in_ms: float,
+    post_in_ms: float,
+) -> Annotations:
+    """load a documentation.txt and cnt-files and distill annotations from them
+    
+    args
+    ----
+    docfile: FileName
+        the documentation.txt with the target coordintes
+    eegfile: FileName
+        the :code:`.cnt`-file with the EEG data and triggers
+    emgfile: FileName
+        the :code:`.cnt`-file with the EMG data
+    readout: str
+        which readout to use (see :data:`~.VALID_READOUTS`)
+    channel: str
+        which channel to pick
+    pre_in_ms: float
+        how many ms to cut before the tms
+    post_in_ms: float
+        how many ms to cut after the tms
+
+    returns
+    -------
+    annotation: Annotations
+        the annotations for this origin files
+    """
+    if readout not in VALID_READOUTS:
+        raise NotImplementedError(f"{readout} is not implemented")
+
+    # collect data
+    info = load_ephys_file(
+        eeg_fname=eegfile,
+        emg_fname=emgfile,
+        pre_in_ms=pre_in_ms,
+        post_in_ms=post_in_ms,
+        select_events=["0001"],
+        select_channel=channel,
+    )
+    coords = load_documentation_txt(docfile)
+    stimulation_intensity_mso = nan
+    stimulation_intensity_didt = nan
+
+    # trace fields
+    traceattrs: List[MetaData] = []
+    event_names = info["event_names"]
+    event_samples = info["event_samples"]
+    event_times = info["event_times"]
+    time_since_last_pulse = info["time_since_last_pulse"]
+    for idx, t in enumerate(event_samples):
+        tattr = {
+            "id": idx,
+            "event_name": f"'{event_names[idx]}'",
+            "event_sample": event_samples[idx],
+            "event_time": event_times[idx],
+            "xyz_coords": coords[idx],
+            "time_since_last_pulse_in_s": time_since_last_pulse[idx],
+            "stimulation_intensity_mso": stimulation_intensity_mso,
+            "stimulation_intensity_didt": stimulation_intensity_didt,
+            "reject": False,
+            "comment": "",
+            "examiner": "",
+            "onset_shift": 0,
+        }
+        for key in SPECIFIC_TRACEKEYS[readout].keys():
+            if key not in tattr.keys():
+                tattr[key] = nan
+        traceattrs.append(tattr)
+
+    anno: Annotations = {
+        "origin": info["origin"],
+        "attrs": {
+            "filedate": info["filedate"],
+            "subject": info["subject"],
+            "samplingrate": info["samplingrate"],
+            "samples_pre_event": info["samples_pre_event"],
+            "samples_post_event": info["samples_post_event"],
+            "channel_labels": info["channel_labels"],
+            "readout": readout,
+            "global_comment": "",
+            "history": "",
+            "version": release,
+        },
+        "traces": traceattrs,
+    }
+    return anno
