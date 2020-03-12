@@ -132,6 +132,13 @@ def is_eegfile_valid(fname: FileName) -> bool:
         return False
 
 
+def is_eeg_file(fname: FileName) -> bool:
+    "return true if this is the eeg-file"
+    parts: List[str] = Path(fname).stem.split("_")
+    # VvNn_VvNn_YYYY-MM-DD_HH-MM-SS.cnt
+    return parts[0] == parts[1]
+
+
 def parse_recording_date(fname: FileName) -> datetime:
     """
     The  eeg cnt-file should have the following format: 

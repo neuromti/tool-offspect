@@ -23,14 +23,28 @@ def cli_tms(args: argparse.Namespace):
         offspect tms -t test.hdf5 -f /media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml /media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat -pp 100 100 -r contralateral_mep -c EDC_L
 
     """
-    # print(args)
+    suffices = []
     for s in args.sources:
-        if Path(s).suffix == ".mat":
-            fmt = "matprot"
+        suffices.append(Path(s).suffix)
+
+    if ".mat" in suffices and ".xml" in suffices:
+        fmt = "matprot"
+    elif ".cnt" in suffices and ".txt" in suffices:
+        fmt = "smartmove"
+    elif ".xdf" in suffices:
+        if ".xml" in suffices:
+            fmt = "manuxdf"
+        else:
+            fmt = "autoxdf"
+    else:
+        raise NotImplementedError("Unknown input format")
 
     print(f"Assuming source data is from {fmt} protocol")
     if fmt == "matprot":
-        from ..input.tms.matprotconv import prepare_annotations, cut_traces
+        from offspect.input.tms.matprotconv import (  # type: ignore
+            prepare_annotations,
+            cut_traces,
+        )
 
         for s in args.sources:
             if Path(s).suffix == ".xml":
@@ -38,16 +52,48 @@ def cli_tms(args: argparse.Namespace):
             if Path(s).suffix == ".mat":
                 matfile = Path(s)
 
-        annotation = prepare_annotations(
-            xmlfile,
-            matfile,
-            args.readout,
-            args.channel,
-            float(args.prepost[0]),
-            float(args.prepost[1]),
+        annotation = prepare_annotations(  # type: ignore
+            xmlfile=xmlfile,
+            matfile=matfile,
+            readout=args.readout,
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
         )
-        traces = cut_traces(matfile, annotation)
 
+    elif fmt == "smartmove":
+        from offspect.input.tms.smartmove import (  # type: ignore
+            prepare_annotations,
+            cut_traces,
+            is_eeg_file,
+        )
+
+        cntfiles = []
+        for s in args.sources:
+            if Path(s).suffix == ".cnt":
+                cntfiles.append(Path(s))
+            if Path(s).suffix == ".txt":
+                docfile = Path(s)
+
+        if len(cntfiles) != 2:
+            raise ValueError("too many input .cnt files")
+        for f in cntfiles:
+            if is_eeg_file(f):
+                eegfile = f
+            else:
+                emgfile = f
+
+        annotation = prepare_annotations(  # type: ignore
+            docfile=docfile,
+            eegfile=eegfile,
+            emgfile=emgfile,
+            readout=args.readout,
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+        )
+
+    traces = cut_traces(matfile, annotation)
     populate(args.to, [annotation], [traces])
 
 
