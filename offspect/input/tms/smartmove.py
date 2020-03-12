@@ -235,7 +235,7 @@ def load_ephys_file(
         raise IndexError(f"Selected channel {select_channel} not found")
 
     origin = Path(cnt._fname).name
-    subject = (Path(eeg_fname).stem.split("_")[0],)
+    subject = Path(eeg_fname).stem.split("_")[0]
     fs = cnt.get_sample_frequency()
     pre = int(pre_in_ms * fs / 1000)
     post = int(post_in_ms * fs / 1000)

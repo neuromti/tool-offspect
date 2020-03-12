@@ -60,7 +60,7 @@ def cli_tms(args: argparse.Namespace):
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
         )
-
+        traces = cut_traces(matfile, annotation)
     elif fmt == "smartmove":
         from offspect.input.tms.smartmove import (  # type: ignore
             prepare_annotations,
@@ -92,8 +92,11 @@ def cli_tms(args: argparse.Namespace):
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
         )
+        for f in cntfiles:
+            if f.name == annotation["origin"]:
+                traces = cut_traces(f, annotation)
+    # ---------------
 
-    traces = cut_traces(matfile, annotation)
     populate(args.to, [annotation], [traces])
 
 
