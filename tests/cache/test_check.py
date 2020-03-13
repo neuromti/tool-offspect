@@ -1,5 +1,6 @@
 import pytest
 from offspect.cache.check import *
+from math import nan, inf
 
 
 def test_check_metadata_are_valid(cachefile0):
@@ -75,16 +76,14 @@ def test_isnotcoords():
     assert not iscoords((0, 1, 1.2))  #  not a list
 
 
-def test_isTsince():
-    assert isTsince(0.001)
-    assert isTsince(912321451)
-    assert isTsince("")  # can also be left empty, because first pulse
-    assert isTsince(None)  # can also be left empty, because first pulse
+@pytest.mark.parametrize("x", [0.001, 912321451, inf, None])
+def test_isTsince(x):
+    assert isTsince(x)
 
 
-def test_isnotTsince():
-    assert not isTsince(0)
-    assert not isTsince(-1)
+@pytest.mark.parametrize("x", ["", 0, -1])
+def test_isnotTsince(x):
+    assert not isTsince(x)
 
 
 @pytest.mark.parametrize("x", [["C0", "C1"], ["C0"]])

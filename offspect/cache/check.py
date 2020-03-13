@@ -46,6 +46,8 @@ def isint(x):
 
 
 def isfloat(x) -> bool:
+    if x is None or x == "":
+        return False
     return isinstance(x, float) or isnan(x)
 
 
@@ -70,7 +72,7 @@ def iscoords(x) -> bool:
 
 
 def isTsince(x) -> bool:
-    return (isnumeric(x) and x > 0) or x == None or x == "" or x == inf
+    return (isnumeric(x) and x > 0) or x == inf or x is None
 
 
 def isbool(x) -> bool:
