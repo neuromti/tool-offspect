@@ -19,3 +19,224 @@ In the optimal case, the :code:`.xdf`-file contains already sufficient informati
 If multiple protocols were recorded in one :code:`xdf`-file, as often happened during manual recording, we will have hundreds of stimuli. Worse, it can be that even marker-streams are missing, and there is no information when a protocol started within the long recording. Linking them to the correct coordinates is tricky, and the best chance is probably taking account of the relative latency between subsequent stimuli.
 
 """
+from offspect.types import Annotations, FileName
+from offspect import release
+from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
+from typing import List, Union, Any, Dict
+from liesl.api import XDFFile
+from liesl.files.xdf.load import XDFStream
+from offspect.input.tms.matprotconv import get_coords_from_xml
+from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
+from pathlib import Path
+from math import nan, inf
+import time
+import json
+import numpy as np
+
+
+def decode(mark: str) -> Any:
+    try:
+        msg = json.loads(mark[0])
+        return msg
+    except json.JSONDecodeError:
+        return mark[0]
+
+
+def yield_events(stream, select_event="coil_0_didt"):
+    """go through all triggers in the stream, and  yield the coordinates
+
+    x,y,z can be [None, None, None] if the coil was out of sight of the NDI camera!
+
+    Otherwise, yields a list of floats
+    """
+    marker = iter(stream.time_series)
+    tstamps = iter(stream.time_stamps)
+    skip = False
+    didt = None
+    tout_ts = None
+    try:
+        while True:
+            msg = decode(next(marker))
+            ts = next(tstamps)
+            if msg == "Starte Hotspotsuche" or msg == "Starte Ruhemotorschwelle":
+                # print(msg)
+                skip = True
+            if msg == "Starte freien Modus":
+                # print(msg)
+                skip = False
+            if skip:
+                continue
+            if type(msg) is dict:
+                if select_event in msg.keys():
+                    didt = msg[select_event]
+                    tout_ts = ts  # this is when we received a TriggerOut from Localite
+                    # the didt is always send prior to the actual response
+                if "amplitude" in msg.keys() and msg["amplitude"] != 0:
+                    pos = [msg[dim] for dim in ["x", "y", "z"]]
+                    # positions are none if the coil was not int the scope of
+                    # the NDI cameras
+                    tout_ts = (
+                        tout_ts or ts
+                    )  # pick the ts of the msg, if there was no coil_X_didt
+                    mso = msg["amplitude"]
+                    if not any(p == None for p in pos):
+                        yield tout_ts, pos, mso, didt
+                        tout_ts = None
+
+    except StopIteration:
+        return
+
+
+def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDFStream:
+    chans = []
+    for stream in streams.values():
+        if stream.channel_labels is not None:
+            chans.extend(stream.channel_labels)
+            if channel in stream.channel_labels:
+                datastream = stream
+
+    if datastream is None:
+        raise IndexError(
+            f"Could not find the channel in any stream in the file. Available are: {chans}"
+        )
+    return datastream
+
+
+def find_closest_samples(stream: XDFStream, tstamps: List[float]) -> List[int]:
+    event_samples = []
+    for ts in tstamps:
+        idx = np.argmin(np.abs(stream.time_stamps - ts))
+        event_samples.append(idx)
+    return event_samples
+
+
+# -----------------------------------------------------------------------------
+
+
+def prepare_annotations(
+    xdffile: FileName,
+    channel: str,
+    readout: str,
+    pre_in_ms: float,
+    post_in_ms: float,
+    xmlfile: FileName = None,
+) -> Annotations:
+    """load a documentation.txt and cnt-files and distill annotations from them
+    
+    args
+    ----
+    xmlfile: FileName
+        an option xml file with information about the target coordinates 
+
+    readout: str
+        which readout to use (see :data:`~.VALID_READOUTS`)
+    channel: str
+        which channel to pick
+    pre_in_ms: float
+        how many ms to cut before the tms
+    post_in_ms: float
+        how many ms to cut after the tms
+    xdffile: FileName
+        the :code:`.xdf`-file with the recorded streams, e.g. data and markers
+    returns
+    -------
+    annotation: Annotations
+        the annotations for this origin files
+    """
+
+    # ------------------
+    event_names = "coil_0_didt"  # TODO make it a function argument eventually
+    streams = XDFFile(xdffile)
+    try:
+        stream = streams["localite_marker"]
+        # initialize only when localite marker was found!
+        coords = []
+        trigout_times = []
+        stimulation_intensity_mso = []
+        stimulation_intensity_didt = []
+
+        for ts, xyz, mso, didt in yield_events(stream, event_names):
+            trigout_times.append(ts)
+            coords.append(xyz)
+            stimulation_intensity_mso.append(mso)
+            stimulation_intensity_didt.append(didt)
+
+    except KeyError:
+        coords = None if (xmlfile is None) else get_coords_from_xml(xmlfile)
+        stimulation_intensity_mso = nan
+        stimulation_intensity_didt = nan
+
+    datastream = pick_stream_with_channel(channel, streams)
+    cix = datastream.channel_labels.index(channel)
+    event_samples = find_closest_samples(datastream, trigout_times)
+    event_times = datastream.time_stamps[event_samples] - datastream.time_stamps[0]
+
+    # global fields
+    origin = Path(xdffile).name
+    fs = datastream.nominal_srate
+    filedate = time.ctime(Path(xdffile).stat().st_mtime)
+    subject = ""  # TODO parse from correctly organized file
+    channel_labels = [channel]
+    samples_pre_event = int(pre_in_ms * fs / 1000)
+    samples_post_event = int(post_in_ms * fs / 1000)
+    # trace fields
+    time_since_last_pulse = [inf] + [
+        a - b for a, b in zip(event_times[1:], event_times[0:-1])
+    ]
+
+    traceattrs: List[MetaData] = []
+    for idx, t in enumerate(event_samples):
+        tattr = {
+            "id": idx,
+            "event_name": event_names,
+            "event_sample": event_samples[idx],
+            "event_time": event_times[idx],
+            "xyz_coords": coords[idx],
+            "time_since_last_pulse_in_s": time_since_last_pulse[idx],
+            "stimulation_intensity_mso": stimulation_intensity_mso[idx],
+            "stimulation_intensity_didt": stimulation_intensity_didt[idx],
+            "reject": False,
+            "comment": "",
+            "examiner": "",
+            "onset_shift": 0,
+        }
+        for key in SPECIFIC_TRACEKEYS[readout].keys():
+            if key not in tattr.keys():
+                tattr[key] = nan
+        traceattrs.append(tattr)
+
+    anno: Annotations = {
+        "origin": origin,
+        "attrs": {
+            "filedate": filedate,
+            "subject": subject,
+            "samplingrate": fs,
+            "samples_pre_event": samples_pre_event,
+            "samples_post_event": samples_post_event,
+            "channel_labels": channel_labels,
+            "readout": readout,
+            "global_comment": "",
+            "history": "",
+            "version": release,
+        },
+        "traces": traceattrs,
+    }
+    return anno
+
+
+if __name__ == "__main__":
+    xdffile = "/media/rgugg/server/mnt/data/data08/RawData/2019_ST_IN-TENS/EiHe/pre1/mapping_contra_R001.xdf"
+    pre_in_ms = 100
+    post_in_ms = 100
+    readout = "contralateral_mep"
+    channel = "EDC_L"
+    anno = prepare_annotations(xdffile, channel, readout, pre_in_ms, post_in_ms)
+    for k, v in anno.items():
+        if type(v) is list:
+            print("Trial Count: ", len(v))
+        elif type(v) is dict:
+            for _k, _v in v.items():
+                print(_k, ":", _v)
+        else:
+            print(k, ":", v)
+

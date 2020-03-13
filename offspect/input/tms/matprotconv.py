@@ -29,6 +29,12 @@ By design, the coordinates of the target-entry pairs were stored  independently 
 
 
 """
+from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
+from typing import Generator, List, Dict
+from pathlib import Path
+import datetime
+from math import inf, nan
+from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from offspect import release
 from os import environ
 
@@ -42,23 +48,22 @@ if not environ.get("READTHEDOCS", False):
     )
     from matprot.convert.traces import cut_into_traces as _cut_traces
 
-from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
-from math import inf, nan
-import datetime
-from pathlib import Path
-from typing import Generator, List, Dict
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
 
-
-def repeat_targets(coords: List[Coordinate]) -> Generator:
+def repeat_targets(coords: List[Coordinate], repeat: int = 5) -> Generator:
     coordinator = iter(coords)
     while True:
         try:
             target = next(coordinator)
-            for i in range(0, 5):
+            for i in range(0, repeat):
                 yield target
         except StopIteration:
             return
+
+
+def get_coords_from_xml(xmlfile: FileName, repeat: int = 5) -> List[Coordinate]:
+    targets = convert_xml_to_coords(xmlfile)
+    coords = list(repeat_targets(targets, repeat))
+    return coords
 
 
 def prepare_annotations(
@@ -70,7 +75,7 @@ def prepare_annotations(
     post_in_ms: float,
 ) -> Annotations:
     """load xml and matfile and distill annotations from them
-    
+
     args
     ----
     xmlfile: FileName
@@ -113,8 +118,7 @@ def prepare_annotations(
     samples_pre_event = int(pre_in_ms * fs / 1000)
     samples_post_event = int(post_in_ms * fs / 1000)
     # trace fields
-    targets = convert_xml_to_coords(xmlfile)
-    coords = list(repeat_targets(targets))
+    coords = get_coords_from_xml(xmlfile)
     event_samples = get_onsets(content)
     event_times = [o / fs for o in event_samples]
     event_names = get_enames(content)
@@ -192,4 +196,3 @@ def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
         onsets=onsets,
     )
     return traces
-
