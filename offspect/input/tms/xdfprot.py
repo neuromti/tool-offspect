@@ -88,7 +88,7 @@ def yield_events(stream, select_event="coil_0_didt"):
 
 
 def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDFStream:
-    chans = []
+    chans: List[str] = []
     for stream in streams.values():
         if stream.channel_labels is not None:
             chans.extend(stream.channel_labels)
@@ -162,9 +162,10 @@ def prepare_annotations(
             stimulation_intensity_didt.append(didt)
 
     except KeyError:
-        coords = None if (xmlfile is None) else get_coords_from_xml(xmlfile)
-        stimulation_intensity_mso = nan
-        stimulation_intensity_didt = nan
+        if xmlfile is not None:
+            coords = get_coords_from_xml(xmlfile)
+        stimulation_intensity_mso = [nan for i in range(len(coords))]
+        stimulation_intensity_didt = [nan for i in range(len(coords))]
 
     datastream = pick_stream_with_channel(channel, streams)
     cix = datastream.channel_labels.index(channel)
