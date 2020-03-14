@@ -24,7 +24,7 @@ setup(
     download_url="https://github.com/pyreiz/ctrl-localite",
     license="MIT",
     packages=packages,
-    entry_points={"console_scripts": ["offspect =offspect.cli.__main__:main",],},
+    entry_points={"console_scripts": ["offspect=offspect.cli.__main__:main",],},
     install_requires=requirements,
     classifiers=[
         "Development Status :: 3 - Alpha",

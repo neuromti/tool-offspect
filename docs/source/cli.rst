@@ -60,6 +60,7 @@ offspect tms
 
    usage: offspect tms [-h] -t TO -f SOURCES [SOURCES ...] -r READOUT -c CHANNEL
                        -pp PREPOST [PREPOST ...]
+                       [-e SELECT_EVENTS [SELECT_EVENTS ...]]
    
    optional arguments:
      -h, --help            show this help message and exit
@@ -73,5 +74,7 @@ offspect tms
      -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
                            <Required> positional arguments of pre and post
                            duration
+     -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
+                           <Required> select event
 
 

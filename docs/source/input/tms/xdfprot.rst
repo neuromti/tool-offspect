@@ -1,4 +1,4 @@
 .. automodule:: offspect.input.tms.xdfprot
    :noindex:
-   :members:
+   :members: cut_traces, prepare_annotations
 

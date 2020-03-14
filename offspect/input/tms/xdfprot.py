@@ -224,6 +224,22 @@ def prepare_annotations(
     return anno
 
 
+def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
+    """cut the tracedate from a matfile given Annotations
+    args
+    ----
+    cntfile: FileName
+        the cntfile for cutting the data. must correspond in name to the one specified in the annotation
+    annotation: Annotations
+        the annotations specifying e.g. onsets as well as pre and post durations
+
+    returns
+    -------
+    traces: List[TraceData]
+    """
+    pass
+
+
 if __name__ == "__main__":
     xdffile = "/media/rgugg/server/mnt/data/data08/RawData/2019_ST_IN-TENS/EiHe/pre1/mapping_contra_R001.xdf"
     pre_in_ms = 100

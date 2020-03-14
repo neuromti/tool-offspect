@@ -1,9 +1,9 @@
    digraph G{
         
     compound=true;
-    #rankdir = LR;    
+    # rankdir = LR;    
     # splines=ortho
-
+    
     subgraph cluster0 {
       label = "init\nfrom different fileformats"
       
@@ -26,22 +26,23 @@
     }
         
 
-    cache[label="annotated CacheFile"]
-    cache1[label="another CacheFile"]
+    cache[label="CacheFile"]
+    cache1[label="second CacheFile\nfrom same subject"]
     merged[label="merged CacheFile"]
 
-    merge[shape="rect", color=magenta]
+    merge[shape="circle", color=magenta]
     cache -> merge[color=magenta]
     cache1 -> merge[color=magenta]
     merge -> merged
 
-    smartmove -> Annotations[ltail=cluster0] [label="init", color="blue"];    
-    Annotations -> TraceData [label="collect", color="blue"];
-    TraceData -> cache[ltail=cluster1, lhead=cluster2] [label="populate", color="blue"];
+    smartmove -> Annotations[ltail=cluster0] [label="new", color="blue"];    
+    Annotations -> TraceData [label="cut", color="blue"];
+    TraceData -> cache[ltail=cluster1, lhead=cluster2] [color="blue"];
     cache -> ForkedAnnotations [lhead=cluster1] [label="fork", color="magenta"];
   
-    ForkedAnnotations -> ForkedTraceData [label="collect", color="blue"];
+    ForkedAnnotations -> ForkedTraceData [label="cut", color="blue"];
 
     cache -> cache [label="inspect", color=blue]
+    cache1 -> cache1 [label="inspect", color=blue]
     
    }

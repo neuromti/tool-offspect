@@ -1,8 +1,9 @@
 from pathlib import Path
 from typing import Union, List
-from offspect.cache.file import CacheFile, merge, populate
+from offspect.cache.file import CacheFile, merge
 import argparse
 from ast import literal_eval
+from .tms import cli_tms
 
 
 def cli_peek(args: argparse.Namespace):
@@ -14,103 +15,6 @@ def cli_merge(args: argparse.Namespace):
     if args.verbose:
         print("Content of target file is now:")
         print(CacheFile(tf))
-
-
-def cli_tms(args: argparse.Namespace):
-    """
-
-    Example::
-
-        offspect tms -t test.hdf5 -f /media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml /media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat -pp 100 100 -r contralateral_mep -c EDC_L
-
-
-    .. admonition:: smartmove
-
-        eep-peek /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EEG/AmWo/20190704/AmWo_AmWo_2019-07-04_15-51-55.cnt
-
-        tells you which events are in the cnt file
-
-        offspect tms -t test.hdf5 -f /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EMG/AmWo/20190704/AmWo1\ 2019-07-04_15-51-37.cnt /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_EEG/AmWo/20190704/AmWo_AmWo_2019-07-04_15-51-55.cnt /media/rgugg/server/mnt/data/data02/RawData/2019_ST_RoboTMS_Coordinates/AmWo/20190704/documentation.txt -r contralateral_mep -c Ch1 -pp 100 100 -e 1
-
-        populates a cachefile
-
-    """
-    suffices = []
-    for s in args.sources:
-        suffices.append(Path(s).suffix)
-
-    if ".mat" in suffices and ".xml" in suffices:
-        fmt = "matprot"
-    elif ".cnt" in suffices and ".txt" in suffices:
-        fmt = "smartmove"
-    elif ".xdf" in suffices:
-        if ".xml" in suffices:
-            fmt = "manuxdf"
-        else:
-            fmt = "autoxdf"
-    else:
-        raise NotImplementedError("Unknown input format")
-
-    print(f"Assuming source data is from {fmt} protocol")
-    if fmt == "matprot":
-        from offspect.input.tms.matprotconv import (  # type: ignore
-            prepare_annotations,
-            cut_traces,
-        )
-
-        for s in args.sources:
-            if Path(s).suffix == ".xml":
-                xmlfile = Path(s)
-            if Path(s).suffix == ".mat":
-                matfile = Path(s)
-
-        annotation = prepare_annotations(  # type: ignore
-            xmlfile=xmlfile,
-            matfile=matfile,
-            readout=args.readout,
-            channel=args.channel,
-            pre_in_ms=float(args.prepost[0]),
-            post_in_ms=float(args.prepost[1]),
-        )
-        traces = cut_traces(matfile, annotation)
-    elif fmt == "smartmove":
-        from offspect.input.tms.smartmove import (  # type: ignore
-            prepare_annotations,
-            cut_traces,
-            is_eeg_file,
-        )
-
-        cntfiles = []
-        for s in args.sources:
-            if Path(s).suffix == ".cnt":
-                cntfiles.append(Path(s))
-            if Path(s).suffix == ".txt":
-                docfile = Path(s)
-
-        if len(cntfiles) != 2:
-            raise ValueError("too many input .cnt files")
-        for f in cntfiles:
-            if is_eeg_file(f):
-                eegfile = f
-            else:
-                emgfile = f
-
-        annotation = prepare_annotations(  # type: ignore
-            docfile=docfile,
-            eegfile=eegfile,
-            emgfile=emgfile,
-            readout=args.readout,
-            channel=args.channel,
-            pre_in_ms=float(args.prepost[0]),
-            post_in_ms=float(args.prepost[1]),
-            select_events=args.select_events,
-        )
-        for f in cntfiles:
-            if f.name == annotation["origin"]:
-                traces = cut_traces(f, annotation)
-    # ---------------
-
-    populate(args.to, [annotation], [traces])
 
 
 def get_parser() -> argparse.ArgumentParser:
