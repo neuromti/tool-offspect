@@ -103,22 +103,22 @@ def cli_tms(args: argparse.Namespace):
             if f.name == annotation["origin"]:
                 traces = cut_traces(f, annotation)
     elif fmt == "autoxdf":
-        from offspect.input.tms.xdfprot import prepare_annotations
+        from offspect.input.tms.xdfprot import prepare_annotations  # type: ignore
 
-        xmlfile = None
+        kwargs = dict()
         for source in args.sources:
             if Path(source).suffix == ".xml":
-                xmlfile = source
+                kwargs["xmfile"] = source
             if Path(source).suffix == ".xdf":
                 xdffile = source
 
         annotation = prepare_annotations(  # type: ignore
             xdffile=xdffile,
-            xmlfile=xmlfile,
             readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
+            **kwargs,
         )
 
     # ---------------
