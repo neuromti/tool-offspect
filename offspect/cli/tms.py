@@ -1,6 +1,7 @@
 from pathlib import Path
 from offspect.cache.file import CacheFile, populate
 import argparse
+import yaml
 
 
 def cli_tms(args: argparse.Namespace):
@@ -27,6 +28,7 @@ def cli_tms(args: argparse.Namespace):
         
 
     """
+    print(args)
     suffices = []
     for s in args.sources:
         suffices.append(Path(s).suffix)
@@ -100,6 +102,29 @@ def cli_tms(args: argparse.Namespace):
         for f in cntfiles:
             if f.name == annotation["origin"]:
                 traces = cut_traces(f, annotation)
+    elif fmt == "autoxdf":
+        from offspect.input.tms.xdfprot import prepare_annotations
+
+        xmlfile = None
+        for source in args.sources:
+            if Path(source).suffix == ".xml":
+                xmlfile = source
+            if Path(source).suffix == ".xdf":
+                xdffile = source
+
+        annotation = prepare_annotations(  # type: ignore
+            xdffile=xdffile,
+            xmlfile=xmlfile,
+            readout=args.readout,
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+        )
+
     # ---------------
 
-    populate(args.to, [annotation], [traces])
+    print(yaml.dump(annotation))
+
+
+# populate(args.to, [annotation], [traces])
+

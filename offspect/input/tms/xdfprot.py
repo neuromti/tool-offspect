@@ -105,7 +105,7 @@ def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDF
 def find_closest_samples(stream: XDFStream, tstamps: List[float]) -> List[int]:
     event_samples = []
     for ts in tstamps:
-        idx = np.argmin(np.abs(stream.time_stamps - ts))
+        idx = int(np.argmin(np.abs(stream.time_stamps - ts)))
         event_samples.append(idx)
     return event_samples
 
@@ -170,7 +170,10 @@ def prepare_annotations(
     datastream = pick_stream_with_channel(channel, streams)
     cix = datastream.channel_labels.index(channel)
     event_samples = find_closest_samples(datastream, trigout_times)
-    event_times = datastream.time_stamps[event_samples] - datastream.time_stamps[0]
+    event_times = [
+        float(t)
+        for t in datastream.time_stamps[event_samples] - datastream.time_stamps[0]
+    ]
 
     # global fields
     origin = Path(xdffile).name
