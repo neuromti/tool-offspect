@@ -1,2 +1,2 @@
-pythonw.exe -m offspect.gui.__main__
+python.exe -m offspect.gui.__main__
 pause
