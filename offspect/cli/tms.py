@@ -2,6 +2,7 @@ from pathlib import Path
 from offspect.cache.file import CacheFile, populate
 import argparse
 import yaml
+from liesl.files.xdf.inspect_xdf import peek
 
 
 def cli_tms(args: argparse.Namespace):
@@ -29,19 +30,16 @@ def cli_tms(args: argparse.Namespace):
 
     """
     print(args)
-    suffices = []
-    for s in args.sources:
-        suffices.append(Path(s).suffix)
+    suffixes = dict()
+    for source in args.sources:
+        suffixes[Path(source).suffix] = source
 
-    if ".mat" in suffices and ".xml" in suffices:
+    if ".mat" in suffixes.keys() and ".xml" in suffixes.keys():
         fmt = "matprot"
-    elif ".cnt" in suffices and ".txt" in suffices:
+    elif ".cnt" in suffixes.keys() and ".txt" in suffixes.keys():
         fmt = "smartmove"
-    elif ".xdf" in suffices:
-        if ".xml" in suffices:
-            fmt = "manuxdf"
-        else:
-            fmt = "autoxdf"
+    elif ".xdf" in suffixes.keys():
+        fmt = "xdfprot"
     else:
         raise NotImplementedError("Unknown input format")
 
@@ -67,6 +65,8 @@ def cli_tms(args: argparse.Namespace):
             post_in_ms=float(args.prepost[1]),
         )
         traces = cut_traces(matfile, annotation)
+
+    # SMARTMOVE ---------------------------------------------------------------
     elif fmt == "smartmove":
         from offspect.input.tms.smartmove import (  # type: ignore
             prepare_annotations,
@@ -78,11 +78,9 @@ def cli_tms(args: argparse.Namespace):
         for s in args.sources:
             if Path(s).suffix == ".cnt":
                 cntfiles.append(Path(s))
-            if Path(s).suffix == ".txt":
-                docfile = Path(s)
-
         if len(cntfiles) != 2:
             raise ValueError("too many input .cnt files")
+
         for f in cntfiles:
             if is_eeg_file(f):
                 eegfile = f
@@ -90,7 +88,7 @@ def cli_tms(args: argparse.Namespace):
                 emgfile = f
 
         annotation = prepare_annotations(  # type: ignore
-            docfile=docfile,
+            docfile=suffixes[".txt"],
             eegfile=eegfile,
             emgfile=emgfile,
             readout=args.readout,
@@ -102,18 +100,23 @@ def cli_tms(args: argparse.Namespace):
         for f in cntfiles:
             if f.name == annotation["origin"]:
                 traces = cut_traces(f, annotation)
-    elif fmt == "autoxdf":
+
+    # XDF -------------------------------------------------------
+    elif fmt == "xdfprot":
+        sinfos = peek(suffixes[".xdf"], at_most=99, max_duration=1)
+        if "localite_flow" not in (sinfo["name"] for sinfo in sinfos):
+            if ".xml" in suffixes:
+                fmt = "xmlxdf"
+            else:
+                fmt = "manuxdf"
+        else:
+            fmt = "autoxdf"
         from offspect.input.tms.xdfprot import prepare_annotations  # type: ignore
 
-        kwargs = dict()
-        for source in args.sources:
-            if Path(source).suffix == ".xml":
-                kwargs["xmfile"] = source
-            if Path(source).suffix == ".xdf":
-                xdffile = source
+        kwargs = {"xmlfile": suffixes.get(".xml", None)}
 
         annotation = prepare_annotations(  # type: ignore
-            xdffile=xdffile,
+            xdffile=suffixes[".xdf"],
             readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),

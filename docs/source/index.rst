@@ -16,6 +16,7 @@ Content
    workflow
    develop
    cli
+   gui
 
 
 

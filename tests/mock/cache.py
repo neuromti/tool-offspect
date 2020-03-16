@@ -72,6 +72,9 @@ def create_test_cachefile(fname: Union[str, Path], settings: dict) -> Path:
     print(fname)
 
     tf = Path(fname).absolute().expanduser()
+    if tf.suffix != ".hdf5":
+        raise ValueError(f"{tf.name} must have a '.hdf5' suffix")
+
     if tf.exists():
         raise FileExistsError(f"{tf.name} already exists")
 
