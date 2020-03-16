@@ -23,8 +23,10 @@ def test_cli_merge(cachefile0, cachefile1):
             stderr=PIPE,
         )
         time.sleep(1)
-        assert tf.exists()
         o, e = p.communicate()
+        print(o.decode())
+        print(e.decode())
+        assert tf.exists()
         assert tf.name in o.decode()  # successfull merge
         assert cachefile0[1]["origin"] in o.decode()  # successfull peek
         assert e == b""  # no errors
