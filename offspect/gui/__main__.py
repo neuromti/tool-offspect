@@ -3,12 +3,14 @@
 Created on Tue Mar 10 09:28:37 2020
 
 @author: Ethan
+
 """
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, QtGui, uic
 from offspect.gui import visual_inspection_gui
 import sys
 import os
+import re
 from pathlib import Path
 from functools import partial
 from matplotlib import pyplot as plt
@@ -28,13 +30,13 @@ else:
         FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from threading import RLock
+
 
 # Ensure using PyQt5 backend
 matplotlib.use('QT5Agg')
 matplotlib.rcParams['axes.linewidth'] = 0.1
 
-def on_close():
-   print("Shutting down")
 
 class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
     def __init__(self, parent=None):
@@ -51,9 +53,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
 #        self.previous_button.clicked.connect()
         self.next_button.clicked.connect(self.plot_mep)
         self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-        
-        self.cwd = os.getcwd()
-    
+
     def update_reject_button(self):
         if self.reject_button.isChecked() == True:
             self.reject_button.setCheckable(False)
@@ -100,26 +100,29 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.MplWidget1.canvas.draw()
     
     def update_coil_coordinates(self):
-        a = int(self.coil_coordinate_input.text()[0])
-        b = int(self.coil_coordinate_input.text()[2])
-        if type(a) and type(b) != int:
-            self.next_button.setStyleSheet("QPushButton:pressed { background-color: red }" )
+        a = self.coil_coordinate_input.text()[0]
+        b = self.coil_coordinate_input.text()[2]
+        if bool(re.search(r'\d', a)) and bool(re.search(r'\d', b)):
+            a = int(a)
+            b = int(b)
+            self.update_coil_button.setStyleSheet("QPushButton:pressed { background-color: light gray }" )
+            self.current_coil_location = [a, b]
+            self.plot_coil_coordinates()
         else:
-            self.next_button.setStyleSheet("QPushButton:pressed { background-color: light gray }" )
-        self.current_coil_location = [a, b]
-        self.plot_coil_coordinates()
+            self.update_coil_button.setStyleSheet("QPushButton:pressed { background-color: red }" )
+
+
         
     def plot_coil_coordinates(self):
         
         cwd = os.getcwd()
+        self.coil = image.imread(cwd + '\\coilpic.png')
+        self.brain = image.imread(cwd + '\\brain.png')
         
         # discards the old graph
         self.MplWidget2.canvas.axes.clear()
         
-        im = image.imread(cwd + '\\coilpic.png')
-        brain = image.imread(cwd + '\\brain.png')
-        
-        self.MplWidget2.canvas.axes.imshow(brain, aspect='auto', extent=(-1, 7, -4, 7), zorder=1)
+        self.MplWidget2.canvas.axes.imshow(self.brain, aspect='auto', extent=(-1, 7, -4, 7), zorder=1)
         
         import itertools
         r = 6
@@ -134,7 +137,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.MplWidget2.canvas.axes.plot(self.current_coil_location[0], self.current_coil_location[1], "ro", zorder=3)
         coilcoor = (self.current_coil_location[0]-0.5, self.current_coil_location[0]+2.5, self.current_coil_location[1]-4, self.current_coil_location[1]+0.4) 
         self.MplWidget2.canvas.axes.imshow(
-                im, aspect='auto', extent=coilcoor, zorder=3)
+                self.coil, aspect='auto', extent=coilcoor, zorder=3)
         
         # plot grid
         self.MplWidget2.canvas.axes.scatter(*zip(*pts), marker='o', s=30, color='blue', zorder=2)
@@ -167,7 +170,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         else:
             event.ignore()
 
-#%%
+
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = Ui()

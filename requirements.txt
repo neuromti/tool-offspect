@@ -1,8 +1,2 @@
 numpy
 pyyaml
-h5py
-pyqtgraph
-PyQt5
-matplotlib
-configparser
-time
