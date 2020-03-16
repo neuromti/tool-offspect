@@ -5,6 +5,13 @@ import argparse
 from ast import literal_eval
 from .tms import cli_tms
 
+try:
+    from offspect.gui.__main__ import main as cli_gui
+except ImportError:
+
+    def cli_gui(*args, **kwargs):
+        pass
+
 
 def cli_peek(args: argparse.Namespace):
     print(CacheFile(args.fname))
@@ -50,7 +57,7 @@ def get_parser() -> argparse.ArgumentParser:
     )
     merge.add_argument("-verbose", "-v", help="be more verbose", action="store_true")
 
-    # tms ---------------------------------------------------------------------
+    # TMS ---------------------------------------------------------------------
     tms = subparsers.add_parser(
         name="tms", help="prepare cachefiles for a tms protocol"
     )
@@ -103,6 +110,9 @@ def get_parser() -> argparse.ArgumentParser:
         type=str,
         dest="select_events",
     )
+    # GUI ---------------------------------------------------------------------
+    gui = subparsers.add_parser(name="gui", help="start the visual inspection GUI")
+
     # ------------------------------------------------------------------------
     return parser
 
@@ -118,6 +128,8 @@ def main():
         cli_merge(args)
     elif args.sub == "tms":
         cli_tms(args)
+    elif args.sub == "gui":
+        cli_gui(args)
     else:
         print("No valid subcommand specified")
 
