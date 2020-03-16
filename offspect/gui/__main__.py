@@ -54,7 +54,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.cf = CacheFile(filename)
         self.trace_idx = 0 # start with the first trace
         self.get_trace_from_cache()
-        self.update_mep_info()
+        self.pull_attrs_info()
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
         self.initialize_reject_button()
         
@@ -89,7 +89,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.attrs['reject'] = False
         self.cf.set_trace_attrs(self.trace_idx, self.attrs)
         
-    def update_mep_info(self):
+    def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
         
         self.event_time_num.display(self.attrs['event_time'])
@@ -105,7 +105,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         
         self.channel_label.setText(self.attrs['channel_labels'][0])
         self.filename.setText(self.attrs['original_file'])
-        self.examiner.setText(self.attrs['examiner'])
+        self.examiner_name.setText(self.attrs['examiner'])
         self.readout.setText(self.attrs['readout'])
         
         self.commentbox.setText(self.attrs['comment'])
@@ -116,7 +116,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.trace_idx += 1
             self.get_trace_from_cache()
             self.plot_mep()
-            self.update_mep_info()
+            self.pull_attrs_info()
             self.initialize_reject_button()
             self.next_button.setStyleSheet("background-color: light gray")
         except:
@@ -127,7 +127,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.trace_idx -= 1
             self.get_trace_from_cache()
             self.plot_mep()
-            self.update_mep_info()
+            self.pull_attrs_info()
             self.initialize_reject_button()
             self.previous_button.setStyleSheet("background-color: light gray")
         except:
