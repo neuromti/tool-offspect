@@ -13,7 +13,7 @@ import liesl
 import configparser
 import matplotlib
 import matplotlib.image as image
-from matplotlib.backends.qt_compat import QtCore, QtWidgets
+from matplotlib.backends.qt_compat import QtCore
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar,
@@ -28,7 +28,7 @@ matplotlib.rcParams["axes.linewidth"] = 0.1
 
 
 class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
-    def __init__(self, filename, parent=None):
+    def __init__(self, parent=None):
         super(Ui, self).__init__(parent)
         self.setupUi(self)
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
@@ -39,7 +39,10 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
         #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open file", "/", "CacheFiles (*.hdf5)"
+        )
+        print(filename)
         self.cf = CacheFile(filename)
         self.trace_idx = 0  # start with the first trace
         self.get_trace_from_cache()
@@ -237,7 +240,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
-    window = Ui(r"C:\Users\Ethan\Documents\GitHub\offline-inspect\merged.hdf5")
+    window = Ui()
     screen = QtWidgets.QDesktopWidget().screenGeometry()
     window.resize(screen.width(), screen.height())
     window.show()
