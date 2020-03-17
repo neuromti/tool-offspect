@@ -125,8 +125,8 @@ def test_read_index_errors(cachefile0):
     # we can iterate across all traces
     for i in range(len(cf)):
         attrs = read_trace(cf, i)
-        assert attrs["original_index"] == i
-        assert attrs["original_file"] == str(cf.fname)
+        assert attrs["cache_file_index"] == str(i)
+        assert attrs["cache_file"] == str(cf.fname)
 
     with pytest.raises(ValueError):
         read_trace(cf, 0.1)
@@ -143,15 +143,15 @@ def test_update_index_errors(cachefile0):
     attrs = read_trace(cf, 0)  # need this for overwriting
 
     with pytest.raises(ValueError):
-        attrs["original_index"] = 0.1
+        attrs["cache_file_index"] = 0.1
+        update_trace_attributes(attrs)
+
+    with pytest.raises(Exception):
+        attrs["cache_file_index"] = -1
         update_trace_attributes(attrs)
 
     with pytest.raises(IndexError):
-        attrs["original_index"] = -1
-        update_trace_attributes(attrs)
-
-    with pytest.raises(IndexError):
-        attrs["original_index"] = len(cf)
+        attrs["cache_file_index"] = str(len(cf))
         update_trace_attributes(attrs)
 
 
