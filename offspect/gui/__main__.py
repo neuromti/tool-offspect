@@ -1,7 +1,7 @@
 """ 
 """
 from PyQt5 import QtWidgets
-from offspect.gui import visual_inspection_gui
+from offspect.gui import visual_inspection_gui_LR as pygui
 import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -16,7 +16,7 @@ def throw_em(parent, message: str):
     em = QtWidgets.QErrorMessage(parent=parent)
     em.showMessage(message)
 
-class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
+class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
     def __init__(self, parent=None):
         super(Ui, self).__init__(parent)
         self.setupUi(self)
@@ -167,20 +167,11 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             event.ignore()
 
 #%%
-            
-def resize_window(app, window):
-    screen = QtWidgets.QDesktopWidget().screenGeometry()
-    window_width = window.frameGeometry().width()
-    window_height = window.frameGeometry().height()
-    if window_width > screen.width():
-        window.resize(window_width, window_height)
-    else:
-        window.resize(screen.width(), screen.height())
+        
             
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = Ui()
-    resize_window(app, window)
     window.show()
     app.exec_()

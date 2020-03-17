@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'visual_inspection_gui.ui'
+# Form implementation generated from reading ui file 'visual_inspection_gui_HR.ui'
 #
 # Created by: PyQt5 UI code generator 5.14.0
 #
@@ -334,3 +334,4 @@ class Ui_MainWindow(object):
         self.time_since_pulse_num.setText(_translate("MainWindow", "0"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Other"))
 from offspect.gui.mplwidget import MplWidget1, MplWidget2
+
