@@ -20,10 +20,8 @@ import matplotlib
 import matplotlib.image as image
 from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
 from matplotlib.backends.backend_qt5agg import (
-        FigureCanvas,
-        NavigationToolbar2QT as NavigationToolbar,
-    )
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+        FigureCanvasQTAgg as FigureCanvas,
+        NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from offspect.api import CacheFile
 
@@ -31,6 +29,11 @@ from offspect.api import CacheFile
 # Ensure using PyQt5 backend
 matplotlib.use("QT5Agg")
 matplotlib.rcParams["axes.linewidth"] = 0.1
+
+
+def throw_em(parent, message: str):
+    em = QtWidgets.QErrorMessage(parent=parent)
+    em.showMessage(message)
 
 class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
     def __init__(self, filename, parent=None):
@@ -65,7 +68,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.attrs['stimulation_intensity_didt'] = int(self.didt_num.text())
         self.attrs['comment']                    = str(self.commentbox.toPlainText())
         
-        self.cf.set_trace_attrs(self.trace_idx, self.attrs)
+        self.cf.update_trace_attributes(self.attrs)
     
     def initialize_reject_button(self):
         if self.attrs['reject'] == True:
@@ -83,7 +86,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         elif self.attrs['reject'] == True:
             self.reject_button.setStyleSheet("background-color: light gray")
             self.attrs['reject'] = False
-        self.cf.set_trace_attrs(self.trace_idx, self.attrs)
+        self.cf.set_trace_attributes(self.attrs)
         
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
@@ -91,7 +94,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         # catch NoneTypes to display something in GUI
         for idx, val in enumerate(self.attrs):    
             if not self.attrs[val]:
-                self.attrs[val] = 'No Value'
+                self.attrs[val] = 'None'
         
         self.event_time_num.display(self.attrs['event_time'])
         self.event_id_num.display(self.attrs['id'])
@@ -120,8 +123,8 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.pull_attrs_info()
             self.initialize_reject_button()
             self.next_button.setStyleSheet("background-color: light gray")
-        except:
-            self.next_button.setStyleSheet("background-color: red")
+        except Exception as e:
+            throw_em(self, str(e))            
         
     def update_previous_button(self):
         try:
@@ -131,8 +134,8 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.pull_attrs_info()
             self.initialize_reject_button()
             self.previous_button.setStyleSheet("background-color: light gray")
-        except:
-            self.previous_button.setStyleSheet("background-color: red")
+        except Exception as e:
+            throw_em(self, str(e))
         
     def get_trace_from_cache(self):
         self.trace = self.cf.get_trace_data(self.trace_idx)
