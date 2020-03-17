@@ -12,19 +12,20 @@ offspect
 ~~~~~~~~
 .. code-block:: none
 
-   usage: offspect [-h] {peek,merge,tms} ...
+   usage: offspect [-h] {peek,merge,tms,gui} ...
    
    Create, manipulate and inspect cachefiles for offline inspection of evoked
    potentials
    
    positional arguments:
-     {peek,merge,tms}
-       peek            peek into a cachefile and print essential information
-       merge           merge two cachefiles into one
-       tms             prepare cachefiles for a tms protocol
+     {peek,merge,tms,gui}
+       peek                peek into a cachefile and print essential information
+       merge               merge two cachefiles into one
+       tms                 prepare cachefiles for a tms protocol
+       gui                 start the visual inspection GUI
    
    optional arguments:
-     -h, --help        show this help message and exit
+     -h, --help            show this help message and exit
 
 
 offspect peek
@@ -76,5 +77,15 @@ offspect tms
                            duration
      -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
                            <Required> select event
+
+
+offspect gui
+~~~~~~~~~~~~
+.. code-block:: none
+
+   usage: offspect gui [-h]
+   
+   optional arguments:
+     -h, --help  show this help message and exit
 
 
