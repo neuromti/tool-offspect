@@ -145,9 +145,7 @@ def plot_glass(
     filled_img = project_into_nifti(coords, values, smooth)
            
     # select the maximum of the colorbar
-    # - either based on the data or the argument 
-    bmax = max(values)
-    vmax = bmax if vmax is None else vmax    
+    # - either based on the data or the argument  
 
     # plot the image
     fig = plt.figure(figsize=(6, 6), dpi=125)

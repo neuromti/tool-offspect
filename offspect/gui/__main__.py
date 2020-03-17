@@ -4,10 +4,7 @@ from PyQt5 import QtWidgets
 from offspect.gui import visual_inspection_gui
 import sys
 import matplotlib
-from matplotlib.backends.backend_qt5agg import (
-        FigureCanvasQTAgg as FigureCanvas,
-        NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from offspect.api import CacheFile
 from offspect.gui.plot import plot_m1s
 
@@ -150,10 +147,10 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         # discards the old graph
         self.MplWidget2.canvas.axes.clear()
         
-        plot_m1s(coords = coords, values = values)
+#        self.MplWidget2.canvas.set_figure(plot_m1s(coords = coords, values = values))
         
         # refresh canvas
-        self.MplWidget2.canvas.draw()
+        self.MplWidget2.canvas.draw(plot_m1s(coords = coords, values = values))
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(
@@ -170,11 +167,20 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             event.ignore()
 
 #%%
+            
+def resize_window(app, window):
+    screen = QtWidgets.QDesktopWidget().screenGeometry()
+    window_width = window.frameGeometry().width()
+    window_height = window.frameGeometry().height()
+    if window_width > screen.width():
+        window.resize(window_width, window_height)
+    else:
+        window.resize(screen.width(), screen.height())
+            
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication(sys.argv)
     window = Ui()
-    screen = QtWidgets.QDesktopWidget().screenGeometry()
-    window.resize(screen.width(), screen.height())
+    resize_window(app, window)
     window.show()
     app.exec_()
