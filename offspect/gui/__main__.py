@@ -19,14 +19,7 @@ import configparser
 import matplotlib
 import matplotlib.image as image
 from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
-
-if is_pyqt5():
-    from matplotlib.backends.backend_qt5agg import (
-        FigureCanvas,
-        NavigationToolbar2QT as NavigationToolbar,
-    )
-else:
-    from matplotlib.backends.backend_qt4agg import (
+from matplotlib.backends.backend_qt5agg import (
         FigureCanvas,
         NavigationToolbar2QT as NavigationToolbar,
     )
@@ -51,7 +44,9 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
 #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open file", "/", "CacheFiles (*.hdf5)")
+        print(filename)
         self.cf = CacheFile(filename)
         self.trace_idx = 0 # start with the first trace
         self.get_trace_from_cache()
@@ -93,9 +88,10 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
         
+        # catch NoneTypes to display something in GUI
         for idx, val in enumerate(self.attrs):    
-            if not attrs[self.val]:
-                attrs[self.val] = 'No Value'
+            if not self.attrs[val]:
+                self.attrs[val] = 'No Value'
         
         self.event_time_num.display(self.attrs['event_time'])
         self.event_id_num.display(self.attrs['id'])
@@ -234,9 +230,14 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
 #        self.MplWidget2.canvas.draw()
 
     def closeEvent(self, event):
-        reply = QtGui.QMessageBox.question(self, 'Message',
-            "Are you sure to quit?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+        reply = QtWidgets.QMessageBox.question(
+            self,
+            "Message",
+            "Are you sure to quit?",
+            QtWidgets.QMessageBox.Yes,
+            QtWidgets.QMessageBox.No,
+        )
+        if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
             app.exit()
         else:

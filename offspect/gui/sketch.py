@@ -7,8 +7,8 @@ Created on Mon Mar 16 10:41:15 2020
 from scipy import stats
 import numpy as np
 from offspect.api import CacheFile
-cf = CacheFile(r"C:\Users\Ethan\Documents\GitHub\offline-inspect\merged.hdf5")
-attrs = cf.get_trace_attrs(1)
+cf = CacheFile(r"C:\Users\Ethan\Documents\GitHub\tool-offspect\merged.hdf5")
+attrs = cf.get_trace_attrs(0)
 traces = cf.get_trace_data(1)
 from matplotlib import pyplot as plt
 
@@ -24,8 +24,6 @@ timey = np.arange(0, len(data))
 pulse_peak    = np.squeeze(np.where(np.diff(np.sign(np.diff(data[:,0])))<0))+1
 pulse_trough  = np.squeeze(np.where(np.diff(np.sign(np.diff(data[:,0])))>0))+1
 
-mep_peak   = 
-mep_trough =
 
 
 

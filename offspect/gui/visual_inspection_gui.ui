@@ -6,45 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-<<<<<<< HEAD
     <width>1510</width>
     <height>903</height>
-=======
-    <width>1743</width>
-    <height>1079</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-<<<<<<< HEAD
    <widget class="QLabel" name="zeroxinglabel_2">
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>650</y>
-=======
-   <widget class="QLCDNumber" name="troughlatency">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>863</y>
-      <width>64</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="zeroxinglabel_2">
-    <property name="geometry">
-     <rect>
-      <x>1200</x>
-      <y>730</y>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
       <width>81</width>
       <height>16</height>
      </rect>
@@ -61,7 +35,6 @@
      <string>comments:</string>
     </property>
    </widget>
-<<<<<<< HEAD
    <widget class="QTextEdit" name="commentbox">
     <property name="geometry">
      <rect>
@@ -69,146 +42,6 @@
       <y>670</y>
       <width>191</width>
       <height>101</height>
-=======
-   <widget class="QLCDNumber" name="peakvolts">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>810</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="troughlatlabel">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>840</y>
-      <width>112</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>trough latency (ms)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="peaklatlabel">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>780</y>
-      <width>141</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>peak latency (ms)</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="peaklatency">
-    <property name="geometry">
-     <rect>
-      <x>690</x>
-      <y>810</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="troughvoltlabel">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>840</y>
-      <width>130</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>trough magnitude (uV)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="peakvoltlabel">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>786</y>
-      <width>120</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>peak magnitude (uV)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="stimintensitylabel">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>790</y>
-      <width>181</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>stim intensity (% MSO)</string>
-    </property>
-   </widget>
-   <widget class="QTextEdit" name="commentbox">
-    <property name="geometry">
-     <rect>
-      <x>1200</x>
-      <y>750</y>
-      <width>301</width>
-      <height>192</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
    </widget>
@@ -218,11 +51,7 @@
       <x>10</x>
       <y>0</y>
       <width>101</width>
-<<<<<<< HEAD
       <height>31</height>
-=======
-      <height>19</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -234,7 +63,6 @@
      <string>Examiner: </string>
     </property>
    </widget>
-<<<<<<< HEAD
    <widget class="QLCDNumber" name="event_id_num">
     <property name="geometry">
      <rect>
@@ -242,15 +70,6 @@
       <y>550</y>
       <width>111</width>
       <height>51</height>
-=======
-   <widget class="QLCDNumber" name="datatime">
-    <property name="geometry">
-     <rect>
-      <x>410</x>
-      <y>730</y>
-      <width>64</width>
-      <height>23</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -260,25 +79,15 @@
    <widget class="QLabel" name="datatimelabel">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>200</x>
       <y>620</y>
       <width>91</width>
-=======
-      <x>300</x>
-      <y>730</y>
-      <width>101</width>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
       <height>23</height>
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>12</pointsize>
-=======
-      <pointsize>14</pointsize>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </font>
     </property>
     <property name="autoFillBackground">
@@ -288,7 +97,6 @@
      <string>time (ms):</string>
     </property>
    </widget>
-<<<<<<< HEAD
    <widget class="QLCDNumber" name="event_time_num">
     <property name="geometry">
      <rect>
@@ -296,15 +104,6 @@
       <y>610</y>
       <width>111</width>
       <height>51</height>
-=======
-   <widget class="QLCDNumber" name="dataindex">
-    <property name="geometry">
-     <rect>
-      <x>410</x>
-      <y>700</y>
-      <width>64</width>
-      <height>23</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="autoFillBackground">
@@ -314,25 +113,15 @@
    <widget class="QLabel" name="dataindexlabel">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>210</x>
       <y>560</y>
       <width>81</width>
-=======
-      <x>310</x>
-      <y>700</y>
-      <width>91</width>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
       <height>23</height>
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>12</pointsize>
-=======
-      <pointsize>14</pointsize>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </font>
     </property>
     <property name="autoFillBackground">
@@ -342,112 +131,31 @@
      <string>event ID:</string>
     </property>
    </widget>
-<<<<<<< HEAD
-=======
-   <widget class="QLCDNumber" name="zeroxinglat">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>860</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="zeroxinglabel">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>843</y>
-      <width>161</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>zero crossing latency (ms)</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="stimintensity">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>810</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="troughvolts">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>860</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
    <widget class="MplWidget1" name="MplWidget1" native="true">
     <property name="geometry">
      <rect>
       <x>0</x>
-<<<<<<< HEAD
       <y>50</y>
       <width>1031</width>
       <height>501</height>
-=======
-      <y>100</y>
-      <width>1141</width>
-      <height>581</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
    </widget>
    <widget class="MplWidget2" name="MplWidget2" native="true">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>1040</x>
       <y>110</y>
       <width>301</width>
       <height>241</height>
-=======
-      <x>1140</x>
-      <y>60</y>
-      <width>591</width>
-      <height>511</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="coilcoordinateslabel">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>1040</x>
       <y>70</y>
-=======
-      <x>1160</x>
-      <y>30</y>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
       <width>191</width>
       <height>31</height>
      </rect>
@@ -458,7 +166,6 @@
      </font>
     </property>
     <property name="text">
-<<<<<<< HEAD
      <string>Coil coordinates: </string>
     </property>
    </widget>
@@ -469,18 +176,6 @@
       <y>0</y>
       <width>91</width>
       <height>31</height>
-=======
-     <string>TMS coil coordinates: </string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="filename">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>30</y>
-      <width>91</width>
-      <height>19</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -495,17 +190,10 @@
    <widget class="QPushButton" name="previous_button">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>20</x>
       <y>570</y>
       <width>121</width>
       <height>41</height>
-=======
-      <x>30</x>
-      <y>690</y>
-      <width>161</width>
-      <height>81</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -520,17 +208,10 @@
    <widget class="QPushButton" name="next_button">
     <property name="geometry">
      <rect>
-<<<<<<< HEAD
       <x>480</x>
       <y>570</y>
       <width>121</width>
       <height>41</height>
-=======
-      <x>590</x>
-      <y>690</y>
-      <width>161</width>
-      <height>81</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -542,7 +223,6 @@
      <string>Next</string>
     </property>
    </widget>
-<<<<<<< HEAD
    <widget class="QLineEdit" name="coil_coordinate_input">
     <property name="geometry">
      <rect>
@@ -550,20 +230,10 @@
       <y>70</y>
       <width>41</width>
       <height>31</height>
-=======
-   <widget class="QLabel" name="time_since_pulse_label">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>890</y>
-      <width>201</width>
-      <height>21</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>12</pointsize>
      </font>
     </property>
@@ -591,43 +261,10 @@
       <y>780</y>
       <width>121</width>
       <height>41</height>
-=======
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>time since last pulse (ms)</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="time_since_pulse">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>910</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="time_since_pulse_label_2">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>793</y>
-      <width>151</width>
-      <height>16</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>12</pointsize>
      </font>
     </property>
@@ -735,24 +372,6 @@
        <string>peak magnitude (uV)</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="peakmag_num">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>40</y>
-        <width>111</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>22</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
      <widget class="QLineEdit" name="peaklat_num">
       <property name="geometry">
        <rect>
@@ -794,6 +413,24 @@
        <rect>
         <x>160</x>
         <y>150</y>
+        <width>111</width>
+        <height>51</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>22</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="peakmag_num">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>40</y>
         <width>111</width>
         <height>51</height>
        </rect>
@@ -1034,54 +671,17 @@
       <y>750</y>
       <width>101</width>
       <height>41</height>
-=======
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-     <string>onset shift (ms)</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="time_since_pulse_2">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>810</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="time_since_pulse_label_3">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>843</y>
-      <width>151</width>
-      <height>16</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>14</pointsize>
-=======
-      <pointsize>10</pointsize>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </font>
     </property>
     <property name="autoFillBackground">
      <bool>true</bool>
     </property>
     <property name="text">
-<<<<<<< HEAD
      <string>Readout:</string>
     </property>
    </widget>
@@ -1092,31 +692,6 @@
       <y>692</y>
       <width>121</width>
       <height>31</height>
-=======
-     <string>di/dt</string>
-    </property>
-   </widget>
-   <widget class="QLCDNumber" name="time_since_pulse_3">
-    <property name="geometry">
-     <rect>
-      <x>230</x>
-      <y>860</y>
-      <width>64</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="muscle_label">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>70</y>
-      <width>81</width>
-      <height>23</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -1128,42 +703,7 @@
      <bool>true</bool>
     </property>
     <property name="text">
-<<<<<<< HEAD
      <string>EDC_R</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="readout">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>750</y>
-      <width>201</width>
-      <height>41</height>
-=======
-     <string>Muscle:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="muscle_label_2">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>70</y>
-      <width>81</width>
-      <height>23</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>14</pointsize>
-     </font>
-    </property>
-    <property name="autoFillBackground">
-     <bool>true</bool>
-    </property>
-    <property name="text">
-<<<<<<< HEAD
-     <string>Contralateral MEP</string>
     </property>
    </widget>
    <widget class="QLabel" name="muscle_label">
@@ -1173,23 +713,10 @@
       <y>692</y>
       <width>91</width>
       <height>31</height>
-=======
-     <string>EDC_R</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="title">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>20</y>
-      <width>311</width>
-      <height>81</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>14</pointsize>
      </font>
     </property>
@@ -1207,22 +734,6 @@
       <y>680</y>
       <width>201</width>
       <height>51</height>
-=======
-      <pointsize>28</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>MEP Inspector</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="coil_coordinate_input">
-    <property name="geometry">
-     <rect>
-      <x>1360</x>
-      <y>30</y>
-      <width>41</width>
-      <height>31</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
@@ -1231,7 +742,6 @@
      </font>
     </property>
     <property name="text">
-<<<<<<< HEAD
      <string>Update Attributes</string>
     </property>
    </widget>
@@ -1242,48 +752,33 @@
       <y>1</y>
       <width>151</width>
       <height>31</height>
-=======
-     <string>0,0</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="update_coil_button">
-    <property name="geometry">
-     <rect>
-      <x>1410</x>
-      <y>30</y>
-      <width>93</width>
-      <height>28</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Update Coil</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="reject_button">
-    <property name="geometry">
-     <rect>
-      <x>1530</x>
-      <y>800</y>
-      <width>201</width>
-      <height>121</height>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      </rect>
     </property>
     <property name="font">
      <font>
-<<<<<<< HEAD
       <pointsize>12</pointsize>
      </font>
     </property>
     <property name="text">
      <string>HiWi</string>
-=======
-      <pointsize>20</pointsize>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="readout">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>750</y>
+      <width>261</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>14</pointsize>
      </font>
     </property>
     <property name="text">
-     <string>Reject Trial</string>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
+     <string>Contralateral MEP</string>
     </property>
    </widget>
   </widget>
@@ -1292,21 +787,14 @@
     <rect>
      <x>0</x>
      <y>0</y>
-<<<<<<< HEAD
      <width>1510</width>
-=======
-     <width>1743</width>
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
      <height>26</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
-<<<<<<< HEAD
  <layoutdefault spacing="7" margin="11"/>
-=======
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
  <customwidgets>
   <customwidget>
    <class>MplWidget1</class>
@@ -1323,7 +811,6 @@
  </customwidgets>
  <resources/>
  <connections/>
-<<<<<<< HEAD
  <designerdata>
   <property name="gridDeltaX">
    <number>10</number>
@@ -1341,6 +828,4 @@
    <bool>true</bool>
   </property>
  </designerdata>
-=======
->>>>>>> 6e8bdbe39636a3d59a054b6b6ceb589a50a4fcec
 </ui>
