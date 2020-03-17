@@ -85,7 +85,12 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
 
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
-
+        
+        # check for value in attrs field
+        for idx, val in enumerate(self.attrs):    
+            if not self.attrs[val]:
+                self.attrs[val] = 'No Value'
+                
         self.event_time_num.display(self.attrs["event_time"])
         self.event_id_num.display(self.attrs["id"])
         self.troughmag_num.setText(str(self.attrs["neg_peak_magnitude_uv"]))
