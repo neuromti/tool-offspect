@@ -11,3 +11,4 @@ dist/*
 .mypy_report/*
 *.hdf5
 *.cnt
+offspect/gui/sketch.py
