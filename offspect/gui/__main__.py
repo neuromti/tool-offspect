@@ -14,12 +14,10 @@ import liesl
 import configparser
 import matplotlib
 import matplotlib.image as image
-<<<<<<< HEAD
 from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
 from matplotlib.backends.backend_qt5agg import (
         FigureCanvasQTAgg as FigureCanvas,
         NavigationToolbar2QT as NavigationToolbar)
-=======
 from matplotlib.backends.qt_compat import QtCore
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
