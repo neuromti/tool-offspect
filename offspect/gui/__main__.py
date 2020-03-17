@@ -25,7 +25,6 @@ from matplotlib.backends.backend_qt5agg import (
 from matplotlib.figure import Figure
 from offspect.api import CacheFile
 
-
 # Ensure using PyQt5 backend
 matplotlib.use("QT5Agg")
 matplotlib.rcParams["axes.linewidth"] = 0.1
@@ -58,17 +57,22 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.initialize_reject_button()
         
     def update_attributes(self):
-        self.attrs['neg_peak_magnitude_uv']      = float(self.troughmag_num.text())
-        self.attrs['neg_peak_latency_ms']        = float(self.troughlat_num.text())
-        self.attrs['pos_peak_latency_ms']        = float(self.peaklat_num.text())
-        self.attrs['pos_peak_magnitude_uv']      = float(self.peakmag_num.text())
-        self.attrs['zcr_latency_ms']             = float(self.zcr_lat_num.text())
-        self.attrs['stimulation_intensity_mso']  = int(self.stimintensity_num.text())
-        self.attrs['time_since_last_pulse_in_s'] = float(self.time_since_pulse_num.text())
-        self.attrs['stimulation_intensity_didt'] = int(self.didt_num.text())
-        self.attrs['comment']                    = str(self.commentbox.toPlainText())
+        # change 'None' back to Nonetype
+        for idx, val in enumerate(self.attrs):    
+            if self.attrs[val] == 'None':
+                self.attrs[val] =  None
+                
+        self.attrs['neg_peak_magnitude_uv']      = self.troughmag_num.text()
+        self.attrs['neg_peak_latency_ms']        = self.troughlat_num.text()
+        self.attrs['pos_peak_latency_ms']        = self.peaklat_num.text()
+        self.attrs['pos_peak_magnitude_uv']      = self.peakmag_num.text()
+        self.attrs['zcr_latency_ms']             = self.zcr_lat_num.text()
+        self.attrs['stimulation_intensity_mso']  = self.stimintensity_num.text()
+        self.attrs['time_since_last_pulse_in_s'] = self.time_since_pulse_num.text()
+        self.attrs['stimulation_intensity_didt'] = self.didt_num.text()
+        self.attrs['comment']                    = self.commentbox.toPlainText()
         
-        self.cf.update_trace_attributes(self.attrs)
+        self.set_trace_attributes(self.attrs)
     
     def initialize_reject_button(self):
         if self.attrs['reject'] == True:
@@ -86,7 +90,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         elif self.attrs['reject'] == True:
             self.reject_button.setStyleSheet("background-color: light gray")
             self.attrs['reject'] = False
-        self.cf.set_trace_attributes(self.attrs)
+        self.update_attributes()
         
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
@@ -98,14 +102,14 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         
         self.event_time_num.display(self.attrs['event_time'])
         self.event_id_num.display(self.attrs['id'])
-        self.troughmag_num.setText(str(self.attrs['neg_peak_magnitude_uv']))
-        self.troughlat_num.setText(str(self.attrs['neg_peak_latency_ms']))
-        self.peaklat_num.setText(str(self.attrs['pos_peak_latency_ms']))
-        self.peakmag_num.setText(str(self.attrs['pos_peak_magnitude_uv']))
-        self.zcr_lat_num.setText(str(self.attrs['zcr_latency_ms']))
-        self.stimintensity_num.setText(str(self.attrs['stimulation_intensity_mso']))
-        self.time_since_pulse_num.setText(str(self.attrs['time_since_last_pulse_in_s']))
-        self.didt_num.setText(str(self.attrs['stimulation_intensity_didt']))
+        self.troughmag_num.setText(self.attrs['neg_peak_magnitude_uv'])
+        self.troughlat_num.setText(self.attrs['neg_peak_latency_ms'])
+        self.peaklat_num.setText(self.attrs['pos_peak_latency_ms'])
+        self.peakmag_num.setText(self.attrs['pos_peak_magnitude_uv'])
+        self.zcr_lat_num.setText(self.attrs['zcr_latency_ms'])
+        self.stimintensity_num.setText(self.attrs['stimulation_intensity_mso'])
+        self.time_since_pulse_num.setText(self.attrs['time_since_last_pulse_in_s'])
+        self.didt_num.setText(self.attrs['stimulation_intensity_didt'])
         
         self.channel_label.setText(self.attrs['channel_labels'][0])
         self.filename.setText(self.attrs['original_file'])
@@ -116,6 +120,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         
  
     def update_next_button(self):
+        self.update_attributes()
         try:
             self.trace_idx += 1
             self.get_trace_from_cache()
@@ -127,6 +132,7 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             throw_em(self, str(e))            
         
     def update_previous_button(self):
+        self.update_attributes()
         try:
             self.trace_idx -= 1
             self.get_trace_from_cache()

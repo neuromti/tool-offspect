@@ -8,7 +8,7 @@ from scipy import stats
 import numpy as np
 from offspect.api import CacheFile
 cf = CacheFile(r"C:\Users\Ethan\Documents\GitHub\tool-offspect\merged.hdf5")
-attrs = cf.get_trace_attrs(1)
+attrs = cf.get_trace_attrs(0)
 traces = cf.get_trace_data(1)
 from matplotlib import pyplot as plt
 
