@@ -33,6 +33,7 @@ from .check import (
     TraceData,
     TraceAttributes,
     filter_trace_attrs,
+    isindex,
 )
 from math import inf, nan
 
@@ -109,7 +110,7 @@ class CacheFile:
 
 
         .. note::
-           The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'original_file' and the 'original_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and/or discarded.
+           The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'cache_file' and the 'cache_file_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and subsequently discarded.
 
         """
         return read_trace(self, idx=idx, what="attrs")
@@ -150,14 +151,14 @@ class CacheFile:
 
 
         """
-        if not "original_file" in attrs.keys() or not "original_index" in attrs.keys():
+        if not "cache_file" in attrs.keys() or not "cache_file_index" in attrs.keys():
             raise ValueError(
                 "This attributes do not originate from a CacheFile. Information about its origin is missing"
             )
 
-        if not str(self.fname) == attrs["original_file"]:
+        if not str(self.fname) == attrs["cache_file"]:
             raise ValueError("These attributes did not originate from this CacheFile")
-        if not idx == attrs["original_index"]:
+        if not idx == int(attrs["cache_file_index"]):
             raise ValueError(
                 "These attributes did originate from a different trace in this CacheFile"
             )
@@ -216,10 +217,11 @@ def update_trace_attributes(attrs: TraceAttributes):
 
     """
     index: int
-    index = attrs["original_index"]  # type: ignore
-    if type(index) != int:
+    if isindex(attrs["cache_file_index"]):
+        index = int(attrs["cache_file_index"])
+    else:
         raise ValueError("Index must be an integer")
-    fname = attrs["original_file"]
+    fname = attrs["cache_file"]
     attrs = filter_trace_attrs(attrs)
 
     if index >= 0:
@@ -263,10 +265,12 @@ def read_trace(
                         dset = f[origin]["traces"][key]
                         dset.id.refresh()  # load fresh from file
                         if what == "attrs":
-                            attrs = parse_traceattrs(dset.attrs)
-                            attrs["original_file"] = str(cf.fname)
-                            attrs["original_index"] = idx
-                            check_metadata(str(attrs["readout"]), attrs)
+                            # attrs = parse_traceattrs(dset.attrs)
+                            attrs = asdict(dset.attrs)
+                            attrs["origin"] = origin
+                            attrs["cache_file"] = str(cf.fname)
+                            attrs["cache_file_index"] = str(idx)
+                            # check_metadata(str(attrs["readout"]), attrs)
                             return attrs
                         elif what == "data":
                             data = parse_tracedata(dset)
@@ -276,6 +280,11 @@ def read_trace(
                     cnt = ix
 
     raise IndexError(f"{idx} not in cachefile")
+
+
+def asdict(attrs: h5py.AttributeManager) -> Dict[str, str]:
+    "parse the metadata from a cachefile and return it as dictionary"
+    return dict(attrs)
 
 
 def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
