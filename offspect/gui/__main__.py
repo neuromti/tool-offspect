@@ -1,44 +1,24 @@
 """ 
 """
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets
 from offspect.gui import visual_inspection_gui
 import sys
-import os
-from pathlib import Path
-from functools import partial
-from matplotlib import pyplot as plt
-import time
-from scipy import stats
-import numpy as np
-import liesl
-import configparser
 import matplotlib
-import matplotlib.image as image
-from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
 from matplotlib.backends.backend_qt5agg import (
         FigureCanvasQTAgg as FigureCanvas,
         NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.backends.qt_compat import QtCore
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar,
-)
->>>>>>> develop
 from matplotlib.figure import Figure
 from offspect.api import CacheFile
+from offspect.gui.plot import plot_m1s
 
 # Ensure using PyQt5 backend
 matplotlib.use("QT5Agg")
 matplotlib.rcParams["axes.linewidth"] = 0.1
 
-
-<<<<<<< HEAD
 def throw_em(parent, message: str):
     em = QtWidgets.QErrorMessage(parent=parent)
     em.showMessage(message)
 
-=======
->>>>>>> develop
 class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
     def __init__(self, parent=None):
         super(Ui, self).__init__(parent)
@@ -46,120 +26,60 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
 
         self.reject_button.setCheckable(True)
-        self.reject_button.clicked.connect(self.update_reject_button)
+        self.reject_button.clicked.connect(self.flip_reject_button)
         self.previous_button.clicked.connect(self.update_previous_button)
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
-<<<<<<< HEAD
 #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+
+        self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "/", "CacheFiles (*.hdf5)")
-=======
-        #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open file", "/", "CacheFiles (*.hdf5)"
-        )
->>>>>>> develop
-        print(filename)
-        self.cf = CacheFile(filename)
+
+        print(self.filename)
+        self.cf = CacheFile(self.filename)
         self.trace_idx = 0  # start with the first trace
         self.get_trace_from_cache()
+        self.plot_mep()
         self.pull_attrs_info()
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
         self.initialize_reject_button()
 
     def update_attributes(self):
-<<<<<<< HEAD
-        # change 'None' back to Nonetype
-        for idx, val in enumerate(self.attrs):    
-            if self.attrs[val] == 'None':
-                self.attrs[val] =  None
                 
-        self.attrs['neg_peak_magnitude_uv']      = self.troughmag_num.text()
-        self.attrs['neg_peak_latency_ms']        = self.troughlat_num.text()
-        self.attrs['pos_peak_latency_ms']        = self.peaklat_num.text()
-        self.attrs['pos_peak_magnitude_uv']      = self.peakmag_num.text()
-        self.attrs['zcr_latency_ms']             = self.zcr_lat_num.text()
-        self.attrs['stimulation_intensity_mso']  = self.stimintensity_num.text()
-        self.attrs['time_since_last_pulse_in_s'] = self.time_since_pulse_num.text()
-        self.attrs['stimulation_intensity_didt'] = self.didt_num.text()
+        self.attrs['neg_peak_magnitude_uv']      = float(self.troughmag_num.text())
+        self.attrs['neg_peak_latency_ms']        = float(self.troughlat_num.text())
+        self.attrs['pos_peak_latency_ms']        = float(self.peaklat_num.text())
+        self.attrs['pos_peak_magnitude_uv']      = float(self.peakmag_num.text())
+        self.attrs['zcr_latency_ms']             = float(self.zcr_lat_num.text())
+        self.attrs['stimulation_intensity_mso']  = int(self.stimintensity_num.text())
+        self.attrs['time_since_last_pulse_in_s'] = float(self.time_since_pulse_num.text())
+        self.attrs['stimulation_intensity_didt'] = int(self.didt_num.text())
         self.attrs['comment']                    = self.commentbox.toPlainText()
+        self.attrs["reject"]                     = self.reject
         
-        self.set_trace_attributes(self.attrs)
-    
-=======
-        self.attrs["neg_peak_magnitude_uv"] = float(self.troughmag_num.text())
-        self.attrs["neg_peak_latency_ms"] = float(self.troughlat_num.text())
-        self.attrs["pos_peak_latency_ms"] = float(self.peaklat_num.text())
-        self.attrs["pos_peak_magnitude_uv"] = float(self.peakmag_num.text())
-        self.attrs["zcr_latency_ms"] = float(self.zcr_lat_num.text())
-        self.attrs["stimulation_intensity_mso"] = int(self.stimintensity_num.text())
-        self.attrs["time_since_last_pulse_in_s"] = float(
-            self.time_since_pulse_num.text()
-        )
-        self.attrs["stimulation_intensity_didt"] = int(self.didt_num.text())
-        self.attrs["comment"] = str(self.commentbox.toPlainText())
-
         self.cf.set_trace_attrs(self.trace_idx, self.attrs)
 
->>>>>>> develop
     def initialize_reject_button(self):
         if self.attrs["reject"] == True:
+            self.reject = True
             self.reject_button.setStyleSheet("background-color: red")
         elif self.attrs["reject"] == False:
+            self.reject = False
             self.reject_button.setStyleSheet("background-color: light gray")
 
-    def update_reject_button(self):
-        """
-        flip rejection
-        """
+    def flip_reject_button(self):
+
         if self.attrs["reject"] == False:
             self.reject_button.setStyleSheet("background-color: red")
             self.attrs["reject"] = True
+            self.reject = True
         elif self.attrs["reject"] == True:
             self.reject_button.setStyleSheet("background-color: light gray")
-<<<<<<< HEAD
             self.attrs['reject'] = False
-        self.update_attributes()
+            self.reject = False
         
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
-        
-        # catch NoneTypes to display something in GUI
-        for idx, val in enumerate(self.attrs):    
-            if not self.attrs[val]:
-                self.attrs[val] = 'None'
-        
-        self.event_time_num.display(self.attrs['event_time'])
-        self.event_id_num.display(self.attrs['id'])
-        self.troughmag_num.setText(self.attrs['neg_peak_magnitude_uv'])
-        self.troughlat_num.setText(self.attrs['neg_peak_latency_ms'])
-        self.peaklat_num.setText(self.attrs['pos_peak_latency_ms'])
-        self.peakmag_num.setText(self.attrs['pos_peak_magnitude_uv'])
-        self.zcr_lat_num.setText(self.attrs['zcr_latency_ms'])
-        self.stimintensity_num.setText(self.attrs['stimulation_intensity_mso'])
-        self.time_since_pulse_num.setText(self.attrs['time_since_last_pulse_in_s'])
-        self.didt_num.setText(self.attrs['stimulation_intensity_didt'])
-        
-        self.channel_label.setText(self.attrs['channel_labels'][0])
-        self.filename.setText(self.attrs['original_file'])
-        self.examiner_name.setText(self.attrs['examiner'])
-        self.readout.setText(self.attrs['readout'])
-        
-        self.commentbox.setText(self.attrs['comment'])
-        
- 
-=======
-            self.attrs["reject"] = False
-        self.cf.set_trace_attrs(self.trace_idx, self.attrs)
-
-    def pull_attrs_info(self):
-        self.attrs = self.cf.get_trace_attrs(self.trace_idx)
-        
-        # check for value in attrs field
-        for idx, val in enumerate(self.attrs):    
-            if not self.attrs[val]:
-                self.attrs[val] = 'No Value'
                 
         self.event_time_num.display(self.attrs["event_time"])
         self.event_id_num.display(self.attrs["id"])
@@ -173,52 +93,39 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.didt_num.setText(str(self.attrs["stimulation_intensity_didt"]))
 
         self.channel_label.setText(self.attrs["channel_labels"][0])
-        self.filename.setText(self.attrs["original_file"])
-        self.examiner_name.setText(self.attrs["examiner"])
-        self.readout.setText(self.attrs["readout"])
+        self.filename_label_2.setText(str(self.attrs["original_file"]))
+        self.examiner_name.setText(str(self.attrs["examiner"]))
+        self.readout.setText(str(self.attrs["readout"]))
 
-        self.commentbox.setText(self.attrs["comment"])
+        self.commentbox.setText(str(self.attrs["comment"]))
+        
+        self.xyz_coords = self.attrs['xyz_coords']
+        self.coil_coordinate_input.setText(str(self.xyz_coords))
 
->>>>>>> develop
     def update_next_button(self):
-        self.update_attributes()
         try:
             self.trace_idx += 1
             self.get_trace_from_cache()
             self.plot_mep()
             self.pull_attrs_info()
+            self.reject_button.setCheckable(True)
             self.initialize_reject_button()
-            self.next_button.setStyleSheet("background-color: light gray")
-<<<<<<< HEAD
         except Exception as e:
             throw_em(self, str(e))            
-        
-=======
-        except:
-            self.next_button.setStyleSheet("background-color: red")
 
->>>>>>> develop
     def update_previous_button(self):
-        self.update_attributes()
         try:
             self.trace_idx -= 1
             self.get_trace_from_cache()
             self.plot_mep()
             self.pull_attrs_info()
+            self.reject_button.setCheckable(True)
             self.initialize_reject_button()
-            self.previous_button.setStyleSheet("background-color: light gray")
-<<<<<<< HEAD
         except Exception as e:
             throw_em(self, str(e))
-        
-=======
-        except:
-            self.previous_button.setStyleSheet("background-color: red")
 
->>>>>>> develop
     def get_trace_from_cache(self):
         self.trace = self.cf.get_trace_data(self.trace_idx)
-        self.plot_mep()
 
     def plot_mep(self):
         data = self.trace
@@ -229,87 +136,24 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         # refresh canvas
         self.MplWidget1.canvas.draw()
 
-    #    def update_coil_coordinates(self):
-    #        a = int(self.coil_coordinate_input.text()[0])
-    #        b = int(self.coil_coordinate_input.text()[2])
-    #        if type(a) and type(b) != int:
-    #            self.next_button.setStyleSheet(
-    #                "QPushButton:pressed { background-color: red }"
-    #            )
-    #        else:
-    #            self.next_button.setStyleSheet(
-    #                "QPushButton:pressed { background-color: light gray }"
-    #            )
-    #        self.current_coil_location = [a, b]
-    #        self.plot_coil_coordinates()
-    #
-    #    def plot_coil_coordinates(self):
-    #
-    #        if "win" in sys.platform:
-    #            cwd = os.path.abspath(os.path.dirname(sys.argv[0]))
-    #            im = image.imread(str(cwd + "\coilpic.png"))
-    #            brain = image.imread(str(cwd + "\map.png"))
-    #        else:
-    #            cwd = Path('__file__').parent
-    #            im = image.imread(str(cwd + "\coilpic.png"))
-    #            brain = image.imread(str(cwd + "\brain.png"))
-    #
-    #
-    #        # discards the old graph
-    #        self.MplWidget2.canvas.axes.clear()
-    #
-    #        self.MplWidget2.canvas.axes.imshow(
-    #            brain, aspect="auto", extent=(-1, 7, -4, 7), zorder=1
-    #        )
-    #
-    #        import itertools
-    #
-    #        r = 6
-    #        c = 6
-    #        x = np.linspace(0, c, c + 1)
-    #        y = np.linspace(0, r, r + 1)
-    #
-    #        pts = itertools.product(x, y)
-    #
-    #        # plot current coordinates
-    #        self.MplWidget2.canvas.axes.plot(
-    #            self.current_coil_location[0], self.current_coil_location[1], "ro", zorder=3
-    #        )
-    #        coilcoor = (
-    #            self.current_coil_location[0] - 0.5,
-    #            self.current_coil_location[0] + 2.5,
-    #            self.current_coil_location[1] - 4,
-    #            self.current_coil_location[1] + 0.4,
-    #        )
-    #        self.MplWidget2.canvas.axes.imshow(im, aspect="auto", extent=coilcoor, zorder=3)
-    #
-    #        # plot grid
-    #        self.MplWidget2.canvas.axes.scatter(
-    #            *zip(*pts), marker="o", s=30, color="blue", zorder=2
-    #        )
-    #        self.MplWidget2.canvas.axes.set_ylabel("Dorsal - Ventral")
-    #        self.MplWidget2.canvas.axes.set_xlabel("Anterior - Posterior")
-    #
-    #        self.MplWidget2.canvas.axes.set_xticks([])
-    #        self.MplWidget2.canvas.axes.set_yticks([])
-    #
-    #        textstr = str(
-    #            "Location: "
-    #            + str((self.current_coil_location[0], self.current_coil_location[1]))
-    #        )
-    #        props = dict(boxstyle="round", facecolor="wheat", alpha=1)
-    #
-    #        self.MplWidget2.canvas.axes.text(
-    #            0.05,
-    #            0.95,
-    #            textstr,
-    #            transform=self.MplWidget2.canvas.axes.transAxes,
-    #            fontsize=14,
-    #            verticalalignment="top",
-    #            bbox=props,
-    #        )
-    #        # refresh canvas
-    #        self.MplWidget2.canvas.draw()
+    def plot_coil_coordinates(self):
+        
+        if self.attrs['channel_labels'][0][4] == 'L':
+            rM1 = self.xyz_coords
+            coords = [rM1]
+            values = [float(self.attrs['pos_peak_magnitude_uv']) + abs(float(self.attrs['neg_peak_magnitude_uv']))]
+        else:
+            lM1 = self.xyz_coords
+            coords = [lM1]
+            values = [float(self.attrs['pos_peak_magnitude_uv']) + abs(float(self.attrs['neg_peak_magnitude_uv']))]
+                
+        # discards the old graph
+        self.MplWidget2.canvas.axes.clear()
+        
+        plot_m1s(coords = coords, values = values)
+        
+        # refresh canvas
+        self.MplWidget2.canvas.draw()
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(
