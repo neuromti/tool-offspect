@@ -1,7 +1,9 @@
 """ 
 """
-from PyQt5 import QtWidgets, QtGui
-from offspect.gui import visual_inspection_gui
+from PyQt5 import QtWidgets, QtGui, uic
+
+# from offspect.gui import visual_inspection_gui
+from offspect.gui.mplwidget import MplWidget1, MplWidget2, get_canvas
 import sys
 import os
 from pathlib import Path
@@ -27,23 +29,33 @@ matplotlib.use("QT5Agg")
 matplotlib.rcParams["axes.linewidth"] = 0.1
 
 
-class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
+class Ui(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
-        super(Ui, self).__init__(parent)
-        self.setupUi(self)
-        self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
-
-        self.reject_button.setCheckable(True)
-        self.reject_button.clicked.connect(self.update_reject_button)
-        self.previous_button.clicked.connect(self.update_previous_button)
-        self.next_button.clicked.connect(self.update_next_button)
-        self.update_attrs_button.clicked.connect(self.update_attributes)
-        #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
+        super().__init__(parent)
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "/", "CacheFiles (*.hdf5)"
         )
         print(filename)
         self.cf = CacheFile(filename)
+        uifolder = Path(__file__).parent / "uis"
+        try:
+            readout = self.cf.get_trace_attrs(0)["readout"]
+            self.ui = uic.loadUi(uifolder / f"{readout}.ui", self)
+        except FileNotFoundError:
+            raise NotImplementedError(f"{readout} is not implemented")
+        # super(Ui, self).__init__(parent)
+        #  self.setupUi(self)
+        self.ui.MplWidget1.canvas = get_canvas()
+        self.ui.MplWidget2.canvas = get_canvas()
+        self.addToolBar(NavigationToolbar(self.ui.MplWidget1.canvas, self))
+
+        self.ui.reject_button.setCheckable(True)
+        self.ui.reject_button.clicked.connect(self.ui.update_reject_button)
+        self.ui.previous_button.clicked.connect(self.ui.update_previous_button)
+        self.ui.next_button.clicked.connect(self.ui.update_next_button)
+        self.ui.update_attrs_button.clicked.connect(self.ui.update_attributes)
+        #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
+
         self.trace_idx = 0  # start with the first trace
         self.get_trace_from_cache()
         self.pull_attrs_info()
@@ -51,58 +63,60 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
         self.initialize_reject_button()
 
     def update_attributes(self):
-        self.attrs["neg_peak_magnitude_uv"] = float(self.troughmag_num.text())
-        self.attrs["neg_peak_latency_ms"] = float(self.troughlat_num.text())
-        self.attrs["pos_peak_latency_ms"] = float(self.peaklat_num.text())
-        self.attrs["pos_peak_magnitude_uv"] = float(self.peakmag_num.text())
-        self.attrs["zcr_latency_ms"] = float(self.zcr_lat_num.text())
-        self.attrs["stimulation_intensity_mso"] = int(self.stimintensity_num.text())
+        self.attrs["neg_peak_magnitude_uv"] = float(self.ui.troughmag_num.text())
+        self.attrs["neg_peak_latency_ms"] = float(self.ui.troughlat_num.text())
+        self.attrs["pos_peak_latency_ms"] = float(self.ui.peaklat_num.text())
+        self.attrs["pos_peak_magnitude_uv"] = float(self.ui.peakmag_num.text())
+        self.attrs["zcr_latency_ms"] = float(self.ui.zcr_lat_num.text())
+        self.attrs["stimulation_intensity_mso"] = int(self.ui.stimintensity_num.text())
         self.attrs["time_since_last_pulse_in_s"] = float(
-            self.time_since_pulse_num.text()
+            self.ui.time_since_pulse_num.text()
         )
-        self.attrs["stimulation_intensity_didt"] = int(self.didt_num.text())
-        self.attrs["comment"] = str(self.commentbox.toPlainText())
+        self.attrs["stimulation_intensity_didt"] = int(self.ui.didt_num.text())
+        self.attrs["comment"] = str(self.ui.commentbox.toPlainText())
 
         self.cf.set_trace_attrs(self.trace_idx, self.attrs)
 
     def initialize_reject_button(self):
         if self.attrs["reject"] == True:
-            self.reject_button.setStyleSheet("background-color: red")
+            self.ui.reject_button.setStyleSheet("background-color: red")
         elif self.attrs["reject"] == False:
-            self.reject_button.setStyleSheet("background-color: light gray")
+            self.ui.reject_button.setStyleSheet("background-color: light gray")
 
     def update_reject_button(self):
         """
         flip rejection
         """
         if self.attrs["reject"] == False:
-            self.reject_button.setStyleSheet("background-color: red")
+            self.ui.reject_button.setStyleSheet("background-color: red")
             self.attrs["reject"] = True
         elif self.attrs["reject"] == True:
-            self.reject_button.setStyleSheet("background-color: light gray")
+            self.ui.reject_button.setStyleSheet("background-color: light gray")
             self.attrs["reject"] = False
         self.cf.set_trace_attrs(self.trace_idx, self.attrs)
 
     def pull_attrs_info(self):
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
 
-        self.event_time_num.display(self.attrs["event_time"])
-        self.event_id_num.display(self.attrs["id"])
-        self.troughmag_num.setText(str(self.attrs["neg_peak_magnitude_uv"]))
-        self.troughlat_num.setText(str(self.attrs["neg_peak_latency_ms"]))
-        self.peaklat_num.setText(str(self.attrs["pos_peak_latency_ms"]))
-        self.peakmag_num.setText(str(self.attrs["pos_peak_magnitude_uv"]))
-        self.zcr_lat_num.setText(str(self.attrs["zcr_latency_ms"]))
-        self.stimintensity_num.setText(str(self.attrs["stimulation_intensity_mso"]))
-        self.time_since_pulse_num.setText(str(self.attrs["time_since_last_pulse_in_s"]))
-        self.didt_num.setText(str(self.attrs["stimulation_intensity_didt"]))
+        self.ui.event_time_num.display(self.attrs["event_time"])
+        self.ui.event_id_num.display(self.attrs["id"])
+        self.ui.troughmag_num.setText(str(self.attrs["neg_peak_magnitude_uv"]))
+        self.ui.troughlat_num.setText(str(self.attrs["neg_peak_latency_ms"]))
+        self.ui.peaklat_num.setText(str(self.attrs["pos_peak_latency_ms"]))
+        self.ui.peakmag_num.setText(str(self.attrs["pos_peak_magnitude_uv"]))
+        self.ui.zcr_lat_num.setText(str(self.attrs["zcr_latency_ms"]))
+        self.ui.stimintensity_num.setText(str(self.attrs["stimulation_intensity_mso"]))
+        self.ui.time_since_pulse_num.setText(
+            str(self.attrs["time_since_last_pulse_in_s"])
+        )
+        self.ui.didt_num.setText(str(self.attrs["stimulation_intensity_didt"]))
 
-        self.channel_label.setText(self.attrs["channel_labels"][0])
-        self.filename.setText(self.attrs["original_file"])
-        self.examiner_name.setText(self.attrs["examiner"])
-        self.readout.setText(self.attrs["readout"])
+        self.ui.channel_label.setText(self.attrs["channel_labels"][0])
+        self.ui.filename.setText(self.attrs["original_file"])
+        self.ui.examiner_name.setText(self.attrs["examiner"])
+        self.ui.readout.setText(self.attrs["readout"])
 
-        self.commentbox.setText(self.attrs["comment"])
+        self.ui.commentbox.setText(self.attrs["comment"])
 
     def update_next_button(self):
         try:
@@ -111,9 +125,10 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.plot_mep()
             self.pull_attrs_info()
             self.initialize_reject_button()
-            self.next_button.setStyleSheet("background-color: light gray")
-        except:
-            self.next_button.setStyleSheet("background-color: red")
+            self.ui.next_button.setStyleSheet("background-color: light gray")
+        except Exception as e:
+            print(e)
+            self.ui.next_button.setStyleSheet("background-color: red")
 
     def update_previous_button(self):
         try:
@@ -122,13 +137,14 @@ class Ui(QtWidgets.QMainWindow, visual_inspection_gui.Ui_MainWindow):
             self.plot_mep()
             self.pull_attrs_info()
             self.initialize_reject_button()
-            self.previous_button.setStyleSheet("background-color: light gray")
-        except:
-            self.previous_button.setStyleSheet("background-color: red")
+            self.ui.next_button.setStyleSheet("background-color: light gray")
+        except Exception as e:
+            print(e)
+            self.ui.next_button.setStyleSheet("background-color: red")
 
     def get_trace_from_cache(self):
         self.trace = self.cf.get_trace_data(self.trace_idx)
-        self.plot_mep()
+        # self.plot_mep()
 
     def plot_mep(self):
         data = self.trace

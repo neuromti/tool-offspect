@@ -13,6 +13,10 @@ from matplotlib.figure import Figure
 import matplotlib.image as image
 
 
+def get_canvas():
+    return FigureCanvas(Figure())
+
+
 class MplWidget1(QWidget):  # type: ignore
     def __init__(self, parent=None):
 
