@@ -273,7 +273,7 @@ def read_trace(
                             return data
                         else:
                             raise NotImplementedError(f"{what} can not be loaded")
-                    cnt = idx
+                    cnt = ix
 
     raise IndexError(f"{idx} not in cachefile")
 
