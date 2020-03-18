@@ -7,7 +7,7 @@ import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from offspect.api import CacheFile
-from offspect.gui.plot import plot_m1s, plot_glass
+from offspect.gui.plot import plot_glass
 from offspect.api import decode, encode
 
 # Ensure using PyQt5 backend
@@ -53,7 +53,7 @@ class Ui(QtWidgets.QMainWindow):
         attrs["time_since_last_pulse_in_s"] = self.time_since_pulse_num.text()
         attrs["stimulation_intensity_didt"] = self.didt_num.text()
         attrs["comment"] = self.commentbox.toPlainText()
-        attrs["reject"] = encode(self.reject)
+        attrs["reject"] = self.reject
         self.cf.set_trace_attrs(self.trace_idx, attrs)
 
     def initialize_reject_button(self):
@@ -171,24 +171,32 @@ class Ui(QtWidgets.QMainWindow):
             event.ignore()
 
 
-def main(args):
-    app = QtWidgets.QApplication([__file__])
+def get_ui(resolution: str = ""):
+
     from importlib import import_module
 
-    if args.resolution == "":
+    if resolution == "":
         from offspect.gui.uis import visual_inspection_gui as pygui
     else:
-        pygui = import_module(
-            f"offspect.gui.uis.visual_inspection_gui_{args.resolution}"
-        )
+        pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
 
     class useUI(Ui, pygui.Ui_MainWindow):
         pass
 
+    return useUI
+
+
+def main(args):
+    useUI = get_ui(args.resolution)
+    app = QtWidgets.QApplication([__file__])
     window = useUI(filename=args.filename)
     window.show()
     app.exec_()
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    useUI = get_ui()
+    app = QtWidgets.QApplication(sys.argv)
+    window = useUI()
+    window.show()
+    app.exec_()
