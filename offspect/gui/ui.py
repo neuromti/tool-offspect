@@ -28,7 +28,7 @@ class Ui(QtWidgets.QMainWindow):
         self.reject_button.clicked.connect(self.flip_reject_button)
         self.previous_button.clicked.connect(self.click_previous_button)
         self.next_button.clicked.connect(self.click_next_button)
-        self.update_attrs_button.clicked.connect(self.update_attributes)
+        self.update_attrs_button.clicked.connect(self.save_attributes)
 
         if filename is None:
             self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -41,7 +41,7 @@ class Ui(QtWidgets.QMainWindow):
         self.trace_idx = 0  # start with the first trace
         self.update_gui()
 
-    def update_attributes(self):
+    def save_attributes(self):
         attrs = self.cf.get_trace_attrs(self.trace_idx)
         attrs["neg_peak_magnitude_uv"] = self.troughmag_num.text()
         attrs["neg_peak_latency_ms"] = self.troughlat_num.text()
@@ -53,7 +53,9 @@ class Ui(QtWidgets.QMainWindow):
         attrs["stimulation_intensity_didt"] = self.didt_num.text()
         attrs["comment"] = self.commentbox.toPlainText()
         attrs["reject"] = self.reject
+        attrs["xyz_coords"] = self.coil_coordinate_input.text()
         self.cf.set_trace_attrs(self.trace_idx, attrs)
+        self.update_gui()
 
     def initialize_reject_button(self):
         self.reject_button.setCheckable(self.reject)
@@ -121,8 +123,8 @@ class Ui(QtWidgets.QMainWindow):
         pre = decode(attrs["samples_pre_event"])
         post = decode(attrs["samples_post_event"])
         fs = decode(attrs["samplingrate"])
-        t0 = -pre / fs
-        t1 = post / fs
+        t0 = -float(pre) / float(fs)
+        t1 = float(post) / float(fs)
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
         # plot data
@@ -134,6 +136,7 @@ class Ui(QtWidgets.QMainWindow):
         self.MplWidget1.canvas.axes.set_xticks(
             range(0, pre + post, (pre + post) // 10), minor=True
         )
+        self.MplWidget1.canvas.axes.tick_params(direction="in")
         # refresh canvas
         self.MplWidget1.canvas.draw()
 
