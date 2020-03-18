@@ -1,7 +1,7 @@
 """ 
 """
 from PyQt5 import QtWidgets
-from offspect.gui import visual_inspection_gui_LR as pygui
+
 import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -19,8 +19,9 @@ def throw_em(parent, message: str):
     em.showMessage(message)
 
 
-class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
-    def __init__(self, parent=None):
+# class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
+class Ui(QtWidgets.QMainWindow):
+    def __init__(self, parent=None, filename=None):
         super(Ui, self).__init__(parent)
         self.setupUi(self)
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
@@ -30,9 +31,12 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
         #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
-        self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open file", "/", "CacheFiles (*.hdf5)"
-        )
+        if filename is None:
+            self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Open file", "/", "CacheFiles (*.hdf5)"
+            )
+        else:
+            self.filename = filename
         print(f"Opening {self.filename}")
         self.cf = CacheFile(self.filename)
         self.trace_idx = 0  # start with the first trace
@@ -82,7 +86,7 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
         self.time_since_pulse_num.setText(attrs["time_since_last_pulse_in_s"])
         self.didt_num.setText(attrs["stimulation_intensity_didt"])
         self.channel_label.setText(attrs["channel_labels"][0])
-        self.filename_label_2.setText(attrs["cache_file"])
+        self.filename_label_2.setText(attrs["origin"])
         self.examiner_name.setText(attrs["examiner"])
         self.readout.setText(attrs["readout"])
         self.commentbox.setText(attrs["comment"])
@@ -170,9 +174,21 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
             event.ignore()
 
 
-def main(argv):
+def main(args):
     app = QtWidgets.QApplication([__file__])
-    window = Ui()
+    from importlib import import_module
+
+    if args.resolution == "":
+        from offspect.gui.uis import visual_inspection_gui as pygui
+    else:
+        pygui = import_module(
+            f"offspect.gui.uis.visual_inspection_gui_{args.resolution}"
+        )
+
+    class useUI(Ui, pygui.Ui_MainWindow):
+        pass
+
+    window = useUI(filename=args.filename)
     window.show()
     app.exec_()
 
