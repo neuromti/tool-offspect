@@ -1,7 +1,7 @@
 """ 
 """
 from PyQt5 import QtWidgets
-from offspect.gui import visual_inspection_gui_LR as pygui
+from offspect.gui import visual_inspection_gui_HR as pygui
 import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -40,17 +40,18 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
         self.pull_attrs_info()
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
         self.initialize_reject_button()
+        self.plot_coil_coordinates()
 
     def update_attributes(self):
                 
-        self.attrs['neg_peak_magnitude_uv']      = float(self.troughmag_num.text())
-        self.attrs['neg_peak_latency_ms']        = float(self.troughlat_num.text())
-        self.attrs['pos_peak_latency_ms']        = float(self.peaklat_num.text())
-        self.attrs['pos_peak_magnitude_uv']      = float(self.peakmag_num.text())
-        self.attrs['zcr_latency_ms']             = float(self.zcr_lat_num.text())
-        self.attrs['stimulation_intensity_mso']  = int(self.stimintensity_num.text())
-        self.attrs['time_since_last_pulse_in_s'] = float(self.time_since_pulse_num.text())
-        self.attrs['stimulation_intensity_didt'] = int(self.didt_num.text())
+        self.attrs['neg_peak_magnitude_uv']      = self.troughmag_num.text()
+        self.attrs['neg_peak_latency_ms']        = self.troughlat_num.text()
+        self.attrs['pos_peak_latency_ms']        = self.peaklat_num.text()
+        self.attrs['pos_peak_magnitude_uv']      = self.peakmag_num.text()
+        self.attrs['zcr_latency_ms']             = self.zcr_lat_num.text()
+        self.attrs['stimulation_intensity_mso']  = self.stimintensity_num.text()
+        self.attrs['time_since_last_pulse_in_s'] = self.time_since_pulse_num.text()
+        self.attrs['stimulation_intensity_didt'] = self.didt_num.text()
         self.attrs['comment']                    = self.commentbox.toPlainText()
         self.attrs["reject"]                     = self.reject
         
@@ -80,24 +81,24 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
                 
         self.event_time_num.display(self.attrs["event_time"])
         self.event_id_num.display(self.attrs["id"])
-        self.troughmag_num.setText(str(self.attrs["neg_peak_magnitude_uv"]))
-        self.troughlat_num.setText(str(self.attrs["neg_peak_latency_ms"]))
-        self.peaklat_num.setText(str(self.attrs["pos_peak_latency_ms"]))
-        self.peakmag_num.setText(str(self.attrs["pos_peak_magnitude_uv"]))
-        self.zcr_lat_num.setText(str(self.attrs["zcr_latency_ms"]))
-        self.stimintensity_num.setText(str(self.attrs["stimulation_intensity_mso"]))
-        self.time_since_pulse_num.setText(str(self.attrs["time_since_last_pulse_in_s"]))
-        self.didt_num.setText(str(self.attrs["stimulation_intensity_didt"]))
+        self.troughmag_num.setText(self.attrs["neg_peak_magnitude_uv"])
+        self.troughlat_num.setText(self.attrs["neg_peak_latency_ms"])
+        self.peaklat_num.setText(self.attrs["pos_peak_latency_ms"])
+        self.peakmag_num.setText(self.attrs["pos_peak_magnitude_uv"])
+        self.zcr_lat_num.setText(self.attrs["zcr_latency_ms"])
+        self.stimintensity_num.setText(self.attrs["stimulation_intensity_mso"])
+        self.time_since_pulse_num.setText(self.attrs["time_since_last_pulse_in_s"])
+        self.didt_num.setText(self.attrs["stimulation_intensity_didt"])
 
         self.channel_label.setText(self.attrs["channel_labels"][0])
-        self.filename_label_2.setText(str(self.attrs["original_file"]))
-        self.examiner_name.setText(str(self.attrs["examiner"]))
-        self.readout.setText(str(self.attrs["readout"]))
+        self.filename_label_2.setText(self.attrs["original_file"])
+        self.examiner_name.setText(self.attrs["examiner"])
+        self.readout.setText(self.attrs["readout"])
 
-        self.commentbox.setText(str(self.attrs["comment"]))
+        self.commentbox.setText(self.attrs["comment"])
         
         self.xyz_coords = self.attrs['xyz_coords']
-        self.coil_coordinate_input.setText(str(self.xyz_coords))
+        self.coil_coordinate_input.setText(self.xyz_coords)
 
     def update_next_button(self):
         try:
@@ -107,6 +108,7 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
             self.pull_attrs_info()
             self.reject_button.setCheckable(True)
             self.initialize_reject_button()
+            self.plot_coil_coordinates()
         except Exception as e:
             throw_em(self, str(e))            
 
@@ -118,6 +120,7 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
             self.pull_attrs_info()
             self.reject_button.setCheckable(True)
             self.initialize_reject_button()
+            self.plot_coil_coordinates()
         except Exception as e:
             throw_em(self, str(e))
 
@@ -143,14 +146,17 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
             lM1 = self.xyz_coords
             coords = [lM1]
             values = [float(self.attrs['pos_peak_magnitude_uv']) + abs(float(self.attrs['neg_peak_magnitude_uv']))]
-                
-        # discards the old graph
+        display = plot_m1s(coords = coords, values = values)
+        display.savefig('pretty_brain.png')  
+        display.close()
+        
         self.MplWidget2.canvas.axes.clear()
-        
-#        self.MplWidget2.canvas.set_figure(plot_m1s(coords = coords, values = values))
-        
+        im = matplotlib.pyplot.imread('pretty_brain.png')
+
+        self.MplWidget2.canvas.axes.imshow(im)
+        self.MplWidget2.canvas.axes.axis('off')
         # refresh canvas
-        self.MplWidget2.canvas.draw(plot_m1s(coords = coords, values = values))
+        self.MplWidget2.canvas.draw()
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(

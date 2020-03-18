@@ -116,7 +116,7 @@ def plot_glass(
         values: List[float],
         display_mode="z",  # lyrz 
         smooth: float = 12.5,
-        colorbar:bool=True,
+        colorbar:bool=False,
         vmax=None,
         title: str = ""):
     """takes a list of coordinates and values and plots them as glass-brain
@@ -148,13 +148,12 @@ def plot_glass(
     # - either based on the data or the argument  
 
     # plot the image
-    fig = plt.figure(figsize=(6, 6), dpi=125)
     display = plotting.plot_glass_brain(filled_img,
                                         colorbar=colorbar,
                                         display_mode=display_mode,
                                         vmax=vmax,
                                         title=title,
-                                        figure=fig)
+                                        figure=None)
 
     # scale and label colorbar
     if colorbar:
