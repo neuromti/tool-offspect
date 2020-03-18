@@ -22,20 +22,27 @@ from numpy import ndarray
 from functools import partial
 import ast
 from functools import lru_cache
-from .check import (
-    check_consistency,
-    check_valid_suffix,
-    check_metadata,
+from offspect.cache.check import isindex
+from offspect.types import (
     FileName,
     MetaValue,
     MetaData,
     Annotations,
     TraceData,
     TraceAttributes,
-    filter_trace_attrs,
-    isindex,
 )
 from math import inf, nan
+
+# ------------------------------------------------------------------------------
+VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
+
+
+def check_valid_suffix(fname: FileName):
+    "check whether the cachefile has a valid suffix"
+    fname = Path(fname)
+    if fname.suffix != VALID_SUFFIX:
+        raise ValueError(f"{fname.suffix} has no valid suffix. Must be {VALID_SUFFIX}")
+
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
@@ -66,7 +73,7 @@ class CacheFile:
             raise FileNotFoundError(f"{self.fname} does not exist")
         check_valid_suffix(fname)
 
-    def get_trace_data(self, idx: int) -> TraceData:
+    def get_trace_data(self, idx: int, decoded=False) -> TraceData:
         """return TraceData for a specific traces in the file
                 
         args
@@ -86,7 +93,11 @@ class CacheFile:
 
 
         """
-        return read_trace(self, idx=idx, what="data")
+        tattrs = read_trace(self, idx=idx, what="data")
+        if decoded:
+            return de
+        else:
+            return tattrs
 
     def get_trace_attrs(self, idx: int) -> TraceAttributes:
         """read the TraceAttributes for a specific traces in the file
@@ -222,7 +233,6 @@ def update_trace_attributes(attrs: TraceAttributes):
     else:
         raise ValueError("Index must be an integer")
     fname = attrs["cache_file"]
-    attrs = filter_trace_attrs(attrs)
 
     if index >= 0:
         cnt = -1
@@ -265,50 +275,19 @@ def read_trace(
                         dset = f[origin]["traces"][key]
                         dset.id.refresh()  # load fresh from file
                         if what == "attrs":
-                            # attrs = parse_traceattrs(dset.attrs)
-                            attrs = asdict(dset.attrs)
-                            attrs["origin"] = origin
+                            attrs: Dict[str, str] = dict(dset.attrs)
+                            attrs["origin"] = str(origin)
                             attrs["cache_file"] = str(cf.fname)
                             attrs["cache_file_index"] = str(idx)
-                            # check_metadata(str(attrs["readout"]), attrs)
                             return attrs
                         elif what == "data":
-                            data = parse_tracedata(dset)
+                            data = np.asanyarray(dset, dtype=float)
                             return data
                         else:
                             raise NotImplementedError(f"{what} can not be loaded")
                     cnt = ix
 
     raise IndexError(f"{idx} not in cachefile")
-
-
-def asdict(attrs: h5py.AttributeManager) -> Dict[str, str]:
-    "parse the metadata from a cachefile and return it as dictionary"
-    return dict(attrs)
-
-
-def parse_traceattrs(attrs: h5py.AttributeManager) -> MetaData:
-    """parse any metadata from a cachefile and return it as Dict    
-    """
-    d = dict(attrs)
-    for key, val in d.items():
-        try:
-            d[key] = ast.literal_eval(val)
-        except (SyntaxError, ValueError):  # for subject and filedate
-            if val == "inf":
-                d[key] = inf
-            if val == "nan":
-                d[key] = nan
-            pass
-            if key == "xyz_coords":
-                xyz = yaml.load("[nan, nan, nan]", Loader=yaml.Loader)
-                d[key] = [float(p) for p in xyz]
-    return d
-
-
-def parse_tracedata(dset: h5py.Dataset) -> TraceData:
-    "parse a hdf5 dataset from a cachefile and return it as a trace"
-    return np.asanyarray(dset, dtype=float)
 
 
 def recover_annotations(cf: CacheFile) -> List[Annotations]:
@@ -330,14 +309,13 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
         for origin in f.keys():
             yml = dict()
             yml["origin"] = origin
-            yml["attrs"] = parse_traceattrs(f[origin].attrs)
+            yml["attrs"] = dict(f[origin].attrs)
             readout = yml["attrs"]["readout"]
             trace_attrs = []
             for idx in f[origin]["traces"]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                tattr = parse_traceattrs(dset.attrs)
-                check_metadata(readout, tattr)
+                tattr = dict(dset.attrs)
                 trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
             events.append(yml)
@@ -366,15 +344,15 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData
         for origin in f.keys():
             yml = dict()
             yml["origin"] = origin
-            yml["attrs"] = parse_traceattrs(f[origin].attrs)
+            yml["attrs"] = dict(f[origin].attrs)
 
             trace_attrs = []
             trace_data = []
             for idx in f[origin]["traces"]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
-                trace_attrs.append(parse_traceattrs(dset.attrs))
-                trace_data.append(parse_tracedata(dset))
+                trace_attrs.append(dict(dset.attrs))
+                trace_data.append(dict(dset))
             yml["traces"] = trace_attrs
         events.append(yml)
         traces.append(trace_data)

@@ -1,3 +1,5 @@
 # .coveragerc to control coverage.py
-#[run]
-#
+[run]
+omit =    
+    offspect/gui/*    
+    **/__init__.py

@@ -65,7 +65,8 @@ from typing import List, Tuple, Dict, Generator, Any
 from datetime import datetime
 import numpy as np
 from math import inf, nan
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
+from offspect.cache.check import VALID_READOUTS
+from offspect.cache.attrs import decode_attrs, encode_attrs
 
 from os import environ
 
@@ -347,9 +348,6 @@ def prepare_annotations(
             "examiner": "",
             "onset_shift": 0,
         }
-        for key in SPECIFIC_TRACEKEYS[readout].keys():
-            if key not in tattr.keys():
-                tattr[key] = nan
         traceattrs.append(tattr)
 
     anno: Annotations = {

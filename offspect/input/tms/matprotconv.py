@@ -29,14 +29,16 @@ By design, the coordinates of the target-entry pairs were stored  independently 
 
 
 """
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
+from offspect.cache.check import VALID_READOUTS
 from typing import Generator, List, Dict
 from pathlib import Path
 import datetime
 from math import inf, nan
+from os import environ
 from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from offspect import release
-from os import environ
+from offspect.cache.attrs import encode_attrs, decode_attrs
+
 
 if not environ.get("READTHEDOCS", False):
     from matprot.convert.coords import convert_xml_to_coords
@@ -138,15 +140,8 @@ def prepare_annotations(
             "stimulation_intensity_mso": stimulation_intensity_mso,
             "stimulation_intensity_didt": stimulation_intensity_didt,
             "reject": False,
-            "comment": "",
-            "examiner": "",
             "onset_shift": 0,
         }
-        for key in SPECIFIC_TRACEKEYS[readout].keys():
-            if key not in tattr.keys():
-                tattr[key] = nan
-        traceattrs.append(tattr)
-
     anno: Annotations = {
         "origin": origin,
         "attrs": {
@@ -157,13 +152,11 @@ def prepare_annotations(
             "samples_post_event": samples_post_event,
             "channel_labels": channel_labels,
             "readout": readout,
-            "global_comment": "",
-            "history": "",
             "version": release,
         },
         "traces": traceattrs,
     }
-    return anno
+    return encode_attrs(anno)
 
 
 def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:

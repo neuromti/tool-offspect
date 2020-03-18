@@ -1,15 +1,7 @@
-from typing import Union, Any, Dict, Callable
-
+from typing import Union, Any, Dict, Callable, List
+from copy import deepcopy
 
 Mapper = Union[Callable[[Any], Any], type]
-
-
-def key_exists(value):
-    return True
-
-
-def pass_value(value):
-    return value
 
 
 class Converter:
@@ -36,6 +28,13 @@ class Converter:
     
     """
 
+    @classmethod
+    def factory(cls, keys: List[str], foo: Callable):
+        kwargs = dict()
+        for key in keys:
+            kwargs[key] = foo
+        return cls(**kwargs)
+
     def __init__(self, **kwargs: Mapper):
         # super(Converter, self).__init__(**kwargs)
         self.mapper: Dict[str, Mapper] = kwargs
@@ -45,7 +44,11 @@ class Converter:
         """
         other = dict()
         for key, convert in self.mapper.items():
-            other[key] = convert(kwargs[key])
+            try:
+                value = kwargs[key]
+            except KeyError:
+                value = None
+            other[key] = convert(value)
         return other
 
     def is_complete(self, other: Dict[str, str]) -> bool:
@@ -56,34 +59,13 @@ class Converter:
         else:
             return True
 
+    def __add__(self, other):
+        copy = deepcopy(self)
+        copy.mapper.update(**other.mapper)
+        return copy
 
-# -----------------------------------------------------------------------------
-OriginEncoder = Converter(
-    **{
-        "channel_labels": list,
-        "samples_post_event": int,
-        "samples_pre_event": int,
-        "samplingrate": int,
-        "subject": str,
-        "readout": str,
-        "comment": str,
-        "filedate": str,
-        "history": str,
-        "version": str,
-    }
-)
-
-OriginDecoder = Converter(
-    **{
-        "channel_labels": str,
-        "samples_post_event": str,
-        "samples_pre_event": str,
-        "samplingrate": str,
-        "subject": str,
-        "readout": str,
-        "comment": str,
-        "filedate": str,
-        "history": str,
-        "version": str,
-    }
-)
+    def __repr__(self) -> str:
+        d = dict()
+        for k, v in self.mapper.items():
+            d[k] = v.__name__
+        return f"Converter(**{d})"
