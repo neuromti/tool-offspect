@@ -5,9 +5,11 @@ The python interface to the :py:class:`~.CacheFile` which checks for filename
 validity during instantiation. When one of its properties are called, it loads
 and parses the metadata and datasets fresh from the hdf5 and aggregatates them.
 Example::
+
    from offspect.api import CacheFile
    cf = CacheFile("example.hdf5")
    print(cf)
+
 """
 from typing import Union, List, Dict, Tuple, Iterator
 from pathlib import Path
@@ -92,16 +94,16 @@ class CacheFile:
         
     
         Example::
+        
             cf = CacheFile("example.hdf5")
             for i in len(cf):
                 attrs = cf.get_trace_attrs(i)
+
+
         .. note::
-<<<<<<< HEAD
-           The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'original_file' and the 'original_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and/or discarded.
-=======
+
            The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'cache_file' and the 'cache_file_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and subsequently discarded.
 
->>>>>>> Return Dict[str,str] from CacheFile.get_trace_attrs
         """
         return read_trace(self, idx=idx, what="attrs")
 
@@ -114,14 +116,19 @@ class CacheFile:
             at which index to overwrite
         attrs: TraceAttributes
             with which attributes to overwrite
+        
+
         Example::
+
             import datetime
             now = str(datetime.datetime.now())
             cf = CacheFile("example.hdf5")
             attrs = cf.get_trace_attrs(0)
             attrs["comment"] = now
             cf.set_trace_attrs(0, attrs)
+
         .. note::
+
            Because we expect the TraceAttributes to originate from a CacheFiles
            :meth:`~.get_trace_attrs` method, we expect them to have information
            about their original file and index included. For safety reasons,
@@ -131,6 +138,7 @@ class CacheFile:
            Additionally, please note that while :meth:`~.get_trace_attrs`
            returns a complete dictionary of attributes, including thise that apply to the whole group or origin file, only valid fields for 
            trace metadata will be saved, i.e. those fields which are in correspondence with the "readout" parameter (see :func:`~.filter_trace_attrs`).
+
         """
         if not "cache_file" in attrs.keys() or not "cache_file_index" in attrs.keys():
             raise ValueError(
@@ -413,6 +421,7 @@ def merge(to: FileName, sources: List[FileName]) -> FileName:
     -------
     fname: FileName
         the name of the target file
+    
     """
     sources = [Path(source).expanduser().absolute() for source in sources]
     to = Path(to).expanduser().absolute()

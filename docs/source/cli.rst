@@ -83,9 +83,14 @@ offspect gui
 ~~~~~~~~~~~~
 .. code-block:: none
 
-   usage: offspect gui [-h]
+   usage: offspect gui [-h] [-r RESOLUTION] [-f FILENAME]
    
    optional arguments:
-     -h, --help  show this help message and exit
+     -h, --help            show this help message and exit
+     -r RESOLUTION, --resolution RESOLUTION
+                           Which resolution to use for the window. leave empty
+                           for default, or set to LR or HR
+     -f FILENAME, --file FILENAME
+                           Which file to load during startup
 
 
