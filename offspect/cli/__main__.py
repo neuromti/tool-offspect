@@ -10,7 +10,7 @@ try:
 except ImportError:
 
     def cli_gui(*args, **kwargs):
-        pass
+        print("GUI was not found")
 
 
 def cli_peek(args: argparse.Namespace):
@@ -112,6 +112,22 @@ def get_parser() -> argparse.ArgumentParser:
     )
     # GUI ---------------------------------------------------------------------
     gui = subparsers.add_parser(name="gui", help="start the visual inspection GUI")
+    gui.add_argument(
+        "-r",
+        "--resolution",
+        help="Which resolution to use for the window. leave empty for default, or set to LR or HR",
+        required=False,
+        default="",
+        dest="resolution",
+    )
+    gui.add_argument(
+        "-f",
+        "--file",
+        help="Which file to load during startup",
+        required=False,
+        default=None,
+        dest="filename",
+    )
 
     # ------------------------------------------------------------------------
     return parser

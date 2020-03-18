@@ -58,7 +58,7 @@ Mock two xdf5 files using :code:`python tests/mock/cache.py fname1.hdf5 fname2.h
    version              : 0.0.1
    traces_count         : 2
 
-Start visual inspection using the GUI with this file with :code:`offspect gui` and select the desired cachefile using the menu.
+Start visual inspection using the GUI with this file with :code:`offspect gui -f merged.hdf5` or run :code:`offspect gui` and select the desired cachefile using the menu. You can also set the gui resolution, see :doc:`cli` for more information.
 
 
 Full Documentation

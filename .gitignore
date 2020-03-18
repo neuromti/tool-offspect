@@ -11,5 +11,9 @@ dist/*
 .mypy_report/*
 *.hdf5
 *.cnt
+<<<<<<< HEAD
 offspect/gui/sketch.py
 offspect/gui/docs.txt
+=======
+*/sketch.py*
+>>>>>>> develop

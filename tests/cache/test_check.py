@@ -1,6 +1,7 @@
 import pytest
 from offspect.cache.check import *
 from math import nan, inf
+from sys import maxsize
 
 
 def test_check_metadata_are_valid(cachefile0):
@@ -114,3 +115,13 @@ def test_isfiledate(x):
 @pytest.mark.parametrize("x", ["00:01:01", "1970", "1970-01", "", None, "yesterday"])
 def test_isnotfiledate(x):
     assert not isfiledate(x)
+
+
+@pytest.mark.parametrize("x", ["1", "0", "2", str(maxsize)])
+def test_isindex(x):
+    assert isindex(x)
+
+
+@pytest.mark.parametrize("x", ["", "1.0", None, inf, nan, "1.2", "-1"])
+def test_isnotindex(x):
+    assert not isindex(x)

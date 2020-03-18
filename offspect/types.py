@@ -8,7 +8,7 @@ TraceData = ndarray  #: A trace, i.e. an array of samples for one or more channe
 FileName = Union[str, Path]  #: The name of a file in the operating system
 
 MetaValue = Union[
-    str, int, float, List[str]
+    str, str
 ]  #: a specific  metadata attribute. Must be one of these types
 
 MetaData = Dict[str, MetaValue]  #: A specific metadata element from an HDF5 cachefile

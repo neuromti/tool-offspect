@@ -71,6 +71,18 @@ def iscoords(x) -> bool:
         return True
 
 
+def isindex(x: str) -> bool:
+    if x is None or x == "" or type(x) is not str:
+        return False
+    try:
+        ix = int(x)
+        if ix < 0:
+            return False
+    except ValueError:
+        return False
+    return (ix - float(x)) < 0.000001
+
+
 def isTsince(x) -> bool:
     return (isnumeric(x) and x > 0) or x == inf or x is None
 
@@ -178,9 +190,11 @@ def filter_trace_attrs(attrs: TraceAttributes) -> TraceAttributes:
 
     """
     readout = str(attrs["readout"])
+    if readout not in VALID_READOUTS:
+        raise NotImplementedError(f"{readout} is not implemented")
     TKEYS = GENERIC_TRACEKEYS.copy()
     TKEYS.update(**SPECIFIC_TRACEKEYS[readout])
-    check_metadata(readout, attrs)
+    # check_metadata(readout, attrs)
     filtered = attrs.copy()
     for key in attrs.keys():
         if key not in TKEYS.keys():
