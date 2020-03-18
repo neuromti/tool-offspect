@@ -94,20 +94,19 @@ class Ui(QtWidgets.QMainWindow):
         self.reject = decode(attrs["reject"])
 
     def click_next_button(self):
-        try:
+        if self.trace_idx == len(self.cf):
+            throw_em(self, "No more traces in this direction!")
+            return
+        else:
             self.trace_idx += 1
             self.update_gui()
-        except IndexError:
-            self.trace_idx -= 1
-            throw_em(self, "No more traces in this direction!")
 
     def click_previous_button(self):
-        try:
+        if self.trace_idx == 0:
+            throw_em(self, "No more traces in this direction!")
+        else:
             self.trace_idx -= 1
             self.update_gui()
-        except IndexError:
-            self.trace_idx += 1
-            throw_em(self, "No more traces in this direction!")
 
     def update_gui(self):
         try:
@@ -125,6 +124,7 @@ class Ui(QtWidgets.QMainWindow):
         self.MplWidget1.canvas.axes.clear()
         # plot data
         self.MplWidget1.canvas.axes.plot(data)
+        self.MplWidget1.canvas.axes.set_ylim(-200, 200)
         # refresh canvas
         self.MplWidget1.canvas.draw()
 
@@ -135,9 +135,10 @@ class Ui(QtWidgets.QMainWindow):
             attrs = self.cf.get_trace_attrs(i)
             coords.append(decode(attrs["xyz_coords"]))
             values.append(1)
+        print(f"Plotting {coords}")
         bg = plot_glass(
             coords,
-            values,
+            values=values,
             display_mode="z",
             smooth=12.5,
             colorbar=False,
@@ -148,15 +149,16 @@ class Ui(QtWidgets.QMainWindow):
             fname = Path(folder) / "background.png"
             print(f"Saved  temporary figure to {fname}")
             bg.savefig(fname)
+            bg.savefig("background.png")
             bg.close()
             im = matplotlib.pyplot.imread(str(fname))
             print(f"Loaded temporary figure from {fname}")
 
         # self.MplWidget2.canvas.axes.clear()
 
-        # self.MplWidget2.canvas.axes.imshow(im)
-        # self.MplWidget2.canvas.axes.axis("off")
-        # self.MplWidget2.canvas.draw()
+        self.MplWidget2.canvas.axes.imshow(im)
+        self.MplWidget2.canvas.axes.axis("off")
+        self.MplWidget2.canvas.draw()
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(
