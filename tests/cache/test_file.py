@@ -98,11 +98,12 @@ def test_merge_inconsistent_attrs(cachefile0, cachefile0inconsistent):
 def test_update_trace_attributes(cachefile0):
     cf = CacheFile(cachefile0[0])
     attrs = read_trace(cf, what="attrs", idx=0)
-    now = str(datetime.datetime.now())
+    now = datetime.datetime.now()
     attrs["comment"] = now
+    print(attrs)
     update_trace_attributes(attrs)
     new_attrs = read_trace(cf, what="attrs", idx=0)
-    assert new_attrs["comment"] == now
+    assert new_attrs["comment"] == str(now)
 
 
 def test_read_index_tracedata(cachefile0):

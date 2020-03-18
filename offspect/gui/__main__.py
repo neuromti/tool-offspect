@@ -20,7 +20,6 @@ def throw_em(parent, message: str):
     em.showMessage(message)
 
 
-# class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
 class Ui(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None):
         super(Ui, self).__init__(parent)
@@ -31,7 +30,7 @@ class Ui(QtWidgets.QMainWindow):
         self.previous_button.clicked.connect(self.click_previous_button)
         self.next_button.clicked.connect(self.click_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
-        #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
+
         if filename is None:
             self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open file", "/", "CacheFiles (*.hdf5)"
@@ -54,7 +53,7 @@ class Ui(QtWidgets.QMainWindow):
         attrs["time_since_last_pulse_in_s"] = self.time_since_pulse_num.text()
         attrs["stimulation_intensity_didt"] = self.didt_num.text()
         attrs["comment"] = self.commentbox.toPlainText()
-        attrs["reject"] = self.reject
+        attrs["reject"] = encode(self.reject)
         self.cf.set_trace_attrs(self.trace_idx, attrs)
 
     def initialize_reject_button(self):
@@ -96,17 +95,15 @@ class Ui(QtWidgets.QMainWindow):
         try:
             self.trace_idx += 1
             self.update_gui()
-        except IndexError as e:
+        except IndexError:
             self.trace_idx -= 1
             throw_em(self, "No more traces in this direction!")
-        except Exception as e:
-            throw_em(self, str(e))
 
     def click_previous_button(self):
         try:
             self.trace_idx -= 1
             self.update_gui()
-        except IndexError as e:
+        except IndexError:
             self.trace_idx += 1
             throw_em(self, "No more traces in this direction!")
 

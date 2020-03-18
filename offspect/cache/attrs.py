@@ -2,6 +2,8 @@ from typing import Any, Dict
 from offspect.types import TraceAttributes
 from importlib import import_module
 import yaml
+from pathlib import Path
+import datetime
 
 
 def decode(value: str) -> Any:
@@ -11,7 +13,13 @@ def decode(value: str) -> Any:
 
 def encode(value: Any) -> str:
     "encode any value to string for storing as TraceAttribute value"
-    return yaml.dump(value, Dumper=yaml.Loader).striplines()[0]
+    if type(value) == type(Path()):
+        value = str(value)
+    if type(value) == datetime.datetime:
+        value = str(value)
+    if type(value) == str:
+        return value
+    return yaml.dump(value, Dumper=yaml.Dumper).splitlines()[0]
 
 
 def encode_attrs(attrs: Dict[str, Any]) -> TraceAttributes:
