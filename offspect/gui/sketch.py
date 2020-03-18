@@ -8,7 +8,7 @@ from scipy import stats
 import numpy as np
 from offspect.api import CacheFile
 cf = CacheFile(r"C:\Users\Ethan\Documents\GitHub\tool-offspect\merged.hdf5")
-attrs = cf.get_trace_attrs(1)
+attrs = cf.get_trace_attrs(0)
 traces = cf.get_trace_data(1)
 from matplotlib import pyplot as plt
 
@@ -39,3 +39,24 @@ plt.vlines([timey[peakpos[1]]], val[1], np.mean(data), color="red", linestyle="d
 from offspect.cache.file import merge
 files = ["fname1.hdf5","fname2.hdf5"]
 merge("merged.hdf5", files)
+
+
+
+
+
+from offspect.gui.plot import plot_m1s
+xyzcoords = attrs['xyz_coords']
+
+
+
+if attrs['channel_labels'][0][4] == 'L':
+    rM1 = xyzcoords
+    coords = [rM1]
+    values = [float(attrs['pos_peak_magnitude_uv']) + abs(float(attrs['neg_peak_magnitude_uv']))]
+else:
+    lM1 = xyzcoords
+    coords = [lM1]
+    values = [float(attrs['pos_peak_magnitude_uv']) + abs(float(attrs['neg_peak_magnitude_uv']))]
+
+plot_m1s(coords = coords, values = values)
+

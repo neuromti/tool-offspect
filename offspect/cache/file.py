@@ -1,17 +1,13 @@
 """
 CacheFile
 ---------
-
 The python interface to the :py:class:`~.CacheFile` which checks for filename
 validity during instantiation. When one of its properties are called, it loads
 and parses the metadata and datasets fresh from the hdf5 and aggregatates them.
-
 Example::
-
    from offspect.api import CacheFile
    cf = CacheFile("example.hdf5")
    print(cf)
-
 """
 from typing import Union, List, Dict, Tuple, Iterator
 from pathlib import Path
@@ -54,9 +50,7 @@ class CacheFile:
     fname: FileName
         path to the file      
           
-
     For each readout, a specific set of fields must be in the metadata of a trace. Whenever attributes are read or written, the validity of the metadata will automatically be checked to be consistent with its 'readout'.
-
     """
 
     def __init__(self, fname: FileName):
@@ -72,18 +66,14 @@ class CacheFile:
         ----
         idx: int
             which trace to pick.
-
         returns
         -------
         attrs: TraceData 
             the date stored for this trace.
-
         
         .. note::
            This is a read-only attribute, and raw data can never be overwritten with the CacheFile interface. If you need to perform
            any preprocessing steps, manage the TraceData with a low-level interface, e.g. :func:`~.populate`.
-
-
         """
         return read_trace(self, idx=idx, what="data")
 
@@ -94,7 +84,6 @@ class CacheFile:
         ----
         idx: int
             which trace to pick.
-
         returns
         -------
         attrs: TraceAttributes 
@@ -102,40 +91,30 @@ class CacheFile:
         
     
         Example::
-
             cf = CacheFile("example.hdf5")
             for i in len(cf):
                 attrs = cf.get_trace_attrs(i)
-
-
         .. note::
            The TraceAttributes contain the metadata of this trace, and  the metadata of its parent group, i.e. sourcefile. Additionally, two fields will be added, containing information about the 'original_file' and the 'original_index'. The number of fields is therefore larger than the number of fields valid for TraceAttributes according to :func:`~.filter_trace_attrs`. This is no problem, because when you update with :meth:`~.set_trace_attrs`, these fields will be used for safety checks and/or discarded.
-
         """
         return read_trace(self, idx=idx, what="attrs")
 
     def set_trace_attrs(self, idx: int, attrs: TraceAttributes):
         """update the attributes of a specific trace
         
-
         args
         ----
         idx: int
             at which index to overwrite
         attrs: TraceAttributes
             with which attributes to overwrite
-
-
         Example::
-
             import datetime
             now = str(datetime.datetime.now())
             cf = CacheFile("example.hdf5")
             attrs = cf.get_trace_attrs(0)
             attrs["comment"] = now
             cf.set_trace_attrs(0, attrs)
-
-
         .. note::
            Because we expect the TraceAttributes to originate from a CacheFiles
            :meth:`~.get_trace_attrs` method, we expect them to have information
@@ -143,12 +122,9 @@ class CacheFile:
            you have to specify the index when calling this setter. Additionally, the original file must be this instance of CacheFile.
            If you want to directly overwrite an arbitrary attribute without
            this safety checks, update the values for original_file and original_index and use :func:`~.update_trace_attributes`. 
-
            Additionally, please note that while :meth:`~.get_trace_attrs`
            returns a complete dictionary of attributes, including thise that apply to the whole group or origin file, only valid fields for 
            trace metadata will be saved, i.e. those fields which are in correspondence with the "readout" parameter (see :func:`~.filter_trace_attrs`).
-
-
         """
         if not "original_file" in attrs.keys() or not "original_index" in attrs.keys():
             raise ValueError(
@@ -209,11 +185,9 @@ def update_trace_attributes(attrs: TraceAttributes):
     
     the original file and index of the trace are specified as field within the
     TraceAttributes
-
     args
     ----
     attrs: TraceAttributes
-
     """
     index: int
     index = attrs["original_index"]  # type: ignore
@@ -304,12 +278,10 @@ def parse_tracedata(dset: h5py.Dataset) -> TraceData:
 
 def recover_annotations(cf: CacheFile) -> List[Annotations]:
     """"recover the file and annotations from a cachefile
-
     args
     ----
     cf: CacheFile
         the cachefile from which to recover
-
     returns
     -------
     annotations: List[Annotations]
@@ -342,7 +314,6 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData
     ----
     cf: CacheFile
         the cachefile from which to recover
-
     returns
     -------
     annotations: List[Annotations]
@@ -350,7 +321,6 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData
     traces: List[List[TraceData]]
         a list of the traces of all sourcefiles saved in the cachefile 
         organized as [sourcefiles][traceidx][TraceData]
-
     """
     with read_file(cf.fname) as f:
         events, traces = [], []
@@ -419,14 +389,12 @@ def populate(
 
 def merge(to: FileName, sources: List[FileName]) -> FileName:
     """merge one or more cachefiles into one file
-
     args
     ----
     to: FileName
         the name of the file to be written into. Will be overwritten, if already existing
     sources: List[FileName]
         a list of source files from which we will read traces and annotations
-
     returns
     -------
     fname: FileName
@@ -449,4 +417,3 @@ def merge(to: FileName, sources: List[FileName]) -> FileName:
     check_consistency(a)
     fname = populate(tf=to, annotations=a, traceslist=t)
     return fname
-
