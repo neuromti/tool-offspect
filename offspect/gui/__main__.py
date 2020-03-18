@@ -68,7 +68,9 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
 
     def pull_attrs_info(self):
         attrs = self.cf.get_trace_attrs(self.trace_idx)
-        print(attrs)
+        print("-" * 79)
+        for k, v in attrs.items():
+            print(k, v)
         self.event_time_num.display(attrs["event_time"])
         self.event_id_num.display(attrs["id"])
         self.troughmag_num.setText(attrs["neg_peak_magnitude_uv"])
@@ -168,9 +170,12 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
             event.ignore()
 
 
-if __name__ == "__main__":
-
-    app = QtWidgets.QApplication(sys.argv)
+def main(argv):
+    app = QtWidgets.QApplication(argv)
     window = Ui()
     window.show()
     app.exec_()
+
+
+if __name__ == "__main__":
+    main(sys.argv)
