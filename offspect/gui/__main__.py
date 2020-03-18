@@ -27,7 +27,6 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
         self.previous_button.clicked.connect(self.update_previous_button)
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
-#        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
 
         self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "/", "CacheFiles (*.hdf5)")

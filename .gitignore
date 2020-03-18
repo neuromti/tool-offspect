@@ -12,3 +12,4 @@ dist/*
 *.hdf5
 *.cnt
 offspect/gui/sketch.py
+offspect/gui/docs.txt
