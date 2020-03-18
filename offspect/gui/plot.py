@@ -26,11 +26,13 @@ def project_into_nifti(
     Because after smoothening, values are decreased, the resulting image is rescaled to the original maximum value as given in the raw data.
     """
     affine = np.asanyarray(
-            [[-1., 0., 0., 90.],
-             [0., 1., 0., -126.],
-             [0., 0., 1., -72.], 
-             [0., 0., 0., 1.]]
-            )    
+        [
+            [-1.0, 0.0, 0.0, 90.0],
+            [0.0, 1.0, 0.0, -126.0],
+            [0.0, 0.0, 1.0, -72.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
     shape = (181, 217, 181)
 
     base = np.zeros(shape)
@@ -114,13 +116,14 @@ def plot_glass(
     return display
 
 
-def plot_coords(coords: List[List[float]], values: List[float]):
-
-    pass
-
-if __name__ =="__main__":
-    coords = [[37.0, 54.2, 22.8], [37.1, 54.4, 22.1], [37.2, 53.9, 23.2], [37.2, 54.3, 21.9]]
-    values = [1000]*4
+if __name__ == "__main__":
+    coords = [
+        [37.0, 54.2, 22.8],
+        [37.1, 54.4, 22.1],
+        [37.2, 53.9, 23.2],
+        [37.2, 54.3, 21.9],
+    ]
+    values = [1000.0] * 4
     plot_glass(coords, values)
     M1 = [-36.6300, -17.6768, 54.3147]
     plot_glass([M1], [1])
