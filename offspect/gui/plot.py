@@ -116,6 +116,31 @@ def plot_glass(
     return display
 
 
+def plot_glass_on(axes, coords, values):
+    import matplotlib
+    from tempfile import TemporaryDirectory
+    from pathlib import Path
+
+    bg = plot_glass(
+        coords,
+        values=values,
+        display_mode="z",
+        smooth=12.5,
+        colorbar=False,
+        vmax=None,
+        title="",
+    )
+    with TemporaryDirectory() as folder:
+        fname = Path(folder) / "background.png"
+        print(f"Saved  temporary figure to {fname}")
+        bg.savefig(fname)
+        bg.close()
+        im = matplotlib.pyplot.imread(str(fname))
+        print(f"Loaded temporary figure from {fname}")
+
+    axes.imshow(im)
+
+
 if __name__ == "__main__":
     coords = [
         [37.0, 54.2, 22.8],

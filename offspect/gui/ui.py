@@ -1,7 +1,4 @@
 from importlib import import_module
-
-""" 
-"""
 from PyQt5 import QtWidgets
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -9,7 +6,7 @@ import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from offspect.api import CacheFile
-from offspect.gui.plot import plot_glass
+from offspect.gui.plot import plot_glass_on
 from offspect.api import decode, encode
 
 # Ensure using PyQt5 backend
@@ -120,43 +117,31 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_trace(self):
         data = self.cf.get_trace_data(self.trace_idx)
+        attrs = self.cf.get_trace_attrs(self.trace_idx)
+        pre = decode(attrs["samples_pre_event"])
+        post = decode(attrs["samples_post_event"])
+        fs = decode(attrs["samplingrate"])
+        t0 = -pre / fs
+        t1 = post / fs
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
         # plot data
         self.MplWidget1.canvas.axes.plot(data)
         self.MplWidget1.canvas.axes.set_ylim(-200, 200)
+        self.MplWidget1.canvas.axes.grid(True, which="both")
+        self.MplWidget1.canvas.axes.set_xticks((0, pre, pre + post))
+        self.MplWidget1.canvas.axes.set_xticklabels((t0, 0, t1))
+        self.MplWidget1.canvas.axes.set_xticks(
+            range(0, pre + post, (pre + post) // 10), minor=True
+        )
         # refresh canvas
         self.MplWidget1.canvas.draw()
 
     def plot_coords(self):
-        coords = []
-        values = []
-        for i in range(len(self.cf)):
-            attrs = self.cf.get_trace_attrs(i)
-            coords.append(decode(attrs["xyz_coords"]))
-            values.append(1)
+        coords = decode(self.cf.get_trace_attrs(self.trace_idx)["xyz_coords"])
+
         print(f"Plotting {coords}")
-        bg = plot_glass(
-            coords,
-            values=values,
-            display_mode="z",
-            smooth=12.5,
-            colorbar=False,
-            vmax=None,
-            title="",
-        )
-        with TemporaryDirectory() as folder:
-            fname = Path(folder) / "background.png"
-            print(f"Saved  temporary figure to {fname}")
-            bg.savefig(fname)
-            bg.savefig("background.png")
-            bg.close()
-            im = matplotlib.pyplot.imread(str(fname))
-            print(f"Loaded temporary figure from {fname}")
-
-        # self.MplWidget2.canvas.axes.clear()
-
-        self.MplWidget2.canvas.axes.imshow(im)
+        plot_glass_on(self.MplWidget2.canvas.axes, [coords], [1000.0])
         self.MplWidget2.canvas.axes.axis("off")
         self.MplWidget2.canvas.draw()
 
