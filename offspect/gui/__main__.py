@@ -1,11 +1,7 @@
 """ 
 """
 from PyQt5 import QtWidgets
-<<<<<<< HEAD
 from offspect.gui import visual_inspection_gui_HR as pygui
-=======
-
->>>>>>> develop
 import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -34,13 +30,12 @@ class Ui(QtWidgets.QMainWindow):
         self.previous_button.clicked.connect(self.update_previous_button)
         self.next_button.clicked.connect(self.update_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
-<<<<<<< HEAD
-
+        
         self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "/", "CacheFiles (*.hdf5)")
 
         print(self.filename)
-=======
+
         #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
         if filename is None:
             self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -49,7 +44,6 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.filename = filename
         print(f"Opening {self.filename}")
->>>>>>> develop
         self.cf = CacheFile(self.filename)
         self.trace_idx = 0  # start with the first trace
         self.get_trace_from_cache()
@@ -59,8 +53,6 @@ class Ui(QtWidgets.QMainWindow):
         self.plot_coil_coordinates()
 
     def update_attributes(self):
-<<<<<<< HEAD
-                
         self.attrs['neg_peak_magnitude_uv']      = self.troughmag_num.text()
         self.attrs['neg_peak_latency_ms']        = self.troughlat_num.text()
         self.attrs['pos_peak_latency_ms']        = self.peaklat_num.text()
@@ -73,20 +65,6 @@ class Ui(QtWidgets.QMainWindow):
         self.attrs["reject"]                     = self.reject
         
         self.cf.set_trace_attrs(self.trace_idx, self.attrs)
-=======
-        attrs = self.cf.get_trace_attrs(self.trace_idx)
-        attrs["neg_peak_magnitude_uv"] = self.troughmag_num.text()
-        attrs["neg_peak_latency_ms"] = self.troughlat_num.text()
-        attrs["pos_peak_latency_ms"] = self.peaklat_num.text()
-        attrs["pos_peak_magnitude_uv"] = self.peakmag_num.text()
-        attrs["zcr_latency_ms"] = self.zcr_lat_num.text()
-        attrs["stimulation_intensity_mso"] = self.stimintensity_num.text()
-        attrs["time_since_last_pulse_in_s"] = self.time_since_pulse_num.text()
-        attrs["stimulation_intensity_didt"] = self.didt_num.text()
-        attrs["comment"] = self.commentbox.toPlainText()
-        attrs["reject"] = self.reject
-        self.cf.set_trace_attrs(self.trace_idx, attrs)
->>>>>>> develop
 
     def initialize_reject_button(self):
         self.reject_button.setCheckable(self.reject)
@@ -100,9 +78,10 @@ class Ui(QtWidgets.QMainWindow):
         self.initialize_reject_button()
 
     def pull_attrs_info(self):
-<<<<<<< HEAD
         self.attrs = self.cf.get_trace_attrs(self.trace_idx)
-                
+        print("-" * 79)
+        for k, v in self.attrs.items():
+            print(k, v)
         self.event_time_num.display(self.attrs["event_time"])
         self.event_id_num.display(self.attrs["id"])
         self.troughmag_num.setText(self.attrs["neg_peak_magnitude_uv"])
@@ -113,40 +92,14 @@ class Ui(QtWidgets.QMainWindow):
         self.stimintensity_num.setText(self.attrs["stimulation_intensity_mso"])
         self.time_since_pulse_num.setText(self.attrs["time_since_last_pulse_in_s"])
         self.didt_num.setText(self.attrs["stimulation_intensity_didt"])
-
         self.channel_label.setText(self.attrs["channel_labels"][0])
-        self.filename_label_2.setText(self.attrs["original_file"])
+        self.filename_label_2.setText(self.attrs["origin"])
         self.examiner_name.setText(self.attrs["examiner"])
         self.readout.setText(self.attrs["readout"])
-
         self.commentbox.setText(self.attrs["comment"])
-        
-        self.xyz_coords = self.attrs['xyz_coords']
+        self.xyz_coords = self.attrs["xyz_coords"]
         self.coil_coordinate_input.setText(self.xyz_coords)
-=======
-        attrs = self.cf.get_trace_attrs(self.trace_idx)
-        print("-" * 79)
-        for k, v in attrs.items():
-            print(k, v)
-        self.event_time_num.display(attrs["event_time"])
-        self.event_id_num.display(attrs["id"])
-        self.troughmag_num.setText(attrs["neg_peak_magnitude_uv"])
-        self.troughlat_num.setText(attrs["neg_peak_latency_ms"])
-        self.peaklat_num.setText(attrs["pos_peak_latency_ms"])
-        self.peakmag_num.setText(attrs["pos_peak_magnitude_uv"])
-        self.zcr_lat_num.setText(attrs["zcr_latency_ms"])
-        self.stimintensity_num.setText(attrs["stimulation_intensity_mso"])
-        self.time_since_pulse_num.setText(attrs["time_since_last_pulse_in_s"])
-        self.didt_num.setText(attrs["stimulation_intensity_didt"])
-        self.channel_label.setText(attrs["channel_labels"][0])
-        self.filename_label_2.setText(attrs["origin"])
-        self.examiner_name.setText(attrs["examiner"])
-        self.readout.setText(attrs["readout"])
-        self.commentbox.setText(attrs["comment"])
-        self.xyz_coords = attrs["xyz_coords"]
-        self.coil_coordinate_input.setText(self.xyz_coords)
-        self.reject = decode(attrs["reject"])
->>>>>>> develop
+        self.reject = decode(self.attrs["reject"])
 
     def update_next_button(self):
         try:
@@ -156,15 +109,10 @@ class Ui(QtWidgets.QMainWindow):
             self.pull_attrs_info()
             self.reject_button.setCheckable(True)
             self.initialize_reject_button()
-<<<<<<< HEAD
             self.plot_coil_coordinates()
-=======
         except IndexError as e:
             self.trace_idx -= 1
             throw_em(self, "No more traces in this direction!")
->>>>>>> develop
-        except Exception as e:
-            throw_em(self, str(e))
 
     def update_previous_button(self):
         try:
@@ -174,15 +122,10 @@ class Ui(QtWidgets.QMainWindow):
             self.pull_attrs_info()
             self.reject_button.setCheckable(True)
             self.initialize_reject_button()
-<<<<<<< HEAD
             self.plot_coil_coordinates()
-=======
         except IndexError as e:
             self.trace_idx += 1
             throw_em(self, "No more traces in this direction!")
->>>>>>> develop
-        except Exception as e:
-            throw_em(self, str(e))
 
     def get_trace_from_cache(self):
         self.trace = self.cf.get_trace_data(self.trace_idx)
@@ -208,8 +151,8 @@ class Ui(QtWidgets.QMainWindow):
         else:
             lM1 = self.xyz_coords
             coords = [lM1]
-<<<<<<< HEAD
             values = [float(self.attrs['pos_peak_magnitude_uv']) + abs(float(self.attrs['neg_peak_magnitude_uv']))]
+        
         display = plot_m1s(coords = coords, values = values)
         display.savefig('pretty_brain.png')  
         display.close()
@@ -221,20 +164,6 @@ class Ui(QtWidgets.QMainWindow):
         self.MplWidget2.canvas.axes.axis('off')
         # refresh canvas
         self.MplWidget2.canvas.draw()
-=======
-            values = [
-                float(self.attrs["pos_peak_magnitude_uv"])
-                + abs(float(self.attrs["neg_peak_magnitude_uv"]))
-            ]
-
-        # discards the old graph
-        self.MplWidget2.canvas.axes.clear()
-
-        #        self.MplWidget2.canvas.set_figure(plot_m1s(coords = coords, values = values))
-
-        # refresh canvas
-        self.MplWidget2.canvas.draw(plot_m1s(coords=coords, values=values))
->>>>>>> develop
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(
@@ -256,7 +185,7 @@ def main(args):
     from importlib import import_module
 
     if args.resolution == "":
-        from offspect.gui.uis import visual_inspection_gui as pygui
+        from offspect.gui.uis import visual_inspection_gui_HR as pygui
     else:
         pygui = import_module(
             f"offspect.gui.uis.visual_inspection_gui_{args.resolution}"
