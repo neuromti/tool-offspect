@@ -23,7 +23,7 @@ from functools import lru_cache
 from .check import (
     check_consistency,
     check_valid_suffix,
-    check_metadata,
+    # check_metadata,
     FileName,
     MetaValue,
     MetaData,
@@ -324,7 +324,7 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
                 tattr = parse_traceattrs(dset.attrs)
-                check_metadata(readout, tattr)
+                # check_metadata(readout, tattr)
                 trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
             events.append(yml)

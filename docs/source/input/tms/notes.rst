@@ -15,5 +15,3 @@ stimulated 5 times. This would have resulted in 180 stimuli and 36 target
 coordinates. In these cases, we can attempt to prepopulate the
 :class:`~.CacheFile` with this information.
 
-An example how this could be implemented in Python can be found in the
-`intens_tms repo <https://github.com/translationalneurosurgery/stroke-tms-maps/blob/master/intens_tms/clean/coords.py#L184>`_.

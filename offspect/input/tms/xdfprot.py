@@ -164,6 +164,15 @@ def prepare_annotations(
     except KeyError:
         if xmlfile is not None:
             coords = get_coords_from_xml(xmlfile)
+            print(f"XDF: Fall back to coordinates from {xmlfile}")
+        else:
+            print(f"XDF: No coordinates available, Filling in [nan, nan, nan]")
+
+            def yield_nan():
+                while True:
+                    yield [nan, nan, nan]
+
+            coords = yield_nan()
         stimulation_intensity_mso = [nan for i in range(len(coords))]
         stimulation_intensity_didt = [nan for i in range(len(coords))]
 
@@ -228,12 +237,12 @@ def prepare_annotations(
     return anno
 
 
-def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
+def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
     """cut the tracedate from a matfile given Annotations
     args
     ----
-    cntfile: FileName
-        the cntfile for cutting the data. must correspond in name to the one specified in the annotation
+    xdfile: FileName
+        the xdffile for cutting the data. must correspond in name to the one specified in the annotation
     annotation: Annotations
         the annotations specifying e.g. onsets as well as pre and post durations
 
@@ -241,7 +250,21 @@ def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
     -------
     traces: List[TraceData]
     """
-    pass
+
+    streams = XDFFile(xdffile)
+    channel = annotation["attrs"]["channel_labels"][0]
+    print("Selecting traces for channel", channel)
+    datastream = pick_stream_with_channel(channel, streams)
+    cix = datastream.channel_labels.index(channel)
+
+    pre = annotation["attrs"]["samples_pre_event"]
+    post = annotation["attrs"]["samples_post_event"]
+    traces = []
+    for attrs in annotation["traces"]:
+        onset = attrs["event_sample"]
+        trace = datastream.time_series[onset - pre : onset + post, cix]
+        traces.append(trace)
+    return traces
 
 
 if __name__ == "__main__":

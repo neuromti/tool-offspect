@@ -27,6 +27,13 @@ def cli_tms(args: argparse.Namespace):
 
             offspect tms -t test.hdf5 -f VvNn_VvNn_1970-01-01_00-00-01.cnt VvNn\ 1970-01-01_00-00-01.cnt documentation.txt -r contralateral_mep -c Ch1 -pp 100 100 -e 1
         
+    .. admonition:: XDF protocol with localite stream
+
+        Convert directly from the source xdf file::
+            
+            offspect tms -f mapping_contra_R004.xdf -t map.hdf5 -pp 100 100 -r contralateral_mep -c EDC_L
+
+        
 
     """
     print(args)
@@ -111,8 +118,10 @@ def cli_tms(args: argparse.Namespace):
                 fmt = "manuxdf"
         else:
             fmt = "autoxdf"
-        from offspect.input.tms.xdfprot import prepare_annotations  # type: ignore
 
+        from offspect.input.tms.xdfprot import prepare_annotations, cut_traces  # type: ignore
+
+        # if an xml file is present, use that one to fall back to it in case there are no coordinates saved in the streams
         kwargs = {"xmlfile": suffixes.get(".xml", None)}
 
         annotation = prepare_annotations(  # type: ignore
@@ -123,11 +132,10 @@ def cli_tms(args: argparse.Namespace):
             post_in_ms=float(args.prepost[1]),
             **kwargs,
         )
+        traces = cut_traces(suffixes[".xdf"], annotation)
 
     # ---------------
 
     print(yaml.dump(annotation))
-
-
-# populate(args.to, [annotation], [traces])
+    populate(args.to, [annotation], [traces])
 
