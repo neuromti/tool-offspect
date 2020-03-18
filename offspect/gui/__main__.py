@@ -165,13 +165,13 @@ class Ui(QtWidgets.QMainWindow, pygui.Ui_MainWindow):
         )
         if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
-            app.exit()
+            self.close()
         else:
             event.ignore()
 
 
 def main(argv):
-    app = QtWidgets.QApplication(argv)
+    app = QtWidgets.QApplication([__file__])
     window = Ui()
     window.show()
     app.exec_()

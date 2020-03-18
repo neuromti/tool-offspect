@@ -10,7 +10,7 @@ try:
 except ImportError:
 
     def cli_gui(*args, **kwargs):
-        pass
+        print("GUI was not found")
 
 
 def cli_peek(args: argparse.Namespace):
