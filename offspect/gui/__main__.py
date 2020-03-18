@@ -1,12 +1,13 @@
 """ 
 """
 from PyQt5 import QtWidgets
-
+from tempfile import TemporaryDirectory
+from pathlib import Path
 import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from offspect.api import CacheFile
-from offspect.gui.plot import plot_m1s
+from offspect.gui.plot import plot_m1s, plot_glass
 from offspect.api import decode, encode
 
 # Ensure using PyQt5 backend
@@ -27,8 +28,8 @@ class Ui(QtWidgets.QMainWindow):
         self.addToolBar(NavigationToolbar(self.MplWidget1.canvas, self))
 
         self.reject_button.clicked.connect(self.flip_reject_button)
-        self.previous_button.clicked.connect(self.update_previous_button)
-        self.next_button.clicked.connect(self.update_next_button)
+        self.previous_button.clicked.connect(self.click_previous_button)
+        self.next_button.clicked.connect(self.click_next_button)
         self.update_attrs_button.clicked.connect(self.update_attributes)
         #        self.update_coil_button.clicked.connect(self.update_coil_coordinates)
         if filename is None:
@@ -40,10 +41,7 @@ class Ui(QtWidgets.QMainWindow):
         print(f"Opening {self.filename}")
         self.cf = CacheFile(self.filename)
         self.trace_idx = 0  # start with the first trace
-        self.get_trace_from_cache()
-        self.plot_mep()
-        self.pull_attrs_info()
-        self.initialize_reject_button()
+        self.update_gui()
 
     def update_attributes(self):
         attrs = self.cf.get_trace_attrs(self.trace_idx)
@@ -94,39 +92,36 @@ class Ui(QtWidgets.QMainWindow):
         self.coil_coordinate_input.setText(self.xyz_coords)
         self.reject = decode(attrs["reject"])
 
-    def update_next_button(self):
+    def click_next_button(self):
         try:
             self.trace_idx += 1
-            self.get_trace_from_cache()
-            self.plot_mep()
-            self.pull_attrs_info()
-            self.reject_button.setCheckable(True)
-            self.initialize_reject_button()
+            self.update_gui()
         except IndexError as e:
             self.trace_idx -= 1
             throw_em(self, "No more traces in this direction!")
         except Exception as e:
             throw_em(self, str(e))
 
-    def update_previous_button(self):
+    def click_previous_button(self):
         try:
             self.trace_idx -= 1
-            self.get_trace_from_cache()
-            self.plot_mep()
-            self.pull_attrs_info()
-            self.reject_button.setCheckable(True)
-            self.initialize_reject_button()
+            self.update_gui()
         except IndexError as e:
             self.trace_idx += 1
             throw_em(self, "No more traces in this direction!")
+
+    def update_gui(self):
+        try:
+            self.pull_attrs_info()
+            self.plot_trace()
+            self.plot_coords()
+            self.initialize_reject_button()
         except Exception as e:
+            print("Exception", e)
             throw_em(self, str(e))
 
-    def get_trace_from_cache(self):
-        self.trace = self.cf.get_trace_data(self.trace_idx)
-
-    def plot_mep(self):
-        data = self.trace
+    def plot_trace(self):
+        data = self.cf.get_trace_data(self.trace_idx)
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
         # plot data
@@ -134,30 +129,35 @@ class Ui(QtWidgets.QMainWindow):
         # refresh canvas
         self.MplWidget1.canvas.draw()
 
-    def plot_coil_coordinates(self):
+    def plot_coords(self):
+        coords = []
+        values = []
+        for i in range(len(self.cf)):
+            attrs = self.cf.get_trace_attrs(i)
+            coords.append(decode(attrs["xyz_coords"]))
+            values.append(1)
+        bg = plot_glass(
+            coords,
+            values,
+            display_mode="z",
+            smooth=12.5,
+            colorbar=False,
+            vmax=None,
+            title="",
+        )
+        with TemporaryDirectory() as folder:
+            fname = Path(folder) / "background.png"
+            print(f"Saved  temporary figure to {fname}")
+            bg.savefig(fname)
+            bg.close()
+            im = matplotlib.pyplot.imread(str(fname))
+            print(f"Loaded temporary figure from {fname}")
 
-        if self.attrs["channel_labels"][0][4] == "L":
-            rM1 = self.xyz_coords
-            coords = [rM1]
-            values = [
-                float(self.attrs["pos_peak_magnitude_uv"])
-                + abs(float(self.attrs["neg_peak_magnitude_uv"]))
-            ]
-        else:
-            lM1 = self.xyz_coords
-            coords = [lM1]
-            values = [
-                float(self.attrs["pos_peak_magnitude_uv"])
-                + abs(float(self.attrs["neg_peak_magnitude_uv"]))
-            ]
+        # self.MplWidget2.canvas.axes.clear()
 
-        # discards the old graph
-        self.MplWidget2.canvas.axes.clear()
-
-        #        self.MplWidget2.canvas.set_figure(plot_m1s(coords = coords, values = values))
-
-        # refresh canvas
-        self.MplWidget2.canvas.draw(plot_m1s(coords=coords, values=values))
+        # self.MplWidget2.canvas.axes.imshow(im)
+        # self.MplWidget2.canvas.axes.axis("off")
+        # self.MplWidget2.canvas.draw()
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(
