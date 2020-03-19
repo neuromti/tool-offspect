@@ -6,5 +6,7 @@ https://github.com/translationalneurosurgery/tool-load-tms/releases/download/v0.
 matplotlib
 liesl
 PyQt5
+nibabel
+nilearn
 
 
