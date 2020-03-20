@@ -166,12 +166,11 @@ class Ui(QtWidgets.QMainWindow):
 def get_ui(resolution: str = ""):
     app = QtWidgets.QApplication([__file__])
     if resolution == "":
-        from offspect.gui.uis import visual_inspection_gui as pygui
+        resolution = "HR"
+        print(f"GUI: Resolution not specified. Fall back to default")
 
-        print(f"GUI: Resolution set to default : {pygui}")
-    else:
-        pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
-        print(f"GUI: Resolution set to {resolution} : {pygui}")
+    pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
+    print(f"GUI: Using {resolution}: {pygui.__name__}")
 
     class useUI(Ui, pygui.Ui_MainWindow):
         pass

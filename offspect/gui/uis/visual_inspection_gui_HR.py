@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'visual_inspection_gui_HR.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.0
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -143,11 +141,11 @@ class Ui_MainWindow(object):
         self.zeroxinglabel_2.setAutoFillBackground(True)
         self.zeroxinglabel_2.setObjectName("zeroxinglabel_2")
         self.gridLayout.addWidget(self.zeroxinglabel_2, 11, 0, 1, 1)
-        self.MplWidget2 = MplWidget2(self.centralwidget)
+        self.MplWidget2 = MplWidget(self.centralwidget)
         self.MplWidget2.setEnabled(True)
         self.MplWidget2.setObjectName("MplWidget2")
         self.gridLayout.addWidget(self.MplWidget2, 2, 9, 8, 1)
-        self.MplWidget1 = MplWidget1(self.centralwidget)
+        self.MplWidget1 = MplWidget(self.centralwidget)
         self.MplWidget1.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.MplWidget1.setObjectName("MplWidget1")
         self.gridLayout.addWidget(self.MplWidget1, 1, 0, 9, 9)
@@ -282,7 +280,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.tabWidget, 10, 9, 4, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1097, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1097, 20))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -333,5 +331,5 @@ class Ui_MainWindow(object):
         self.didt_num.setText(_translate("MainWindow", "0"))
         self.time_since_pulse_num.setText(_translate("MainWindow", "0"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Other"))
-from offspect.gui.mplwidget import MplWidget1, MplWidget2
 
+from .mplwidget import MplWidget

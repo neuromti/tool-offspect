@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'visual_inspection_gui_LR.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.0
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -139,11 +137,11 @@ class Ui_MainWindow(object):
         self.zeroxinglabel_2.setFont(font)
         self.zeroxinglabel_2.setAutoFillBackground(True)
         self.zeroxinglabel_2.setObjectName("zeroxinglabel_2")
-        self.MplWidget2 = MplWidget2(self.centralwidget)
+        self.MplWidget2 = MplWidget(self.centralwidget)
         self.MplWidget2.setEnabled(True)
         self.MplWidget2.setGeometry(QtCore.QRect(624, 78, 241, 251))
         self.MplWidget2.setObjectName("MplWidget2")
-        self.MplWidget1 = MplWidget1(self.centralwidget)
+        self.MplWidget1 = MplWidget(self.centralwidget)
         self.MplWidget1.setGeometry(QtCore.QRect(9, 45, 609, 281))
         self.MplWidget1.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.MplWidget1.setObjectName("MplWidget1")
@@ -278,7 +276,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 881, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 881, 20))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -329,5 +327,5 @@ class Ui_MainWindow(object):
         self.didt_num.setText(_translate("MainWindow", "0"))
         self.time_since_pulse_num.setText(_translate("MainWindow", "0"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Other"))
-from offspect.gui.mplwidget import MplWidget1, MplWidget2
 
+from .mplwidget import MplWidget
