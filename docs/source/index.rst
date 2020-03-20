@@ -29,7 +29,7 @@ If you have a fresh Anaconda Installation, this should work out of the box. Othe
    pip install virtualenv
    virtualenv .env
    source .env/bin/activate # on linux or mac
-   \.env\Scripts\activate # on windows
+   .env\Scripts\activate # on windows
    pip install -r requirements.txt
    pip install -e .
    # at a later stage, you can deactivate the environment with
