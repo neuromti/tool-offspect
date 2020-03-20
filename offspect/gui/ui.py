@@ -213,7 +213,7 @@ def get_ui(resolution: str = ""):
     pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
     print(f"GUI: Using {resolution}: {pygui.__name__}")
 
-    class useUI(Ui, pygui.Ui_MainWindow):
+    class useUI(Ui, pygui.Ui_MainWindow):  # type: ignore
         pass
 
     return app, useUI
