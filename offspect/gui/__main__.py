@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """ 
 """
 from PyQt5 import QtWidgets
@@ -197,7 +198,18 @@ def main(args):
     window = useUI(filename=args.filename)
     window.show()
     app.exec_()
+=======
+from offspect.gui.ui import get_ui, start_window
+
+
+def main(args):
+    app, UI = get_ui(args.resolution)
+    window = UI(filename=args.filename)
+    start_window(app, window)
+>>>>>>> develop
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    app, UI = get_ui()
+    window = UI(filename=None)
+    start_window(app, window)

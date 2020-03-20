@@ -23,6 +23,7 @@ one value to :data:`~.SPECIFIC_TRACEKEYS`, with the key being the string-name
 of the new readout. Additionally, readout should be added to
 :data:`~.VALID_READOUTS`.
 
+.. _developing the gui:
 
 GUI test and development
 ************************

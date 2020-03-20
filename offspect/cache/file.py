@@ -23,7 +23,7 @@ from functools import lru_cache
 from .check import (
     check_consistency,
     check_valid_suffix,
-    check_metadata,
+    # check_metadata,
     FileName,
     MetaValue,
     MetaData,
@@ -34,6 +34,7 @@ from .check import (
     isindex,
 )
 from math import inf, nan
+from offspect.cache.attrs import encode
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True
@@ -219,7 +220,7 @@ def update_trace_attributes(attrs: TraceAttributes):
                     if idx == index:
                         dset = f[origin]["traces"][key]
                         for key in attrs.keys():
-                            dset.attrs[str(key)] = str(attrs[key])
+                            dset.attrs[encode(key)] = encode(attrs[key])
                         return
                     cnt = idx
 
@@ -254,9 +255,10 @@ def read_trace(
                         if what == "attrs":
                             # attrs = parse_traceattrs(dset.attrs)
                             attrs = asdict(dset.attrs)
-                            attrs["origin"] = origin
-                            attrs["cache_file"] = str(cf.fname)
-                            attrs["cache_file_index"] = str(idx)
+                            # attrs["origin"] = encode(str(origin))
+                            attrs["origin"] = encode(origin)
+                            attrs["cache_file"] = encode(cf.fname)
+                            attrs["cache_file_index"] = encode(idx)
                             # check_metadata(str(attrs["readout"]), attrs)
                             return attrs
                         elif what == "data":
@@ -322,7 +324,7 @@ def recover_annotations(cf: CacheFile) -> List[Annotations]:
                 dset = f[origin]["traces"][idx]
                 dset.id.refresh()  # load fresh from file
                 tattr = parse_traceattrs(dset.attrs)
-                check_metadata(readout, tattr)
+                # check_metadata(readout, tattr)
                 trace_attrs.append(tattr)
             yml["traces"] = trace_attrs
             events.append(yml)

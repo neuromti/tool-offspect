@@ -270,14 +270,14 @@
      </widget>
     </item>
     <item row="2" column="9" rowspan="8">
-     <widget class="MplWidget2" name="MplWidget2" native="true">
+     <widget class="MplWidget" name="MplWidget2" native="true">
       <property name="enabled">
        <bool>true</bool>
       </property>
      </widget>
     </item>
     <item row="1" column="0" rowspan="9" colspan="9">
-     <widget class="MplWidget1" name="MplWidget1" native="true">
+     <widget class="MplWidget" name="MplWidget1" native="true">
       <property name="layoutDirection">
        <enum>Qt::LeftToRight</enum>
       </property>
@@ -664,7 +664,7 @@
      <x>0</x>
      <y>0</y>
      <width>1097</width>
-     <height>26</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
@@ -673,15 +673,9 @@
  <layoutdefault spacing="7" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>MplWidget1</class>
+   <class>MplWidget</class>
    <extends>QWidget</extends>
-   <header>mplwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>MplWidget2</class>
-   <extends>QWidget</extends>
-   <header>mplwidget.h</header>
+   <header>.mplwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
