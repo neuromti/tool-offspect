@@ -5,7 +5,7 @@ https://github.com/translationalneurosurgery/tool-libeep/releases/download/v0.3/
 https://github.com/translationalneurosurgery/tool-load-tms/releases/download/v0.1/matprot-0.1-py3-none-any.whl
 matplotlib
 liesl
-PyQt5
+PyQt5<5.13
 nibabel
 nilearn
 
