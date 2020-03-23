@@ -28,7 +28,7 @@ of the new readout. Additionally, readout should be added to
 GUI test and development
 ************************
 
-Mock two xdf5 files using :code:`python tests/mock/cache.py fname1.hdf5 fname2.hdf5` from the project root. Merge these two files with :code:`offspect merge -f *.hdf5 -t merged.hdf5`. Peek into the merged file with :code:`offspect peek merged.hdf5`. This should give you the following output:
+Mock two xdf5 files using :code:`python tests/mock/cache.py fname1.hdf5 fname2.hdf5` from the project root. Merge these two files with :code:`offspect merge -f fname1.hdf5 fname2.hdf5 -t merged.hdf5`. Peek into the merged file with :code:`offspect peek merged.hdf5`. This should give you the following output:
 
 .. code-block:: none
 
