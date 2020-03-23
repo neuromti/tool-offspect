@@ -4,4 +4,4 @@
 This is a software package to convert and visually inspect event-related
 potentials from a variety of  file formats
 
-Read the full documentation on [Readthedocs](https://readthedocs.org/projects/offline-inspect/badge/?version=latest)
+Read the full documentation on [Readthedocs](https://offline-inspect.readthedocs.io/en/latest/)
