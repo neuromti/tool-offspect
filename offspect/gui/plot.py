@@ -60,15 +60,6 @@ def project_into_nifti(
 
 
 def plot_glass(
-<<<<<<< HEAD
-        coords: List[List[float]],
-        values: List[float],
-        display_mode="z",  # lyrz 
-        smooth: float = 12.5,
-        colorbar:bool=False,
-        vmax=None,
-        title: str = ""):
-=======
     coords: List[List[float]],
     values: List[float],
     display_mode="z",  # lyrz
@@ -77,7 +68,6 @@ def plot_glass(
     vmax=None,
     title: str = "",
 ):
->>>>>>> develop
     """takes a list of coordinates and values and plots them as glass-brain
     args
     ----
@@ -107,14 +97,6 @@ def plot_glass(
     # - either based on the data or the argument
 
     # plot the image
-<<<<<<< HEAD
-    display = plotting.plot_glass_brain(filled_img,
-                                        colorbar=colorbar,
-                                        display_mode=display_mode,
-                                        vmax=vmax,
-                                        title=title,
-                                        figure=None)
-=======
     fig = plt.figure(figsize=(6, 6), dpi=125)
     display = plotting.plot_glass_brain(
         filled_img,
@@ -124,7 +106,6 @@ def plot_glass(
         title=title,
         figure=fig,
     )
->>>>>>> develop
 
     # scale and label colorbar
     if colorbar:
@@ -135,12 +116,6 @@ def plot_glass(
     return display
 
 
-<<<<<<< HEAD
-def plot_m1s(coords = [lM1, rM1], values = [200., 200.]):
-    "plots the left and right M1 on a glass-brain"
-    display = plot_glass(coords, values, title="M1s")
-    return display
-=======
 def plot_glass_on(axes, coords, values):
     import matplotlib
     from tempfile import TemporaryDirectory
@@ -177,4 +152,3 @@ if __name__ == "__main__":
     plot_glass(coords, values)
     M1 = [-36.6300, -17.6768, 54.3147]
     plot_glass([M1], [1])
->>>>>>> develop
