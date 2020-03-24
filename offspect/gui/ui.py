@@ -30,8 +30,8 @@ class Ui(QtWidgets.QMainWindow):
         self.previous_button.clicked.connect(self.click_previous_button)
         self.next_button.clicked.connect(self.click_next_button)
         self.update_attrs_button.clicked.connect(self.save_attributes)
-        self.trace_update_button.clicked.connect(self.random_access_trace)
-
+        # self.trace_update_button.clicked.connect(self.random_access_trace)
+        self.trace_idx_num.editingFinished.connect(self.check_trace_idx)
         if filename is None:
             self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open file", "/", "CacheFiles (*.hdf5)"
@@ -40,12 +40,12 @@ class Ui(QtWidgets.QMainWindow):
             self.filename = filename
         print(f"Opening {self.filename}")
         self.cf = CacheFile(self.filename)
-        self.trace_idx = 0  # start with the first trace
+        # start with the first trace
 
         # get the index of the last trace in hdf5 file
         self.last_trace_num.display(len(self.cf))
-
-        self.update_gui()
+        self.trace_idx = 0  # updates the gui
+        # self.update_gui()
 
     def save_attributes(self):
         attrs = self.cf.get_trace_attrs(self.trace_idx)
@@ -73,7 +73,7 @@ class Ui(QtWidgets.QMainWindow):
     def flip_reject_button(self):
         self.reject = not self.reject
         self.initialize_reject_button()
-        # save the rejection when the button is pressed 
+        # save the rejection when the button is pressed
         self.save_attributes()
         self.update_gui()
 
@@ -83,7 +83,10 @@ class Ui(QtWidgets.QMainWindow):
         for k, v in attrs.items():
             print(k, v)
         self.event_time_num.display(attrs["event_time"])
-        self.trace_idx_num.setText(attrs["id"])
+        # self.trace_idx_num.setText(attrs["id"])
+        # this was the id within a source file, not the running continous index
+        # within a merged file, it is now the index
+
         self.troughmag_num.setText(attrs["neg_peak_magnitude_uv"])
         self.troughlat_num.setText(attrs["neg_peak_latency_ms"])
         self.peaklat_num.setText(attrs["pos_peak_latency_ms"])
@@ -102,26 +105,48 @@ class Ui(QtWidgets.QMainWindow):
         self.reject = decode(attrs["reject"])
 
         # calculate VPP to be displayed in the plot
-        self.vpp = abs(float(attrs["neg_peak_magnitude_uv"])) + float(attrs["pos_peak_magnitude_uv"])
+        self.vpp = abs(float(attrs["neg_peak_magnitude_uv"])) + float(
+            attrs["pos_peak_magnitude_uv"]
+        )
 
-    def random_access_trace(self):
-    	self.trace_idx = int(self.trace_idx_num.text()) # set the trace index to the number entered
-    	self.update_gui()
+    @property
+    def trace_idx(self):
+        try:
+            trace_idx = int(float(self.trace_idx_num.text())) - 1
+        except ValueError:
+            trace_idx = 0
+        trace_idx = max((trace_idx, 0))
+        trace_idx = min((trace_idx, len(self.cf) - 1))
+        return trace_idx  # correct for the display starting counting at 1, not zero
+
+    @trace_idx.setter
+    def trace_idx(self, trace_idx: int):
+        trace_idx += 1  # add one to start displaying at 1, not zero
+        maxidx = len(self.cf)
+        if trace_idx >= maxidx:
+            trace_idx = maxidx
+            self.next_button.setEnabled(False)
+            self.previous_button.setEnabled(True)
+        elif trace_idx <= 1:
+            trace_idx = 1
+            self.next_button.setEnabled(True)
+            self.previous_button.setEnabled(False)
+        else:
+            self.previous_button.setEnabled(True)
+            self.next_button.setEnabled(True)
+
+        print("Setting trace_idx from", self.trace_idx, "to", trace_idx)
+        self.trace_idx_num.setText(str(trace_idx))
+        self.update_gui()
+
+    def check_trace_idx(self):
+        self.trace_idx += 0
 
     def click_next_button(self):
-        if self.trace_idx == len(self.cf):
-            throw_em(self, "No more traces in this direction!")
-            return
-        else:
-            self.trace_idx += 1
-            self.update_gui()
+        self.trace_idx += 1
 
     def click_previous_button(self):
-        if self.trace_idx == 0:
-            throw_em(self, "No more traces in this direction!")
-        else:
-            self.trace_idx -= 1
-            self.update_gui()
+        self.trace_idx -= 1
 
     def update_gui(self):
         try:
@@ -134,23 +159,33 @@ class Ui(QtWidgets.QMainWindow):
             throw_em(self, str(e))
 
     def plot_trace(self):
+
         data = self.cf.get_trace_data(self.trace_idx)
         attrs = self.cf.get_trace_attrs(self.trace_idx)
+        # probably better to put the rest of this into a function in a
+        # different file and then import the function
+        # function could hat the signature
+        # plot_trace(ax, cf, trace_idx) and be called e.g. like
+        # plot_trace(self.MplWidget1.canvas.axes, self.cf, self.trace_idx)
+        # this allows to work an separate plotting functions for different
+        # readouts and prevent merging conflicts within this base class.
+
+        # everything into a function from here on
         pre = decode(attrs["samples_pre_event"])
         post = decode(attrs["samples_post_event"])
         fs = decode(attrs["samplingrate"])
         t0 = -float(pre) / float(fs)
         t1 = float(post) / float(fs)
-		# get indices of tms pulse
+        # get indices of tms pulse
         peak = np.where(data == np.max(data))[0][0]
         trough = np.where(data == np.min(data))[0][0]
         if peak > trough:
             latest = peak
         else:
             latest = trough
-        # find MEP 
-        mep_peak = np.where(data == np.max(data[latest+5:]))[0][0]
-        mep_trough = np.where(data == np.min(data[latest+5:]))[0][0] 
+        # find MEP
+        mep_peak = np.where(data == np.max(data[latest + 5 :]))[0][0]
+        mep_trough = np.where(data == np.min(data[latest + 5 :]))[0][0]
         timey = np.arange(0, len(data), 1)
 
         textstr = "Vpp = {0:3.2f}".format(self.vpp)
@@ -159,17 +194,22 @@ class Ui(QtWidgets.QMainWindow):
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
         self.MplWidget1.canvas.axes.text(
-        0.05,
-        0.95,
-        textstr,
-        transform=self.MplWidget1.canvas.axes.transAxes,
-        fontsize=14,
-        verticalalignment="top",
-        bbox=props)
+            0.05,
+            0.95,
+            textstr,
+            transform=self.MplWidget1.canvas.axes.transAxes,
+            fontsize=14,
+            verticalalignment="top",
+            bbox=props,
+        )
         # plot data
-        self.MplWidget1.canvas.axes.plot(timey,data)
-        self.MplWidget1.canvas.axes.vlines(timey[mep_peak], data[mep_peak], 0, color="red", linestyle="dashed")
-        self.MplWidget1.canvas.axes.vlines(timey[mep_trough], data[mep_trough], 0, color="red", linestyle="dashed")
+        self.MplWidget1.canvas.axes.plot(timey, data)
+        self.MplWidget1.canvas.axes.vlines(
+            timey[mep_peak], data[mep_peak], 0, color="red", linestyle="dashed"
+        )
+        self.MplWidget1.canvas.axes.vlines(
+            timey[mep_trough], data[mep_trough], 0, color="red", linestyle="dashed"
+        )
         self.MplWidget1.canvas.axes.set_ylim(-200, 200)
         self.MplWidget1.canvas.axes.grid(True, which="both")
         self.MplWidget1.canvas.axes.set_xticks((0, pre, pre + post))
@@ -178,6 +218,8 @@ class Ui(QtWidgets.QMainWindow):
             range(0, pre + post, (pre + post) // 10), minor=True
         )
         self.MplWidget1.canvas.axes.tick_params(direction="in")
+
+        # everything into a function until here
         # refresh canvas
         self.MplWidget1.canvas.draw()
 

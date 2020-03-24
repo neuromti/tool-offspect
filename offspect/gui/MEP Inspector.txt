@@ -1,2 +1,0 @@
-python -m offspect.gui.__main__
-pause

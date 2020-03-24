@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 from offspect.input.tms.matprotconv import prepare_annotations, cut_traces
 from offspect.api import populate, CacheFile
+from matprot.convert.traces import is_matlab_installed
 
 try:
     matfile = list(
@@ -22,6 +23,7 @@ except IndexError:
 
 
 @pytest.mark.skipif(found == False, reason="Could not find the test files")
+@pytest.mark.skipif(is_matlab_installed() == False, reason="Matlab is not installed")
 def test_matprot(tmp_path):
 
     annotation = prepare_annotations(

@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'visual_inspection_gui_XS.ui'
 #
-# Created by: PyQt5 UI code generator 5.12
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -305,7 +304,7 @@ class Ui_MainWindow(object):
         self.readout.setObjectName("readout")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 20))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -354,11 +353,10 @@ class Ui_MainWindow(object):
         self.coil_coordinate_input.setText(_translate("MainWindow", "0,0"))
         self.zeroxinglabel_5.setText(_translate("MainWindow", "comments:"))
         self.label_7.setText(_translate("MainWindow", "Enter Trace ID:"))
-        self.trace_idx_num.setText(_translate("MainWindow", "0"))
+        self.trace_idx_num.setText(_translate("MainWindow", "1"))
         self.total_traces_label.setText(_translate("MainWindow", "Total Traces: "))
         self.label_9.setText(_translate("MainWindow", "Event Time:"))
         self.trace_update_button.setText(_translate("MainWindow", "Go"))
         self.readout.setText(_translate("MainWindow", "Contralateral MEP"))
-
 
 from .mplwidget import MplWidget

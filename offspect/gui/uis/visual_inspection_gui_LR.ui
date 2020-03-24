@@ -192,7 +192,7 @@
       </font>
      </property>
      <property name="text">
-      <string>0</string>
+      <string>1</string>
      </property>
     </widget>
     <widget class="QLCDNumber" name="last_trace_num">
