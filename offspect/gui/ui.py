@@ -6,7 +6,7 @@ import sys
 import matplotlib
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from offspect.api import CacheFile
-from offspect.gui.plot import plot_glass_on
+from offspect.gui.plot import plot_glass_on, plot_trace
 from offspect.api import decode, encode
 import numpy as np
 
@@ -104,11 +104,6 @@ class Ui(QtWidgets.QMainWindow):
         self.coil_coordinate_input.setText(self.xyz_coords)
         self.reject = decode(attrs["reject"])
 
-        # calculate VPP to be displayed in the plot
-        self.vpp = abs(float(attrs["neg_peak_magnitude_uv"])) + float(
-            attrs["pos_peak_magnitude_uv"]
-        )
-
     @property
     def trace_idx(self):
         try:
@@ -162,64 +157,10 @@ class Ui(QtWidgets.QMainWindow):
 
         data = self.cf.get_trace_data(self.trace_idx)
         attrs = self.cf.get_trace_attrs(self.trace_idx)
-        # probably better to put the rest of this into a function in a
-        # different file and then import the function
-        # function could hat the signature
-        # plot_trace(ax, data, attrs) and be called e.g. like
-        # plot_trace(self.MplWidget1.canvas.axes, data, attrs)
-        # this allows to work an separate plotting functions for different
-        # readouts and prevent merging conflicts within this base class.
-
-        # everything into a function from here on
-        pre = decode(attrs["samples_pre_event"])
-        post = decode(attrs["samples_post_event"])
-        fs = decode(attrs["samplingrate"])
-        t0 = -float(pre) / float(fs)
-        t1 = float(post) / float(fs)
-        # get indices of tms pulse
-        peak = np.where(data == np.max(data))[0][0]
-        trough = np.where(data == np.min(data))[0][0]
-        if peak > trough:
-            latest = peak
-        else:
-            latest = trough
-        # find MEP
-        mep_peak = np.where(data == np.max(data[latest + 5 :]))[0][0]
-        mep_trough = np.where(data == np.min(data[latest + 5 :]))[0][0]
-        timey = np.arange(0, len(data), 1)
-
-        textstr = "Vpp = {0:3.2f}".format(self.vpp)
-        props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
-
+  
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
-        self.MplWidget1.canvas.axes.text(
-            0.05,
-            0.95,
-            textstr,
-            transform=self.MplWidget1.canvas.axes.transAxes,
-            fontsize=14,
-            verticalalignment="top",
-            bbox=props,
-        )
-        # plot data
-        self.MplWidget1.canvas.axes.plot(timey, data)
-        self.MplWidget1.canvas.axes.vlines(
-            timey[mep_peak], data[mep_peak], 0, color="red", linestyle="dashed"
-        )
-        self.MplWidget1.canvas.axes.vlines(
-            timey[mep_trough], data[mep_trough], 0, color="red", linestyle="dashed"
-        )
-        self.MplWidget1.canvas.axes.set_ylim(-200, 200)
-        self.MplWidget1.canvas.axes.grid(True, which="both")
-        self.MplWidget1.canvas.axes.set_xticks((0, pre, pre + post))
-        self.MplWidget1.canvas.axes.set_xticklabels((t0, 0, t1))
-        self.MplWidget1.canvas.axes.set_xticks(
-            range(0, pre + post, (pre + post) // 10), minor=True
-        )
-        self.MplWidget1.canvas.axes.tick_params(direction="in")
-
-        # everything into a function until here
+        plot_trace(self.MplWidget1.canvas.axes, data, attrs)
         # refresh canvas
         self.MplWidget1.canvas.draw()
 

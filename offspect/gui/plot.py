@@ -5,8 +5,61 @@ import numpy as np
 from itertools import chain
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
+from offspect.api import decode
+
+def plot_trace(ax, data, attrs):
+
+    pre = decode(attrs["samples_pre_event"])
+    post = decode(attrs["samples_post_event"])
+    fs = decode(attrs["samplingrate"])
+    t0 = -float(pre) / float(fs)
+    t1 = float(post) / float(fs)
+    vpp = abs(float(attrs["neg_peak_magnitude_uv"])) + float(
+            attrs["pos_peak_magnitude_uv"])
+
+    # get indices of tms pulse
+    peak = np.where(data == np.max(data))[0][0]
+    trough = np.where(data == np.min(data))[0][0]
+    if peak > trough:
+        latest = peak
+    else:
+        latest = trough
+
+    # find MEP
+    mep_peak = np.where(data == np.max(data[latest + 5 :]))[0][0]
+    mep_trough = np.where(data == np.min(data[latest + 5 :]))[0][0]
+    timey = np.arange(0, len(data), 1)
+
+    textstr = "Vpp = {0:3.2f}".format(vpp)
+    props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
+    ax.text(
+        0.05,
+        0.95,
+        textstr,
+        transform=ax.transAxes,
+        fontsize=14,
+        verticalalignment="top",
+        bbox=props,
+    )
+    # plot data
+    ax.plot(timey, data)
+    ax.vlines(
+        timey[mep_peak], data[mep_peak], 0, color="red", linestyle="dashed"
+    )
+    ax.vlines(
+        timey[mep_trough], data[mep_trough], 0, color="red", linestyle="dashed"
+    )
+    ax.set_ylim(-200, 200)
+    ax.grid(True, which="both")
+    ax.set_xticks((0, pre, pre + post))
+    ax.set_xticklabels((t0, 0, t1))
+    ax.set_xticks(
+        range(0, pre + post, (pre + post) // 10), minor=True
+    )
+    ax.tick_params(direction="in")
 
 # ---------------------------------------------------------------------------
+
 def project_into_nifti(
     coords: List[List[float]], values: List[float], smooth: float = 12.5
 ) -> Nifti1Image:
