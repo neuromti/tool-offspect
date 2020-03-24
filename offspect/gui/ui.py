@@ -165,8 +165,8 @@ class Ui(QtWidgets.QMainWindow):
         # probably better to put the rest of this into a function in a
         # different file and then import the function
         # function could hat the signature
-        # plot_trace(ax, cf, trace_idx) and be called e.g. like
-        # plot_trace(self.MplWidget1.canvas.axes, self.cf, self.trace_idx)
+        # plot_trace(ax, data, attrs) and be called e.g. like
+        # plot_trace(self.MplWidget1.canvas.axes, data, attrs)
         # this allows to work an separate plotting functions for different
         # readouts and prevent merging conflicts within this base class.
 
