@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'visual_inspection_gui_LR.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -75,35 +76,29 @@ class Ui_MainWindow(object):
         self.trace_idx_num.setFont(font)
         self.trace_idx_num.setObjectName("trace_idx_num")
         self.last_trace_num = QtWidgets.QLCDNumber(self.frame)
-        self.last_trace_num.setGeometry(QtCore.QRect(140, 100, 71, 31))
+        self.last_trace_num.setGeometry(QtCore.QRect(140, 70, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.last_trace_num.setFont(font)
         self.last_trace_num.setObjectName("last_trace_num")
         self.label_2 = QtWidgets.QLabel(self.frame)
-        self.label_2.setGeometry(QtCore.QRect(10, 90, 131, 41))
+        self.label_2.setGeometry(QtCore.QRect(10, 60, 131, 41))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.event_time_num = QtWidgets.QLCDNumber(self.frame)
-        self.event_time_num.setGeometry(QtCore.QRect(140, 140, 71, 31))
+        self.event_time_num.setGeometry(QtCore.QRect(140, 110, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.event_time_num.setFont(font)
         self.event_time_num.setObjectName("event_time_num")
         self.label_3 = QtWidgets.QLabel(self.frame)
-        self.label_3.setGeometry(QtCore.QRect(10, 130, 131, 41))
+        self.label_3.setGeometry(QtCore.QRect(10, 100, 131, 41))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
-        self.trace_update_button = QtWidgets.QPushButton(self.frame)
-        self.trace_update_button.setGeometry(QtCore.QRect(10, 50, 91, 41))
-        font = QtGui.QFont()
-        font.setPointSize(9)
-        self.trace_update_button.setFont(font)
-        self.trace_update_button.setObjectName("trace_update_button")
         self.examiner_name = QtWidgets.QLineEdit(self.centralwidget)
         self.examiner_name.setGeometry(QtCore.QRect(440, 10, 205, 30))
         font = QtGui.QFont()
@@ -305,7 +300,7 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_2, "")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 979, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 979, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -327,7 +322,6 @@ class Ui_MainWindow(object):
         self.trace_idx_num.setText(_translate("MainWindow", "1"))
         self.label_2.setText(_translate("MainWindow", "Total Traces: "))
         self.label_3.setText(_translate("MainWindow", "Event Time:"))
-        self.trace_update_button.setText(_translate("MainWindow", "Go"))
         self.examiner_name.setText(_translate("MainWindow", "HiWi"))
         self.filename_label.setText(_translate("MainWindow", "Filename: "))
         self.filename_label_2.setText(_translate("MainWindow", "Filename"))
@@ -359,5 +353,6 @@ class Ui_MainWindow(object):
         self.didt_num.setText(_translate("MainWindow", "0"))
         self.time_since_pulse_num.setText(_translate("MainWindow", "0"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Other"))
+
 
 from .mplwidget import MplWidget

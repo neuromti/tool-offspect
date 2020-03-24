@@ -584,6 +584,37 @@
       </property>
      </widget>
     </item>
+    <item row="2" column="9" rowspan="8">
+     <widget class="MplWidget" name="MplWidget2" native="true">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="filename_label_2">
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Filename</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QLineEdit" name="examiner_name">
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>HiWi</string>
+      </property>
+     </widget>
+    </item>
     <item row="11" column="2" rowspan="3" colspan="2">
      <widget class="QFrame" name="frame">
       <property name="frameShape">
@@ -632,7 +663,7 @@
        <property name="geometry">
         <rect>
          <x>150</x>
-         <y>110</y>
+         <y>70</y>
          <width>71</width>
          <height>41</height>
         </rect>
@@ -642,7 +673,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>110</y>
+         <y>70</y>
          <width>131</width>
          <height>41</height>
         </rect>
@@ -660,7 +691,7 @@
        <property name="geometry">
         <rect>
          <x>150</x>
-         <y>170</y>
+         <y>130</y>
          <width>71</width>
          <height>41</height>
         </rect>
@@ -670,7 +701,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>170</y>
+         <y>130</y>
          <width>131</width>
          <height>41</height>
         </rect>
@@ -684,55 +715,6 @@
         <string>Event Time:</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="trace_update_button">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>50</y>
-         <width>131</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Go</string>
-       </property>
-      </widget>
-     </widget>
-    </item>
-    <item row="2" column="9" rowspan="8">
-     <widget class="MplWidget" name="MplWidget2" native="true">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
-     <widget class="QLabel" name="filename_label_2">
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Filename</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QLineEdit" name="examiner_name">
-      <property name="font">
-       <font>
-        <pointsize>12</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>HiWi</string>
-      </property>
      </widget>
     </item>
    </layout>
@@ -743,7 +725,7 @@
      <x>0</x>
      <y>0</y>
      <width>1162</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

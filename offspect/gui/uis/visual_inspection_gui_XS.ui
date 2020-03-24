@@ -714,7 +714,7 @@
       <x>460</x>
       <y>372</y>
       <width>191</width>
-      <height>171</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="font">
@@ -768,7 +768,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>80</y>
+       <y>40</y>
        <width>71</width>
        <height>31</height>
       </rect>
@@ -783,7 +783,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>70</y>
+       <y>30</y>
        <width>91</width>
        <height>41</height>
       </rect>
@@ -801,7 +801,7 @@
      <property name="geometry">
       <rect>
        <x>100</x>
-       <y>120</y>
+       <y>80</y>
        <width>71</width>
        <height>31</height>
       </rect>
@@ -816,7 +816,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>70</y>
        <width>81</width>
        <height>41</height>
       </rect>
@@ -828,24 +828,6 @@
      </property>
      <property name="text">
       <string>Event Time:</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="trace_update_button">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>91</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>9</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Go</string>
      </property>
     </widget>
    </widget>
@@ -874,7 +856,7 @@
      <x>0</x>
      <y>0</y>
      <width>851</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

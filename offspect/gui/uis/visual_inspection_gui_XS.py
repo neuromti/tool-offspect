@@ -2,11 +2,12 @@
 
 # Form implementation generated from reading ui file 'visual_inspection_gui_XS.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -247,7 +248,7 @@ class Ui_MainWindow(object):
         self.zeroxinglabel_5.setAutoFillBackground(True)
         self.zeroxinglabel_5.setObjectName("zeroxinglabel_5")
         self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(460, 372, 191, 171))
+        self.frame.setGeometry(QtCore.QRect(460, 372, 191, 131))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.frame.setFont(font)
@@ -267,35 +268,29 @@ class Ui_MainWindow(object):
         self.trace_idx_num.setFont(font)
         self.trace_idx_num.setObjectName("trace_idx_num")
         self.last_trace_num = QtWidgets.QLCDNumber(self.frame)
-        self.last_trace_num.setGeometry(QtCore.QRect(100, 80, 71, 31))
+        self.last_trace_num.setGeometry(QtCore.QRect(100, 40, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.last_trace_num.setFont(font)
         self.last_trace_num.setObjectName("last_trace_num")
         self.total_traces_label = QtWidgets.QLabel(self.frame)
-        self.total_traces_label.setGeometry(QtCore.QRect(10, 70, 91, 41))
+        self.total_traces_label.setGeometry(QtCore.QRect(10, 30, 91, 41))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.total_traces_label.setFont(font)
         self.total_traces_label.setObjectName("total_traces_label")
         self.event_time_num = QtWidgets.QLCDNumber(self.frame)
-        self.event_time_num.setGeometry(QtCore.QRect(100, 120, 71, 31))
+        self.event_time_num.setGeometry(QtCore.QRect(100, 80, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.event_time_num.setFont(font)
         self.event_time_num.setObjectName("event_time_num")
         self.label_9 = QtWidgets.QLabel(self.frame)
-        self.label_9.setGeometry(QtCore.QRect(10, 110, 81, 41))
+        self.label_9.setGeometry(QtCore.QRect(10, 70, 81, 41))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.label_9.setFont(font)
         self.label_9.setObjectName("label_9")
-        self.trace_update_button = QtWidgets.QPushButton(self.frame)
-        self.trace_update_button.setGeometry(QtCore.QRect(10, 30, 91, 41))
-        font = QtGui.QFont()
-        font.setPointSize(9)
-        self.trace_update_button.setFont(font)
-        self.trace_update_button.setObjectName("trace_update_button")
         self.readout = QtWidgets.QLabel(self.centralwidget)
         self.readout.setGeometry(QtCore.QRect(730, 500, 133, 21))
         font = QtGui.QFont()
@@ -304,7 +299,7 @@ class Ui_MainWindow(object):
         self.readout.setObjectName("readout")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 20))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 851, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -356,7 +351,7 @@ class Ui_MainWindow(object):
         self.trace_idx_num.setText(_translate("MainWindow", "1"))
         self.total_traces_label.setText(_translate("MainWindow", "Total Traces: "))
         self.label_9.setText(_translate("MainWindow", "Event Time:"))
-        self.trace_update_button.setText(_translate("MainWindow", "Go"))
         self.readout.setText(_translate("MainWindow", "Contralateral MEP"))
+
 
 from .mplwidget import MplWidget
