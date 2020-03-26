@@ -61,7 +61,7 @@ def yield_events(stream, select_event="coil_0_didt"):
             if msg == "Starte Hotspotsuche" or msg == "Starte Ruhemotorschwelle":
                 # print(msg)
                 skip = True
-            if msg == "Starte freien Modus":
+            elif msg == "Starte freien Modus":
                 # print(msg)
                 skip = False
             if skip:
@@ -82,6 +82,8 @@ def yield_events(stream, select_event="coil_0_didt"):
                     if not any(p == None for p in pos):
                         yield tout_ts, pos, mso, didt
                         tout_ts = None
+                else:
+                    yield tout_ts, None, None, didt
 
     except StopIteration:
         return
