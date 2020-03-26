@@ -104,6 +104,8 @@ def isversion(x) -> bool:
 
 
 def isfiledate(x) -> bool:
+    if x == "":
+        return True
     d = yaml.load(f"filedate: {x}", Loader=yaml.Loader)["filedate"]
     return type(d) == datetime.datetime or type(d) == datetime.date
 
@@ -200,4 +202,3 @@ def filter_trace_attrs(attrs: TraceAttributes) -> TraceAttributes:
         if key not in TKEYS.keys():
             filtered.pop(key)
     return filtered
-

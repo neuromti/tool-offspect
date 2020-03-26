@@ -112,7 +112,11 @@ def prepare_annotations(
     fs = get_fs(content)
     stimulation_intensity_mso = content["mso"][0][0]
     stimulation_intensity_didt = nan
-    filedate = str(datetime.datetime(*content["recdate"][0]))
+    if content["recdate"][0] == 0:  # there was no valid date in the obj
+        filedate = ""  # so we set this to unknown
+    else:  # otherwise we use the one stored in the obj
+        filedate = str(datetime.datetime(*content["recdate"][0]))
+
     subject = content["subid"][0]
     channel_labels = [channel]
     samples_pre_event = int(pre_in_ms * fs / 1000)

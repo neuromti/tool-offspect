@@ -107,12 +107,12 @@ def test_isnotversion(x):
     assert not isversion(x)
 
 
-@pytest.mark.parametrize("x", ["1970-01-01 00:01:01", "1970-01-01"])
+@pytest.mark.parametrize("x", ["1970-01-01 00:01:01", "1970-01-01", ""])
 def test_isfiledate(x):
     assert isfiledate(x)
 
 
-@pytest.mark.parametrize("x", ["00:01:01", "1970", "1970-01", "", None, "yesterday"])
+@pytest.mark.parametrize("x", ["00:01:01", "1970", "1970-01", None, "yesterday"])
 def test_isnotfiledate(x):
     assert not isfiledate(x)
 
