@@ -41,6 +41,10 @@ def decode(mark: str) -> Any:
     except json.JSONDecodeError:
         return mark[0]
 
+def yield_target_values(stream, target_value, target_channel):
+    for idx, datapoint in enumerate(stream.time_series):
+        if datapoint[target_channel] == target_value:
+            yield stream.time_stamps[idx]
 
 def yield_events(stream, select_event="coil_0_didt"):
     """go through all triggers in the stream, and  yield the coordinates
@@ -122,14 +126,18 @@ def prepare_annotations(
     pre_in_ms: float,
     post_in_ms: float,
     xmlfile: FileName = None,
+    subject = None,
+    event_stream = "localite_marker",
+    event_type:str = "marker_name",
+    event_target_value = 'coil_0_didt',
+    event_channel = None
 ) -> Annotations:
     """load a documentation.txt and cnt-files and distill annotations from them
-    
+
     args
     ----
-    xmlfile: FileName
-        an option xml file with information about the target coordinates 
-
+    xdffile: FileName
+        the :code:`.xdf`-file with the recorded streams, e.g. data and markers
     readout: str
         which readout to use (see :data:`~.VALID_READOUTS`)
     channel: str
@@ -138,45 +146,67 @@ def prepare_annotations(
         how many ms to cut before the tms
     post_in_ms: float
         how many ms to cut after the tms
-    xdffile: FileName
-        the :code:`.xdf`-file with the recorded streams, e.g. data and markers
+    xmlfile: FileName
+        an option xml file with information about the target coordinates
+    subject: str
+        Option to provide subject name
+    event_stream:str = "localite_marker"
+        Which stream contains the event
+    event_type:str = "marker_name"
+        Which event type to look for. Valid: 'marker_name' and 'target_value'
+    event_target_value = 'coil_0_didt'
+        The target value of the marker or channel
+    event_channel = None
+        when searching for target value in stream, a channel must be provided
     returns
     -------
     annotation: Annotations
         the annotations for this origin files
     """
-
-    # ------------------
-    event_names = "coil_0_didt"  # TODO make it a function argument eventually
     streams = XDFFile(xdffile)
-    try:
-        stream = streams["localite_marker"]
-        # initialize only when localite marker was found!
-        coords = []
+    if event_type == 'marker_name':
+        try:
+            event_name = "TMS stimulus"
+            stream = streams[event_stream]
+            # initialize only when localite marker was found!
+            coords = []
+            trigout_times = []
+            stimulation_intensity_mso = []
+            stimulation_intensity_didt = []
+
+            for ts, xyz, mso, didt in yield_events(stream, event_target_value):
+                trigout_times.append(ts)
+                coords.append(xyz)
+                stimulation_intensity_mso.append(mso)
+                stimulation_intensity_didt.append(didt)
+
+        except KeyError:
+            if xmlfile is not None:
+                coords = get_coords_from_xml(xmlfile)
+                print(f"XDF: Fall back to coordinates from {xmlfile}")
+            else:
+                print(f"XDF: No coordinates available, Filling in [nan, nan, nan]")
+
+                def yield_nan():
+                    while True:
+                        yield [nan, nan, nan]
+
+                coords = yield_nan()
+            stimulation_intensity_mso = [nan for i in range(len(coords))]
+            stimulation_intensity_didt = [nan for i in range(len(coords))]
+    elif event_type == 'target_value':
         trigout_times = []
+        coords = []
         stimulation_intensity_mso = []
         stimulation_intensity_didt = []
+        event_name = "Spongebob Trigger"
+        stream = streams[event_stream]
+        for trigout_time in yield_target_values(stream, event_target_value, event_channel):
+            trigout_times.append(trigout_time)
+            coords.append([nan, nan, nan])
+            stimulation_intensity_mso.append(nan)
+            stimulation_intensity_didt.append(nan)
 
-        for ts, xyz, mso, didt in yield_events(stream, event_names):
-            trigout_times.append(ts)
-            coords.append(xyz)
-            stimulation_intensity_mso.append(mso)
-            stimulation_intensity_didt.append(didt)
-
-    except KeyError:
-        if xmlfile is not None:
-            coords = get_coords_from_xml(xmlfile)
-            print(f"XDF: Fall back to coordinates from {xmlfile}")
-        else:
-            print(f"XDF: No coordinates available, Filling in [nan, nan, nan]")
-
-            def yield_nan():
-                while True:
-                    yield [nan, nan, nan]
-
-            coords = yield_nan()
-        stimulation_intensity_mso = [nan for i in range(len(coords))]
-        stimulation_intensity_didt = [nan for i in range(len(coords))]
 
     datastream = pick_stream_with_channel(channel, streams)
     cix = datastream.channel_labels.index(channel)
@@ -190,7 +220,6 @@ def prepare_annotations(
     origin = Path(xdffile).name
     fs = datastream.nominal_srate
     filedate = time.ctime(Path(xdffile).stat().st_mtime)
-    subject = ""  # TODO parse from correctly organized file
     channel_labels = [channel]
     samples_pre_event = int(pre_in_ms * fs / 1000)
     samples_post_event = int(post_in_ms * fs / 1000)
@@ -203,7 +232,7 @@ def prepare_annotations(
     for idx, t in enumerate(event_samples):
         tattr = {
             "id": idx,
-            "event_name": event_names,
+            "event_name": event_name,
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
             "xyz_coords": coords[idx],
