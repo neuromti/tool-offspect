@@ -57,7 +57,8 @@ class Ui(QtWidgets.QMainWindow):
         attrs["stimulation_intensity_mso"] = self.stimintensity_num.text()
         attrs["time_since_last_pulse_in_s"] = self.time_since_pulse_num.text()
         attrs["stimulation_intensity_didt"] = self.didt_num.text()
-        attrs["comment"] = self.commentbox.toPlainText()
+        attrs["comment"] = self.trace_commentbox.toPlainText()
+        attrs["global_comment"] = self.global_commentbox.toPlainText()
         attrs["reject"] = self.reject
         attrs["xyz_coords"] = self.coil_coordinate_input.text()
         self.cf.set_trace_attrs(self.trace_idx, attrs)
@@ -73,7 +74,7 @@ class Ui(QtWidgets.QMainWindow):
     def flip_reject_button(self):
         self.reject = not self.reject
         self.initialize_reject_button()
-        # save the rejection when the button is pressed 
+        # save the rejection when the button is pressed
         self.save_attributes()
         self.update_gui()
 
@@ -96,7 +97,8 @@ class Ui(QtWidgets.QMainWindow):
         self.filename_label_2.setText(attrs["origin"])
         self.examiner_name.setText(attrs["examiner"])
         self.readout.setText(attrs["readout"])
-        self.commentbox.setText(attrs["comment"])
+        self.trace_commentbox.setText(attrs["comment"])
+        self.global_commentbox.setText(attrs["global_comment"])
         self.xyz_coords = attrs["xyz_coords"]
         self.coil_coordinate_input.setText(self.xyz_coords)
         self.reject = decode(attrs["reject"])
@@ -148,9 +150,9 @@ class Ui(QtWidgets.QMainWindow):
             latest = peak
         else:
             latest = trough
-        # find MEP 
+        # find MEP
         mep_peak = np.where(data == np.max(data[latest+5:]))[0][0]
-        mep_trough = np.where(data == np.min(data[latest+5:]))[0][0] 
+        mep_trough = np.where(data == np.min(data[latest+5:]))[0][0]
         timey = np.arange(0, len(data), 1)
 
         textstr = "Vpp = {0:3.2f}".format(self.vpp)
