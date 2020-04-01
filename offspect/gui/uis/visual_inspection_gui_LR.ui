@@ -103,6 +103,24 @@
         <string>file comments:</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="reject_button">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>88</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Reject Trial</string>
+       </property>
+      </widget>
      </widget>
     </item>
     <item row="5" column="1">
@@ -235,24 +253,6 @@
         <string>Next</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="reject_button">
-       <property name="geometry">
-        <rect>
-         <x>230</x>
-         <y>70</y>
-         <width>88</width>
-         <height>27</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Reject Trial</string>
-       </property>
-      </widget>
      </widget>
     </item>
     <item row="5" column="2">
@@ -305,7 +305,7 @@
          <x>90</x>
          <y>40</y>
          <width>51</width>
-         <height>31</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
@@ -318,7 +318,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>40</y>
+         <y>30</y>
          <width>101</width>
          <height>41</height>
         </rect>
@@ -336,9 +336,9 @@
        <property name="geometry">
         <rect>
          <x>90</x>
-         <y>80</y>
+         <y>70</y>
          <width>51</width>
-         <height>31</height>
+         <height>21</height>
         </rect>
        </property>
        <property name="font">
@@ -351,9 +351,9 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>70</y>
+         <y>60</y>
          <width>91</width>
-         <height>51</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="font">
@@ -387,7 +387,7 @@
        <property name="geometry">
         <rect>
          <x>160</x>
-         <y>50</y>
+         <y>40</y>
          <width>161</width>
          <height>61</height>
         </rect>
@@ -417,7 +417,7 @@
          <x>10</x>
          <y>40</y>
          <width>631</width>
-         <height>541</height>
+         <height>511</height>
         </rect>
        </property>
        <property name="layoutDirection">
