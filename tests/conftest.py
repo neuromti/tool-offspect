@@ -2,7 +2,7 @@ import pytest
 import tempfile
 from pathlib import Path
 from .mock.cache import create_test_cachefile, get_cachefile_template
-
+from .mock.markerstream import XDFStream
 
 @pytest.fixture(scope="module")
 def cachefile0():
@@ -52,3 +52,7 @@ def matfile():
 @pytest.fixture(scope="session")
 def xmlfile():
     yield Path(__file__).parent / "coords_contralesional.xml"
+
+@pytest.fixture(scope="module")
+def XDFMarkerStream():
+    yield XDFStream()
