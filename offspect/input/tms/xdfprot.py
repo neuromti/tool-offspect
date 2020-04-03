@@ -115,7 +115,31 @@ def find_closest_samples(stream: XDFStream, tstamps: List[float]) -> List[int]:
         event_samples.append(idx)
     return event_samples
 
+def valid_info_for_trigger(info_tsp, trigger_tsp):
+    """decides if a info marker fits to a trigger timestamp"""
+    return trigger_tsp > info_tsp > trigger_tsp - 3.5
 
+def find_trigger_info(reiz_marker_stream, trigger_tsp:float):
+    """
+    Searches for the info in reiz marker stream for a specific trigger
+
+    args:
+        ---
+        reiz_marker_stream:XDFStream
+            a strem cotaining information on stimuli
+        trigger_tsp: float
+         Specifies an column where the values determin the index order
+
+    returns:
+        info:
+            None if no info was found, else the info in the marker
+    """
+    try:
+        info_index = [i for i, info_tsp in enumerate(reiz_marker_stream.time_stamps) if valid_info_for_trigger(info_tsp, trigger_tsp)][-1]
+        info = reiz_marker_stream.time_series[info_index]
+        return info
+    except IndexError:
+        return None
 # -----------------------------------------------------------------------------
 
 
@@ -164,6 +188,7 @@ def prepare_annotations(
         the annotations for this origin files
     """
     streams = XDFFile(xdffile)
+    event_names = []
     if event_type == 'marker_name':
         try:
             event_name = "TMS stimulus"
@@ -175,6 +200,7 @@ def prepare_annotations(
             stimulation_intensity_didt = []
 
             for ts, xyz, mso, didt in yield_events(stream, event_target_value):
+                event_names.append(event_name)
                 trigout_times.append(ts)
                 coords.append(xyz)
                 stimulation_intensity_mso.append(mso)
@@ -199,9 +225,11 @@ def prepare_annotations(
         coords = []
         stimulation_intensity_mso = []
         stimulation_intensity_didt = []
-        event_name = "Spongebob Trigger"
         stream = streams[event_stream]
         for trigout_time in yield_target_values(stream, event_target_value, event_channel):
+            triggger_info = find_trigger_info(streams['reiz_marker_sa'], trigout_times)[0]
+            if trigger_info:
+                event_names.append(f"{trigger_info['stim_type']} Stimulus")
             trigout_times.append(trigout_time)
             coords.append([nan, nan, nan])
             stimulation_intensity_mso.append(nan)
