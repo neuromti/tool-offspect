@@ -4,8 +4,6 @@ Generic MetaData fields implemented in all readouts
 
 More elaborate analysis requires custom-written scripts or readouts.
 """
-from offspect.cache.converter import Converter, exists, pass_value, encode, decode
-
 valid_origin_keys = [
     "channel_labels",
     "channel_of_interest",
@@ -32,10 +30,3 @@ valid_trace_keys = [
     "comment",
     "examiner",
 ]  #: information contained in every trace, regardless of readout
-
-valid_keys = valid_origin_keys + valid_trace_keys
-
-is_valid = Converter.factory(valid_keys, exists)
-pass_value = Converter.factory(valid_keys, pass_value)
-encode = Converter.factory(valid_keys, encode)
-decode = Converter.factory(valid_keys, decode)
