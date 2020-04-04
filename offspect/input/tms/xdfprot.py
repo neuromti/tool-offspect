@@ -21,7 +21,6 @@ If multiple protocols were recorded in one :code:`xdf`-file, as often happened d
 """
 from offspect.types import Annotations, FileName
 from offspect import release
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
 from typing import List, Union, Any, Dict
 from liesl.api import XDFFile
 from liesl.files.xdf.load import XDFStream
@@ -199,6 +198,8 @@ def prepare_annotations(
         a - b for a, b in zip(event_times[1:], event_times[0:-1])
     ]
 
+    print(readout)
+
     traceattrs: List[MetaData] = []
     for idx, t in enumerate(event_samples):
         tattr = {
@@ -267,20 +268,3 @@ def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
         trace = datastream.time_series[onset - pre : onset + post, cix]
         traces.append(trace)
     return traces
-
-
-if __name__ == "__main__":
-    xdffile = "/media/rgugg/server/mnt/data/data08/RawData/2019_ST_IN-TENS/EiHe/pre1/mapping_contra_R001.xdf"
-    pre_in_ms = 100
-    post_in_ms = 100
-    readout = "contralateral_mep"
-    channel = "EDC_L"
-    anno = prepare_annotations(xdffile, channel, readout, pre_in_ms, post_in_ms)
-    for k, v in anno.items():
-        if type(v) is list:
-            print("Trial Count: ", len(v))
-        elif type(v) is dict:
-            for _k, _v in v.items():
-                print(_k, ":", _v)
-        else:
-            print(k, ":", v)

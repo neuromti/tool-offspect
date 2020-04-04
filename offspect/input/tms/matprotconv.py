@@ -29,7 +29,6 @@ By design, the coordinates of the target-entry pairs were stored  independently 
 
 
 """
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
 from typing import Generator, List, Dict
 from pathlib import Path
 import datetime

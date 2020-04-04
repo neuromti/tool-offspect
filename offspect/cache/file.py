@@ -21,16 +21,12 @@ from functools import partial
 import ast
 from functools import lru_cache
 from .check import (
-    check_consistency,
     check_valid_suffix,
-    # check_metadata,
     FileName,
-    MetaValue,
     MetaData,
     Annotations,
     TraceData,
     TraceAttributes,
-    filter_trace_attrs,
     isindex,
 )
 from math import inf, nan

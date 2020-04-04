@@ -65,8 +65,6 @@ from typing import List, Tuple, Dict, Generator, Any
 from datetime import datetime
 import numpy as np
 from math import inf, nan
-from offspect.cache.check import VALID_READOUTS, SPECIFIC_TRACEKEYS
-
 from os import environ
 
 if not environ.get("READTHEDOCS", False):

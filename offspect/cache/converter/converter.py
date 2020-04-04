@@ -51,6 +51,9 @@ class Converter:
             other[key] = convert(value)
         return other
 
+    def keys(self):
+        return list(self.mapper.keys())
+
     def is_complete(self, other: Dict[str, str]) -> bool:
         o = set(k for k in other.keys())
         s = set(k for k in self.mapper.keys())

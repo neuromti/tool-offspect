@@ -24,3 +24,8 @@ is_valid = Converter.factory(valid_keys, exists) + generic.is_valid
 pass_value = Converter.factory(valid_keys, pass_value) + generic.pass_value
 encode = Converter.factory(valid_keys, encode) + generic.encode
 decode = Converter.factory(valid_keys, decode) + generic.decode
+
+
+class Annotation:
+    def __init__(self):
+        print(is_valid.keys())
