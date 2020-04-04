@@ -14,7 +14,7 @@ packages = setuptools.find_namespace_packages(exclude=["tests*", "docs*", "htmlc
 
 setup(
     name="offspect",
-    version="0.1.0",
+    version="0.1.1",
     description="Visually inspect evoked responses",
     long_description=long_description,
     long_description_content_type="text/markdown",
