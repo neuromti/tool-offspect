@@ -137,13 +137,13 @@ def prepare_annotations(
             "xyz_coords": coords[idx],
             "time_since_last_pulse_in_s": float(time_since_last_pulse[idx]),
             "stimulation_intensity_mso": float(stimulation_intensity_mso),
-            "stimulation_intensity_didt": stimulation_intensity_didt,
+            "stimulation_intensity_didt": float(stimulation_intensity_didt),
             "reject": False,
             "comment": "",
             "examiner": "",
             "onset_shift": 0,
         }
-        anno.append_trace_attrs(tattr)
+        anno.append_trace_attr(tattr)
 
     return anno.anno
 
@@ -166,6 +166,7 @@ def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
             "Matfile does not correspond with original file. Fix manually if you plan to fork this annotations"
         )
     content = convert_mat(matfile)
+    # it is important to decode all values, because they are natively stored as strings only
     target_channel = decode(annotation["attrs"]["channel_of_interest"])
     pre = decode(annotation["attrs"]["samples_pre_event"])
     post = decode(annotation["attrs"]["samples_post_event"])

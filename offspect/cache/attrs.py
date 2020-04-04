@@ -25,11 +25,32 @@ def encode(value: Any) -> str:
         return value
     if type(value) == list:
         return str(value)
-    return yaml.dump(value, Dumper=yaml.Dumper).splitlines()[0]
+
+    enc = yaml.dump(value, Dumper=yaml.Dumper).splitlines()[0]
+    if "!!" in enc:
+        raise ValueError(
+            "Please use only literals, and if necessary cast with float, str or int"
+        )
+
+    return enc
 
 
 class AnnotationFactory:
-    def clear_annotations(self):
+    """A factory to create new annotations
+    
+    args
+    ----
+    readin: str
+        the format of the data being readin, e.g. tms or pes
+    readout: str
+        the format of how the data will be used for display and analysis, e.g. wave, cmep, imep, erp
+    origin:str
+        the original source-file from where this data is coming from
+
+    
+    """
+
+    def _clear_annotations(self):
         self.anno: Annotations = dict()
         self.anno["origin"] = ""
         self.anno["attrs"]: MetaData = dict()
@@ -44,12 +65,13 @@ class AnnotationFactory:
             raise NotImplementedError(
                 f"{readout} invalid, only {valid_readouts} are allowed"
             )
-        self.clear_annotations()
+        self._clear_annotations()
         self.set("origin", origin)
         self.set("readout", readout)
         self.set("readin", readin)
 
     def set(self, key: str, value: Any):
+        "perform checks for validity and sets a value for a global field"
         if key == "origin":
             self.anno["origin"] = encode(value)
         else:
@@ -60,7 +82,8 @@ class AnnotationFactory:
             else:
                 self.anno["attrs"][key] = encode(value)
 
-    def get(self, key: str, value: Any):
+    def get(self, key: str):
+        "returns a value for a global field"
         if key == "origin":
             return decode(self.anno["origin"])
         else:
@@ -75,7 +98,7 @@ class AnnotationFactory:
     def rio(self):
         """The readin/out parameter
         
-        limits the valid TraceAttributes and defines what the GUI should show        
+        This parameter defines which keys are valid for the TraceAttributes and defines what the GUI should show
         """
         ri = self.anno["attrs"]["readin"]
         ro = self.anno["attrs"]["readout"]
@@ -97,16 +120,13 @@ class AnnotationFactory:
         m = importlib.import_module(f"offspect.cache.readout.{self.rio}")
         return m.valid_keys + valid_trace_keys
 
-    def append_trace_attrs(self, attrs: MetaData):
+    def append_trace_attr(self, attrs: MetaData):
         "append a TraceAttribute to the current list of TraceAttributes"
         tattrs = dict()
         for key in self.valid_trace_keys:
             if key in attrs.keys():
                 e = encode(attrs[key])
-                if "!!" in e:
-                    raise ValueError(
-                        "Please use only safe values, if necessary cast with float, str or int first!"
-                    )
+
                 tattrs[key] = e
             else:
                 print(f"Defaulting to '' for {key}")
