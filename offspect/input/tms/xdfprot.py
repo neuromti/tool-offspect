@@ -20,7 +20,6 @@ If multiple protocols were recorded in one :code:`xdf`-file, as often happened d
 
 """
 from offspect.types import Annotations, FileName
-from offspect import release
 from typing import List, Union, Any, Dict
 from liesl.api import XDFFile
 from liesl.files.xdf.load import XDFStream
@@ -31,6 +30,7 @@ from math import nan, inf
 import time
 import json
 import numpy as np
+from offspect.cache.attrs import AnnotationFactory
 
 
 def decode(mark: str) -> Any:
@@ -200,44 +200,8 @@ def prepare_annotations(
 
     print(readout)
 
-    traceattrs: List[MetaData] = []
-    for idx, t in enumerate(event_samples):
-        tattr = {
-            "id": idx,
-            "event_name": event_names,
-            "event_sample": event_samples[idx],
-            "event_time": event_times[idx],
-            "xyz_coords": coords[idx],
-            "time_since_last_pulse_in_s": time_since_last_pulse[idx],
-            "stimulation_intensity_mso": stimulation_intensity_mso[idx],
-            "stimulation_intensity_didt": stimulation_intensity_didt[idx],
-            "reject": False,
-            "comment": "",
-            "examiner": "",
-            "onset_shift": 0,
-        }
-        for key in SPECIFIC_TRACEKEYS[readout].keys():
-            if key not in tattr.keys():
-                tattr[key] = nan
-        traceattrs.append(tattr)
-
-    anno: Annotations = {
-        "origin": origin,
-        "attrs": {
-            "filedate": filedate,
-            "subject": subject,
-            "samplingrate": fs,
-            "samples_pre_event": samples_pre_event,
-            "samples_post_event": samples_post_event,
-            "channel_labels": channel_labels,
-            "readout": readout,
-            "global_comment": "",
-            "history": "",
-            "version": release,
-        },
-        "traces": traceattrs,
-    }
-    return anno
+    anno = AnnotationFactory(readin="tms", readout=readout, origin=origin)
+    return anno.anno
 
 
 def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:

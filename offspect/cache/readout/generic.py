@@ -8,11 +8,13 @@ from offspect.cache.converter import Converter, exists, pass_value, encode, deco
 
 valid_origin_keys = [
     "channel_labels",
+    "channel_of_interest",
     "samples_post_event",
     "samples_pre_event",
     "samplingrate",
     "subject",
     "readout",
+    "readin",
     "global_comment",
     "filedate",
     "history",

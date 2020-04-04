@@ -12,12 +12,12 @@ def test_matprot(tmp_path, get_matprot):
     annotation = prepare_annotations(
         xmlfile,
         matfile,
-        channel="EDC_L",
+        channel_of_interest="EDC_L",
         pre_in_ms=100,
         post_in_ms=100,
-        readout="contralateral_mep",
+        readout="cmep",
     )
-
+    print(annotation)
     traces = cut_traces(matfile, annotation)
 
     d = tmp_path / "matprot"
@@ -27,3 +27,4 @@ def test_matprot(tmp_path, get_matprot):
     populate(tf, annotations=[annotation], traceslist=[traces])
     cf = CacheFile(tf)
     assert cf.origins[0] == Path(matfile).name
+    assert len(cf) == 2

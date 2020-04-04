@@ -17,7 +17,6 @@ valid_keys = [
     "pos_peak_latency_ms",
     "zcr_latency_ms",
     "xyz_coords",
-    "channel_of_interest",
 ]  #: valid keys for contralateral-mep
 
 is_valid = Converter.factory(valid_keys, exists) + generic.is_valid

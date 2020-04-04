@@ -36,6 +36,8 @@ from math import inf, nan
 from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from offspect import release
 from os import environ
+from offspect.cache.attrs import AnnotationFactory, decode
+
 
 if not environ.get("READTHEDOCS", False):
     from matprot.convert.coords import convert_xml_to_coords
@@ -69,7 +71,7 @@ def prepare_annotations(
     xmlfile: FileName,
     matfile: FileName,
     readout: str,
-    channel: str,
+    channel_of_interest: str,
     pre_in_ms: float,
     post_in_ms: float,
 ) -> Annotations:
@@ -95,14 +97,6 @@ def prepare_annotations(
     annotation: Annotations
         the annotations for this origin files
     """
-    # xmlfile = "/media/rgugg/tools/python3/tool-load-tms/tests/coords_contralesional.xml"
-    # matfile = "/media/rgugg/tools/python3/tool-load-tms/tests/map_contralesional.mat"
-    # channel = "EDC_L"
-    # pre_in_ms = 100
-    # post_in_ms = 100
-
-    if readout not in VALID_READOUTS:
-        raise NotImplementedError(f"{readout} is not implemented")
 
     # collect data
     content = convert_mat(matfile)
@@ -113,8 +107,7 @@ def prepare_annotations(
     stimulation_intensity_didt = nan
     filedate = str(datetime.datetime(*content["recdate"][0]))
 
-    subject = content["subid"][0]
-    channel_labels = [channel]
+    subject = str(content["subid"][0])
     samples_pre_event = int(pre_in_ms * fs / 1000)
     samples_post_event = int(post_in_ms * fs / 1000)
     # trace fields
@@ -126,44 +119,33 @@ def prepare_annotations(
         a - b for a, b in zip(event_times[1:], event_times[0:-1])
     ]
 
-    traceattrs: List[MetaData] = []
-    for idx, t in enumerate(event_samples):
+    anno = AnnotationFactory(readin="tms", readout=readout, origin=origin)
+    anno.set("filedate", filedate)
+    anno.set("subject", subject)
+    anno.set("samplingrate", fs)
+    anno.set("samples_pre_event", samples_pre_event)
+    anno.set("samples_post_event", samples_post_event)
+    anno.set("channel_of_interest", channel_of_interest)
+    anno.set("channel_labels", [channel_of_interest])
+
+    for idx, _ in enumerate(event_samples):
         tattr = {
             "id": idx,
             "event_name": f"'{event_names[idx]}'",
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
             "xyz_coords": coords[idx],
-            "time_since_last_pulse_in_s": time_since_last_pulse[idx],
-            "stimulation_intensity_mso": stimulation_intensity_mso,
+            "time_since_last_pulse_in_s": float(time_since_last_pulse[idx]),
+            "stimulation_intensity_mso": float(stimulation_intensity_mso),
             "stimulation_intensity_didt": stimulation_intensity_didt,
             "reject": False,
             "comment": "",
             "examiner": "",
             "onset_shift": 0,
         }
-        for key in SPECIFIC_TRACEKEYS[readout].keys():
-            if key not in tattr.keys():
-                tattr[key] = nan
-        traceattrs.append(tattr)
+        anno.append_trace_attrs(tattr)
 
-    anno: Annotations = {
-        "origin": origin,
-        "attrs": {
-            "filedate": filedate,
-            "subject": subject,
-            "samplingrate": fs,
-            "samples_pre_event": samples_pre_event,
-            "samples_post_event": samples_post_event,
-            "channel_labels": channel_labels,
-            "readout": readout,
-            "global_comment": "",
-            "history": "",
-            "version": release,
-        },
-        "traces": traceattrs,
-    }
-    return anno
+    return anno.anno
 
 
 def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
@@ -184,10 +166,10 @@ def cut_traces(matfile: FileName, annotation: Annotations) -> List[TraceData]:
             "Matfile does not correspond with original file. Fix manually if you plan to fork this annotations"
         )
     content = convert_mat(matfile)
-    target_channel = annotation["attrs"]["channel_labels"][0]
-    pre = annotation["attrs"]["samples_pre_event"]
-    post = annotation["attrs"]["samples_post_event"]
-    onsets = [attr["event_sample"] for attr in annotation["traces"]]
+    target_channel = decode(annotation["attrs"]["channel_of_interest"])
+    pre = decode(annotation["attrs"]["samples_pre_event"])
+    post = decode(annotation["attrs"]["samples_post_event"])
+    onsets = [decode(attr["event_sample"]) for attr in annotation["traces"]]
     traces = _cut_traces(
         content,
         target_channel=target_channel,

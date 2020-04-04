@@ -55,6 +55,7 @@ def cli_tms(args: argparse.Namespace):
         raise NotImplementedError("Unknown input format")
 
     print(f"Assuming source data is from {fmt} protocol")
+    # MATPROT -----------------------------------------------------------------
     if fmt == "matprot":
         from offspect.input.tms.matprotconv import (  # type: ignore
             prepare_annotations,
@@ -71,7 +72,7 @@ def cli_tms(args: argparse.Namespace):
             xmlfile=xmlfile,
             matfile=matfile,
             readout=args.readout,
-            channel=args.channel,
+            channel_of_interest=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
         )
