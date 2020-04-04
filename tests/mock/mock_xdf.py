@@ -4,6 +4,7 @@ from pathlib import Path
 xdf_urls = {
     "acute_nmes.xdf": "https://github.com/translationalneurosurgery/tool-offspect/releases/download/v0.1.0/acute_nmes.xdf",
     "acute_tms.xdf": "https://github.com/translationalneurosurgery/tool-offspect/releases/download/v0.1.0/acute_tms.xdf",
+    "stroke_map.xdf": "https://github.com/translationalneurosurgery/tool-offspect/releases/download/v0.1.0/stroke_map.xdf",
 }
 
 

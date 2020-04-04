@@ -120,6 +120,8 @@ def prepare_annotations(
     pre_in_ms: float,
     post_in_ms: float,
     xmlfile: FileName = None,
+    event_names="coil_0_didt",
+    event_stream="localite_marker",
 ) -> Annotations:
     """load a documentation.txt and cnt-files and distill annotations from them
     
@@ -145,10 +147,10 @@ def prepare_annotations(
     """
 
     # ------------------
-    event_names = "coil_0_didt"  # TODO make it a function argument eventually
+
     streams = XDFFile(xdffile)
     try:
-        stream = streams["localite_marker"]
+        stream = streams[event_stream]
         # initialize only when localite marker was found!
         coords = []
         trigout_times = []

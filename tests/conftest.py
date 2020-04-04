@@ -55,7 +55,7 @@ def xmlfile():
 
 
 @pytest.fixture(scope="session")
-def xdffile():
+def get_xdffile():
     from .mock.mock_xdf import mock
 
     yield mock
