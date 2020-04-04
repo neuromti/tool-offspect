@@ -46,12 +46,27 @@ def cachefile1():
 
 @pytest.fixture(scope="session")
 def matfile():
+    print("Mocking matfile")
     yield Path(__file__).parent / "map_contralesional.mat"
 
 
 @pytest.fixture(scope="session")
 def xmlfile():
+    print("Mocking xmlfile")
     yield Path(__file__).parent / "coords_contralesional.xml"
+
+
+@pytest.fixture(scope="session")
+def get_matprot():
+    from .mock.mock_matprot import mock
+
+    mocked = mock()
+    for f in mocked:
+        if Path(f).suffix == ".xml":
+            xmlfile = f
+        elif Path(f).suffix == ".mat":
+            matfile = f
+    yield xmlfile, matfile
 
 
 @pytest.fixture(scope="session")

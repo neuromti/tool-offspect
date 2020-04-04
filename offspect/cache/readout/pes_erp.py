@@ -1,8 +1,8 @@
 """
-ERPs induced by single pulse NMES / PNS
----------------------------------------
+ERPs induced by single pulse PES
+--------------------------------
 
-This is a readout for EEG responses evoked by single pulse peripheral stimulation. As this will be a multi-channel-readout, there would be a tremendous amount of peaks and latencies. Therefore, we only store the GMFP trace results in the metadata. More elaborate analysis requires custom-written scripts.
+This is a readout for EEG responses evoked by single pulse peripheral electrical stimulation. As this will be a multi-channel-readout, there would be a tremendous amount of peaks and latencies. Therefore, we only store the GMFP trace results in the metadata. 
 """
 from offspect.cache.converter import Converter, exists, pass_value, encode, decode
 from offspect.cache.readout import generic

@@ -5,27 +5,10 @@ from offspect.input.tms.matprotconv import prepare_annotations, cut_traces
 from offspect.api import populate, CacheFile
 from matprot.convert.traces import is_matlab_installed
 
-try:
-    matfile = list(
-        (Path(pkg_resources.resource_filename("matprot", "")).parent / "tests").glob(
-            "*.mat"
-        )
-    )[0]
 
-    xmlfile = list(
-        (Path(pkg_resources.resource_filename("matprot", "")).parent / "tests").glob(
-            "*.xml"
-        )
-    )[0]
-    found = True
-except IndexError:
-    found = False
-
-
-@pytest.mark.skipif(found == False, reason="Could not find the test files")
 @pytest.mark.skipif(is_matlab_installed() == False, reason="Matlab is not installed")
-def test_matprot(tmp_path):
-
+def test_matprot(tmp_path, get_matprot):
+    xmlfile, matfile = get_matprot
     annotation = prepare_annotations(
         xmlfile,
         matfile,
@@ -43,4 +26,4 @@ def test_matprot(tmp_path):
 
     populate(tf, annotations=[annotation], traceslist=[traces])
     cf = CacheFile(tf)
-    assert cf.origins[0] == matfile.name
+    assert cf.origins[0] == Path(matfile).name

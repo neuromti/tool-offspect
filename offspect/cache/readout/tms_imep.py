@@ -1,6 +1,6 @@
 """
-Contralateral MEPs induced by single pulse TMS
-----------------------------------------------
+Ipsilateral MEPs induced by single pulse TMS
+--------------------------------------------
 
 This is a readout for a single channel EMG response evoked by single pulse transcranial magnetic stimulation. As this will be a single-channel-readout with a relatively clear waveform, we store only the magnitude of the first negative and positive peak and the zero-crossing latency.
 

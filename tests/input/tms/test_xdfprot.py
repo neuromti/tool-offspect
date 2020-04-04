@@ -8,8 +8,8 @@ def test_convert_xdf(get_xdffile):
     annotation = prepare_annotations(
         xdffile=xdffile,
         channel="EDC_L",
-        readout="tms_cmep",
-        # readout="contralateral_mep",
+        # readout="tms_cmep",
+        readout="contralateral_mep",
         pre_in_ms=100,
         post_in_ms=100,
         event_names="coil_0_didt",

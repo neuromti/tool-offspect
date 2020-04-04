@@ -17,6 +17,10 @@ Readouts
    :noindex:
    :members: valid_keys
    
-.. automodule:: offspect.cache.readout.nmes_erp
+.. automodule:: offspect.cache.readout.pes_erp
+   :noindex:
+   :members: valid_keys
+   
+.. automodule:: offspect.cache.readout.pes_mep
    :noindex:
    :members: valid_keys

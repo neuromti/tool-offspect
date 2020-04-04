@@ -12,16 +12,17 @@ offspect
 ~~~~~~~~
 .. code-block:: none
 
-   usage: offspect [-h] {peek,merge,tms,gui} ...
+   usage: offspect [-h] {peek,merge,tms,pes,gui} ...
    
    Create, manipulate and inspect cachefiles for offline inspection of evoked
    potentials
    
    positional arguments:
-     {peek,merge,tms,gui}
+     {peek,merge,tms,pes,gui}
        peek                peek into a cachefile and print essential information
        merge               merge two cachefiles into one
        tms                 prepare cachefiles for a tms protocol
+       pes                 prepare cachefiles for a pes protocol
        gui                 start the visual inspection GUI
    
    optional arguments:
@@ -69,7 +70,32 @@ offspect tms
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of input files
      -r READOUT, --readout READOUT
-                           the desired readout
+                           the desired readout, valid are: ['cmep', 'imep',
+                           'erp']
+     -c CHANNEL, --channel CHANNEL
+                           the desired channel
+     -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
+                           <Required> positional arguments of pre and post
+                           duration
+     -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
+                           <Required> select event
+
+
+offspect pes
+~~~~~~~~~~~~
+.. code-block:: none
+
+   usage: offspect pes [-h] -t TO -f SOURCES [SOURCES ...] -r READOUT -c CHANNEL
+                       -pp PREPOST [PREPOST ...]
+                       [-e SELECT_EVENTS [SELECT_EVENTS ...]]
+   
+   optional arguments:
+     -h, --help            show this help message and exit
+     -t TO, --to TO        filename of the cachefile to be populated
+     -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
+                           <Required> list of input files
+     -r READOUT, --readout READOUT
+                           the desired readout, valid are: ['erp', 'mep']
      -c CHANNEL, --channel CHANNEL
                            the desired channel
      -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
