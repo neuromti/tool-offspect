@@ -110,12 +110,10 @@ def test_load_ephys_file(eeg_cnt, emg_cnt):
 
 def test_convert_smartmove(eeg_cnt, emg_cnt, doctxt):
     eeg_cnt, onsets = eeg_cnt
-    anno = prepare_annotations(
-        doctxt, eeg_cnt, emg_cnt, "Ch1", "contralateral_mep", 100, 100
-    )
+    anno = prepare_annotations(doctxt, eeg_cnt, emg_cnt, "Ch1", "cmep", 100, 100)
     assert anno["origin"] == Path(emg_cnt).name
     assert len(anno["traces"]) == 2
-    assert [a["event_time"] for a in anno["traces"]] == [o / 1000 for o in onsets]
+    assert [a["event_time"] for a in anno["traces"]] == [str(o / 1000) for o in onsets]
 
     traces = cut_traces(emg_cnt, anno)
     for (trace, t) in zip(traces, onsets):

@@ -66,6 +66,7 @@ from datetime import datetime
 import numpy as np
 from math import inf, nan
 from os import environ
+from offspect.cache.attrs import AnnotationFactory, decode
 
 if not environ.get("READTHEDOCS", False):
     from libeep import cnt_file
@@ -274,7 +275,7 @@ def prepare_annotations(
     docfile: FileName,
     eegfile: FileName,
     emgfile: FileName,
-    channel: str,
+    channel_of_interest: str,
     readout: str,
     pre_in_ms: float,
     post_in_ms: float,
@@ -304,8 +305,6 @@ def prepare_annotations(
     annotation: Annotations
         the annotations for this origin files
     """
-    if readout not in VALID_READOUTS:
-        raise NotImplementedError(f"{readout} is not implemented")
 
     # collect data
     info = load_ephys_file(
@@ -314,14 +313,22 @@ def prepare_annotations(
         pre_in_ms=pre_in_ms,
         post_in_ms=post_in_ms,
         select_events=select_events,
-        select_channel=channel,
+        select_channel=channel_of_interest,
     )
     coords = load_documentation_txt(docfile)
     stimulation_intensity_mso = nan
     stimulation_intensity_didt = nan
 
+    anno = AnnotationFactory(readin="tms", readout=readout, origin=info["origin"])
+    anno.set("filedate", info["filedate"])
+    anno.set("subject", info["subject"])
+    anno.set("samplingrate", info["samplingrate"])
+    anno.set("samples_pre_event", info["samples_pre_event"])
+    anno.set("samples_post_event", info["samples_post_event"])
+    anno.set("channel_of_interest", [channel_of_interest])
+    anno.set("channel_labels", info["channel_labels"])
+
     # trace fields
-    traceattrs: List[MetaData] = []
     event_names = info["event_names"]
     event_samples = info["event_samples"]
     event_times = info["event_times"]
@@ -341,32 +348,12 @@ def prepare_annotations(
             "stimulation_intensity_mso": stimulation_intensity_mso,
             "stimulation_intensity_didt": stimulation_intensity_didt,
             "reject": False,
-            "comment": "",
-            "examiner": "",
             "onset_shift": 0,
         }
-        for key in SPECIFIC_TRACEKEYS[readout].keys():
-            if key not in tattr.keys():
-                tattr[key] = nan
-        traceattrs.append(tattr)
 
-    anno: Annotations = {
-        "origin": info["origin"],
-        "attrs": {
-            "filedate": info["filedate"],
-            "subject": info["subject"],
-            "samplingrate": info["samplingrate"],
-            "samples_pre_event": info["samples_pre_event"],
-            "samples_post_event": info["samples_post_event"],
-            "channel_labels": info["channel_labels"],
-            "readout": readout,
-            "global_comment": "",
-            "history": "",
-            "version": release,
-        },
-        "traces": traceattrs,
-    }
-    return anno
+        anno.append_trace_attr(tattr)
+
+    return anno.anno
 
 
 def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
@@ -383,14 +370,14 @@ def cut_traces(cntfile: FileName, annotation: Annotations) -> List[TraceData]:
     traces: List[TraceData]
     """
     cnt = cnt_file(cntfile)
-    pre = annotation["attrs"]["samples_pre_event"]
-    post = annotation["attrs"]["samples_post_event"]
+    pre = decode(annotation["attrs"]["samples_pre_event"])
+    post = decode(annotation["attrs"]["samples_post_event"])
     cix = [cnt.get_channel_info(c)[0] for c in range(cnt.get_channel_count())].index(
-        annotation["attrs"]["channel_labels"][0]
+        decode(annotation["attrs"]["channel_of_interest"])[0]
     )
     traces = []
     for attrs in annotation["traces"]:
-        onset = attrs["event_sample"]
+        onset = decode(attrs["event_sample"])
         trace = cnt.get_samples(fro=onset - pre, to=onset + post)
         trace = np.asanyarray(trace)[:, cix]
         traces.append(trace)
