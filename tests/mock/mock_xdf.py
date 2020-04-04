@@ -8,8 +8,9 @@ xdf_urls = {
 
 
 def download_to_file(url: str, fname: str):
-    print(f"Beginning file download from {url}")
+    print(f"Downloading file from {url}")
     urllib.request.urlretrieve(url, fname)
+    print(f"File downloaded to", fname)
 
 
 def mock(xdfname: str, clean=False):
@@ -25,6 +26,8 @@ def mock(xdfname: str, clean=False):
 
     if not fname.exists():
         download_to_file(url, str(fname))
+    else:
+        print(f"File already downloaded to", fname)
 
     return str(fname)
 
@@ -32,4 +35,3 @@ def mock(xdfname: str, clean=False):
 if __name__ == "__main__":
     for fname in xdf_urls.keys():
         mock(fname, clean=True)
-        print("Download complete for", fname)

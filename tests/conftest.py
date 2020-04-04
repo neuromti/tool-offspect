@@ -52,3 +52,10 @@ def matfile():
 @pytest.fixture(scope="session")
 def xmlfile():
     yield Path(__file__).parent / "coords_contralesional.xml"
+
+
+@pytest.fixture(scope="session")
+def xdffile():
+    from .mock.mock_xdf import mock
+
+    yield mock
