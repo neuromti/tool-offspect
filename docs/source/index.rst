@@ -35,6 +35,16 @@ If you have a fresh Anaconda Installation, this should work out of the box. Othe
    # at a later stage, you can deactivate the environment with
    deactivate
 
+Updating
+--------
+
+You can update the offline-inspection tool from the project root with  
+
+.. code-block:: bash
+
+   git pull
+   pip install -r requirements.txt
+   pip install -e .
 
 Content
 -------
