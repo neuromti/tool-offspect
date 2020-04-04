@@ -7,7 +7,6 @@ This is a readout for EEG responses evoked by single pulse transcranial magnetic
 from offspect.cache.converter import Converter, exists, pass_value, encode, decode
 from offspect.cache.readout import generic
 
-command = "tms-erp"  #: command line parameter for this readout
 valid_keys = [
     "stimulation_intensity_mso",
     "stimulation_intensity_didt",
