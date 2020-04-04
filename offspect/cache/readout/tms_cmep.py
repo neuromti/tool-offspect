@@ -8,8 +8,6 @@ This is a readout for a single channel EMG response evoked by single pulse trans
 from offspect.cache.converter import Converter, exists, pass_value, encode, decode
 from offspect.cache.readout import generic
 
-command = "contralateral-mep"  #: command line parameter for this readout
-
 valid_keys = [
     "stimulation_intensity_mso",
     "stimulation_intensity_didt",
@@ -19,6 +17,7 @@ valid_keys = [
     "pos_peak_latency_ms",
     "zcr_latency_ms",
     "xyz_coords",
+    "channel_of_interest",
 ]  #: valid keys for contralateral-mep
 
 is_valid = Converter.factory(valid_keys, exists) + generic.is_valid
