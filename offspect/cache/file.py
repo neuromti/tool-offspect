@@ -21,6 +21,7 @@ from functools import partial
 import ast
 from functools import lru_cache
 from .check import (
+    check_consistency,
     check_valid_suffix,
     FileName,
     MetaData,
@@ -206,7 +207,7 @@ def update_trace_attributes(attrs: TraceAttributes):
     else:
         raise ValueError("Index must be an integer")
     fname = attrs["cache_file"]
-    attrs = filter_trace_attrs(attrs)
+    # attrs = filter_trace_attrs(attrs)
 
     if index >= 0:
         cnt = -1
@@ -435,6 +436,7 @@ def merge(to: FileName, sources: List[FileName]) -> FileName:
         a.extend(attrs)
         t.extend(traces)
 
+    print(a)
     check_consistency(a)
     fname = populate(tf=to, annotations=a, traceslist=t)
     return fname

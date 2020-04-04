@@ -35,6 +35,11 @@ def encode(value: Any) -> str:
     return enc
 
 
+def get_valid_trace_keys(rio: str) -> List[str]:
+    m = importlib.import_module(f"offspect.cache.readout.{rio}")
+    return m.valid_keys + valid_trace_keys
+
+
 class AnnotationFactory:
     """A factory to create new annotations
     
@@ -117,8 +122,7 @@ class AnnotationFactory:
     @lru_cache(maxsize=1)
     def valid_trace_keys(self):
         "a list of which keys are required and valid for the TraceAttributes"
-        m = importlib.import_module(f"offspect.cache.readout.{self.rio}")
-        return m.valid_keys + valid_trace_keys
+        return get_valid_trace_keys(self.rio)
 
     def append_trace_attr(self, attrs: MetaData):
         "append a TraceAttribute to the current list of TraceAttributes"

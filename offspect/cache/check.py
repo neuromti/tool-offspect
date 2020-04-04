@@ -6,8 +6,36 @@ import re
 import datetime
 from offspect.types import *
 from math import inf, isnan
+from offspect.cache.attrs import get_valid_trace_keys
+from offspect.cache.readout.generic import must_be_identical_in_merged_file
 
 VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
+
+
+def check_consistency(annotations: List[Annotations]):
+    """check whether a list of annotations is consistent
+    
+    For a list of attributes to be consistents, every origin file must be unique, and data may only come from a single subject. Additionally, channel_labels, samples pre/post, sampling must be identical for all traces"
+    """
+    o = [a["origin"] for a in annotations]
+    ro = set([a["attrs"]["readout"] for a in annotations])
+    ri = set([a["attrs"]["readin"] for a in annotations])
+
+    if len(set(o)) != len(o):
+        raise Exception(f"Origins are not unique {o}")
+    if len(ro) != 1:
+        raise Exception(f"Readouts are not identical: {ro}")
+    if len(ri) != 1:
+        raise Exception(f"Readins are not identical: {ri}")
+
+    rio = ri.pop() + "_" + ro.pop()
+    keys_required_for_consistency = get_valid_trace_keys(rio)
+
+    # these keys must be identical across groups / origin files within a a cachefile
+    for key in must_be_identical_in_merged_file:
+        check = [str(a["attrs"][key]) for a in annotations]
+        if len(set(check)) != 1:
+            raise Exception(f"{key} is inconsistent: {check}")
 
 
 def check_valid_suffix(fname: FileName):

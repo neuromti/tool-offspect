@@ -4,7 +4,8 @@ Generic MetaData fields implemented in all readouts
 
 More elaborate analysis requires custom-written scripts or readouts.
 """
-valid_origin_keys = [
+
+must_be_identical_in_merged_file = [
     "channel_labels",
     "channel_of_interest",
     "samples_post_event",
@@ -13,11 +14,14 @@ valid_origin_keys = [
     "subject",
     "readout",
     "readin",
+    "version",
+]
+can_vary_across_merged_files = [
     "global_comment",
     "filedate",
-    "history",
-    "version",
 ]  #: information about the origin file
+
+valid_origin_keys = must_be_identical_in_merged_file + can_vary_across_merged_files
 
 valid_trace_keys = [
     "id",
