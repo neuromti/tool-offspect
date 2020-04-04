@@ -47,7 +47,7 @@ class Converter:
             try:
                 value = kwargs[key]
             except KeyError:
-                value = None
+                value = None  # type: ignore
             other[key] = convert(value)
         return other
 

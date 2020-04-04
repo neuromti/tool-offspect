@@ -3,7 +3,7 @@ from typing import Union, List
 from offspect.cache.file import CacheFile, merge
 import argparse
 from ast import literal_eval
-from .tms import cli_tms
+from offspect.cli.tms import cli_tms
 
 try:
     from offspect.gui.__main__ import main as cli_gui
