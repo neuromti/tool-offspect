@@ -23,17 +23,17 @@ from offspect.types import Annotations, FileName
 from typing import List, Union, Any, Dict
 from liesl.api import XDFFile
 from liesl.files.xdf.load import XDFStream
-from offspect.input.tms.matprotconv import get_coords_from_xml
+from offspect.input.tms.cmep.matprotconv import get_coords_from_xml
 from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from pathlib import Path
 from math import nan, inf
 import time
 import json
 import numpy as np
-from offspect.cache.attrs import AnnotationFactory
+from offspect.cache.attrs import AnnotationFactory, decode
 
 
-def decode(mark: str) -> Any:
+def decode_marker(mark: str) -> Any:
     try:
         msg = json.loads(mark[0])
         return msg
@@ -55,7 +55,7 @@ def yield_events(stream, select_event="coil_0_didt"):
     tout_ts = None
     try:
         while True:
-            msg = decode(next(marker))
+            msg = decode_marker(next(marker))
             ts = next(tstamps)
             if msg == "Starte Hotspotsuche" or msg == "Starte Ruhemotorschwelle":
                 # print(msg)
@@ -88,6 +88,7 @@ def yield_events(stream, select_event="coil_0_didt"):
 
 def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDFStream:
     chans: List[str] = []
+    datastream = None
     for stream in streams.values():
         if stream.channel_labels is not None:
             chans.extend(stream.channel_labels)
@@ -96,7 +97,7 @@ def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDF
 
     if datastream is None:
         raise IndexError(
-            f"Could not find the channel in any stream in the file. Available are: {chans}"
+            f"Could not find the channel {channel} in any stream in the file. Available are: {chans}"
         )
     return datastream
 
@@ -178,29 +179,39 @@ def prepare_annotations(
         stimulation_intensity_didt = [nan for i in range(len(coords))]
 
     datastream = pick_stream_with_channel(channel, streams)
-    cix = datastream.channel_labels.index(channel)
+
+    # global fields
+    fs = datastream.nominal_srate
+    anno = AnnotationFactory(readin="tms", readout=readout, origin=Path(xdffile).name)
+    anno.set("filedate", time.ctime(Path(xdffile).stat().st_mtime))
+    anno.set("subject", "")  # TODO parse from correctly organized file
+    anno.set("samplingrate", fs)
+    anno.set("samples_pre_event", int(pre_in_ms * fs / 1000))
+    anno.set("samples_post_event", int(post_in_ms * fs / 1000))
+    anno.set("channel_of_interest", channel)
+    anno.set("channel_labels", [channel])
+    # trace fields
     event_samples = find_closest_samples(datastream, trigout_times)
     event_times = [
         float(t)
         for t in datastream.time_stamps[event_samples] - datastream.time_stamps[0]
     ]
-
-    # global fields
-    origin = Path(xdffile).name
-    fs = datastream.nominal_srate
-    filedate = time.ctime(Path(xdffile).stat().st_mtime)
-    subject = ""  # TODO parse from correctly organized file
-    channel_labels = [channel]
-    samples_pre_event = int(pre_in_ms * fs / 1000)
-    samples_post_event = int(post_in_ms * fs / 1000)
-    # trace fields
     time_since_last_pulse = [inf] + [
         a - b for a, b in zip(event_times[1:], event_times[0:-1])
     ]
 
-    print(readout)
-
-    anno = AnnotationFactory(readin="tms", readout=readout, origin=origin)
+    for idx, t in enumerate(event_samples):
+        tattr = {
+            "id": idx,
+            "event_name": event_stream + str(event_names),
+            "event_sample": event_samples[idx],
+            "event_time": event_times[idx],
+            "xyz_coords": coords[idx],
+            "time_since_last_pulse_in_s": time_since_last_pulse[idx],
+            "stimulation_intensity_mso": stimulation_intensity_mso[idx],
+            "stimulation_intensity_didt": stimulation_intensity_didt[idx],
+        }
+        anno.append_trace_attr(tattr)
     return anno.anno
 
 
@@ -219,16 +230,16 @@ def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
     """
 
     streams = XDFFile(xdffile)
-    channel = annotation["attrs"]["channel_labels"][0]
+    channel = decode(annotation["attrs"]["channel_of_interest"])
     print("Selecting traces for channel", channel)
     datastream = pick_stream_with_channel(channel, streams)
     cix = datastream.channel_labels.index(channel)
 
-    pre = annotation["attrs"]["samples_pre_event"]
-    post = annotation["attrs"]["samples_post_event"]
+    pre = decode(annotation["attrs"]["samples_pre_event"])
+    post = decode(annotation["attrs"]["samples_post_event"])
     traces = []
     for attrs in annotation["traces"]:
-        onset = attrs["event_sample"]
+        onset = decode(attrs["event_sample"])
         trace = datastream.time_series[onset - pre : onset + post, cix]
         traces.append(trace)
     return traces

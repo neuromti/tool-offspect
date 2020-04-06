@@ -1,5 +1,5 @@
 import pytest
-from offspect.input.tms.smartmove import *
+from offspect.input.tms.cmep.smartmove import *
 from tempfile import mkdtemp
 from pathlib import Path
 import libeep
@@ -7,7 +7,7 @@ import libeep
 
 @pytest.fixture
 def doctxt():
-    f = Path(__file__).parent.parent.parent / "mock" / "documentation.txt"
+    f = Path(__file__).parent.parent.parent.parent / "mock" / "documentation.txt"
     yield str(f)
 
 
@@ -110,7 +110,8 @@ def test_load_ephys_file(eeg_cnt, emg_cnt):
 
 def test_convert_smartmove(eeg_cnt, emg_cnt, doctxt):
     eeg_cnt, onsets = eeg_cnt
-    anno = prepare_annotations(doctxt, eeg_cnt, emg_cnt, "Ch1", "cmep", 100, 100)
+    cntfiles = [eeg_cnt, emg_cnt]
+    anno = prepare_annotations(doctxt, cntfiles, "Ch1", "cmep", 100, 100)
     assert anno["origin"] == Path(emg_cnt).name
     assert len(anno["traces"]) == 2
     assert [a["event_time"] for a in anno["traces"]] == [str(o / 1000) for o in onsets]

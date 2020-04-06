@@ -133,6 +133,6 @@ class AnnotationFactory:
 
                 tattrs[key] = e
             else:
-                print(f"Defaulting to '' for {key}")
+                # print(f"Defaulting to '' for {key}")
                 tattrs[key] = ""
         self.anno["traces"].append(tattrs)

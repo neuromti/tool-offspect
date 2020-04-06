@@ -269,12 +269,9 @@ def load_ephys_file(
 
 
 # -----------------------------------------------------------------------------
-
-
 def prepare_annotations(
     docfile: FileName,
-    eegfile: FileName,
-    emgfile: FileName,
+    cntfiles: List[FileName],
     channel_of_interest: str,
     readout: str,
     pre_in_ms: float,
@@ -287,9 +284,8 @@ def prepare_annotations(
     ----
     docfile: FileName
         the documentation.txt with the target coordintes
-    eegfile: FileName
-        the :code:`.cnt`-file with the EEG data and triggers
-    emgfile: FileName
+    cntfiles: List[FileName]
+        a list of the :code:`.cnt`-file with the EEG data and triggers and the 
         the :code:`.cnt`-file with the EMG data
     readout: str
         which readout to use (see :data:`~.VALID_READOUTS`)
@@ -305,6 +301,34 @@ def prepare_annotations(
     annotation: Annotations
         the annotations for this origin files
     """
+    for f in cntfiles:
+        if is_eeg_file(f):
+            eegfile = f
+        else:
+            emgfile = f
+
+    return _prepare_annotations(
+        docfile,
+        eegfile,
+        emgfile,
+        channel_of_interest,
+        readout,
+        pre_in_ms,
+        post_in_ms,
+        select_events,
+    )
+
+
+def _prepare_annotations(
+    docfile: FileName,
+    eegfile: FileName,
+    emgfile: FileName,
+    channel_of_interest: str,
+    readout: str,
+    pre_in_ms: float,
+    post_in_ms: float,
+    select_events: List[str] = ["0001"],
+) -> Annotations:
 
     # collect data
     info = load_ephys_file(

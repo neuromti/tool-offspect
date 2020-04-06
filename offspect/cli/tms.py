@@ -5,8 +5,10 @@ import yaml
 from typing import List
 from liesl.files.xdf.inspect_xdf import peek
 from offspect.cache.readout import get_valid_readouts
+from offspect.input import get_protocol_handler
 
-VALID_READOUTS: List[str] = get_valid_readouts(Path(__file__).stem)
+READIN = Path(__file__).stem
+VALID_READOUTS: List[str] = get_valid_readouts(READIN)
 
 
 def cli_tms(args: argparse.Namespace):
@@ -46,7 +48,7 @@ def cli_tms(args: argparse.Namespace):
         suffixes[Path(source).suffix] = source
 
     if ".mat" in suffixes.keys() and ".xml" in suffixes.keys():
-        fmt = "matprot"
+        fmt = "matprotconv"
     elif ".cnt" in suffixes.keys() and ".txt" in suffixes.keys():
         fmt = "smartmove"
     elif ".xdf" in suffixes.keys():
@@ -54,14 +56,11 @@ def cli_tms(args: argparse.Namespace):
     else:
         raise NotImplementedError("Unknown input format")
 
+    prepare_annotations, cut_traces = get_protocol_handler(READIN, args.readout, fmt)
+
     print(f"Assuming source data is from {fmt} protocol")
     # MATPROT -----------------------------------------------------------------
     if fmt == "matprot":
-        from offspect.input.tms.matprotconv import (  # type: ignore
-            prepare_annotations,
-            cut_traces,
-        )
-
         for s in args.sources:
             if Path(s).suffix == ".xml":
                 xmlfile = Path(s)
@@ -80,12 +79,6 @@ def cli_tms(args: argparse.Namespace):
 
     # SMARTMOVE ---------------------------------------------------------------
     elif fmt == "smartmove":
-        from offspect.input.tms.smartmove import (  # type: ignore
-            prepare_annotations,
-            cut_traces,
-            is_eeg_file,
-        )
-
         cntfiles = []
         for s in args.sources:
             if Path(s).suffix == ".cnt":
@@ -93,16 +86,9 @@ def cli_tms(args: argparse.Namespace):
         if len(cntfiles) != 2:
             raise ValueError("too many input .cnt files")
 
-        for f in cntfiles:
-            if is_eeg_file(f):
-                eegfile = f
-            else:
-                emgfile = f
-
         annotation = prepare_annotations(  # type: ignore
             docfile=suffixes[".txt"],
-            eegfile=eegfile,
-            emgfile=emgfile,
+            cntfiles=cntfiles,
             readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
@@ -123,8 +109,6 @@ def cli_tms(args: argparse.Namespace):
                 fmt = "manuxdf"
         else:
             fmt = "autoxdf"
-
-        from offspect.input.tms.xdfprot import prepare_annotations, cut_traces  # type: ignore
 
         # if an xml file is present, use that one to fall back to it in case there are no coordinates saved in the streams
         kwargs = {"xmlfile": suffixes.get(".xml", None)}
