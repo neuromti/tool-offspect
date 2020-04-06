@@ -14,13 +14,12 @@ def get_all_rios():
     READINS: List[str] = []  #: all currently implemented readins
     RIOS: List[str] = []  #: all currently available readin/readout combos
     for ri in (Path(__file__).parent.parent / "input").iterdir():
-        if ri.is_dir():
+        if ri.is_dir() and not ri.name.startswith("_"):
             READINS.append(ri.stem)
             for ro in ri.iterdir():
-                if ro.is_dir():
+                if ro.is_dir() and not ro.name.startswith("_"):
                     READOUTS.append(ro.stem)
                     rio = f"{ri.stem}-{ro.stem}"
-                    print(f"Found {rio}")
                     RIOS.append(rio)
     return RIOS
 
