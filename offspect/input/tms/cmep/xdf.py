@@ -39,54 +39,12 @@ from offspect.protocols.xdf import (
     yield_comments,
     list_nan,
     list_nan_coords,
+    yield_loc_coords,
+    yield_loc_mso,
+    yield_loc_didt,
 )
 
 # -----------------------------------------------------------------------------
-
-
-def yield_events(stream, select_event="coil_0_didt"):
-    """go through all triggers in the stream, and  yield the coordinates
-
-    x,y,z can be [None, None, None] if the coil was out of sight of the NDI camera!
-
-    Otherwise, yields a list of floats
-    """
-    marker = iter(stream.time_series)
-    tstamps = iter(stream.time_stamps)
-    skip = False
-    didt = None
-    tout_ts = None
-    try:
-        while True:
-            msg = decode_marker(next(marker))
-            ts = next(tstamps)
-            if msg == "Starte Hotspotsuche" or msg == "Starte Ruhemotorschwelle":
-                # print(msg)
-                skip = True
-            if msg == "Starte freien Modus":
-                # print(msg)
-                skip = False
-            if skip:
-                continue
-            if type(msg) is dict:
-                if select_event in msg.keys():
-                    didt = msg[select_event]
-                    tout_ts = ts  # this is when we received a TriggerOut from Localite
-                    # the didt is always send prior to the actual response
-                if "amplitude" in msg.keys() and msg["amplitude"] != 0:
-                    pos = [msg[dim] for dim in ["x", "y", "z"]]
-                    # positions are none if the coil was not int the scope of
-                    # the NDI cameras
-                    tout_ts = (
-                        tout_ts or ts
-                    )  # pick the ts of the msg, if there was no coil_X_didt
-                    mso = msg["amplitude"]
-                    if not any(p == None for p in pos):
-                        yield tout_ts, pos, mso, didt
-                        tout_ts = None
-
-    except StopIteration:
-        return
 
 
 def prepare_annotations(
@@ -130,10 +88,10 @@ def prepare_annotations(
     event_count = len(time_stamps)
 
     if "localite_flow" in streams or "localite_marker" in streams:
-        print("Not implemented, but here we could parse coords and intensity")
-        coords = list_nan_coords(event_count)
-        stimulation_intensity_didt = list_nan(event_count)
-        stimulation_intensity_mso = list_nan(event_count)
+        loc_stream = streams["localite_marker"]
+        coords = list(yield_loc_coords(loc_stream, time_stamps))
+        stimulation_intensity_didt = list(yield_loc_didt(loc_stream, time_stamps))
+        stimulation_intensity_mso = list(yield_loc_mso(loc_stream, time_stamps))
     else:
         coords = list_nan_coords(event_count)
         stimulation_intensity_didt = list_nan(event_count)

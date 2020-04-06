@@ -137,6 +137,83 @@ def yield_comments(
         yield comments.pop(idx)[0]
 
 
+def yield_loc_coords(
+    stream: XDFStream, time_stamps: List[float], relative: str = "later"
+):
+    coords = []
+    ct: List[float] = []
+    for t, m in zip(stream.time_stamps, stream.time_series):
+        msg = decode_marker(m)
+        if type(msg) is dict:
+            if "amplitude" in msg.keys() and msg["amplitude"] != 0:
+                pos = [msg[dim] for dim in ["x", "y", "z"]]
+                coords.append(pos)
+                ct.append(t)
+
+    for ts in time_stamps:
+        if relative == "earlier":  # closest in time, but comment was earlier
+            _ct = [t - ts for t in ct if t <= ts]
+        elif relative == "later":  # closest in time, but comment was later
+            _ct = [t - ts for t in ct if t >= ts]
+        else:  # closest in time
+            _ct = [t - ts for t in ct]
+        idx = np.argmin(np.abs(_ct))
+        # we pop, therefore no coordinate can be returned twice
+        ct.pop(idx)
+        yield coords.pop(idx)
+
+
+def yield_loc_mso(stream: XDFStream, time_stamps: List[float], relative: str = "later"):
+    mso = []
+    ct: List[float] = []
+    for t, m in zip(stream.time_stamps, stream.time_series):
+        msg = decode_marker(m)
+        if type(msg) is dict:
+            if "amplitude" in msg.keys() and msg["amplitude"] != 0:
+                mso.append(msg["amplitude"])
+                ct.append(t)
+
+    for ts in time_stamps:
+        if relative == "earlier":  # closest in time, but comment was earlier
+            _ct = [t - ts for t in ct if t <= ts]
+        elif relative == "later":  # closest in time, but comment was later
+            _ct = [t - ts for t in ct if t >= ts]
+        else:  # closest in time
+            _ct = [t - ts for t in ct]
+        idx = np.argmin(np.abs(_ct))
+        # we pop, therefore no coordinate can be returned twice
+        ct.pop(idx)
+        yield mso.pop(idx)
+
+
+def yield_loc_didt(
+    stream: XDFStream,
+    time_stamps: List[float],
+    event_mark: str = "coil_0_didt",
+    relative: str = "closest",
+):
+    didt = []
+    ct: List[float] = []
+    for t, m in zip(stream.time_stamps, stream.time_series):
+        msg = decode_marker(m)
+        if type(msg) is dict:
+            if event_mark in msg.keys():
+                didt.append(msg[event_mark])
+                ct.append(t)
+
+    for ts in time_stamps:
+        if relative == "earlier":  # closest in time, but comment was earlier
+            _ct = [t - ts for t in ct if t <= ts]
+        elif relative == "later":  # closest in time, but comment was later
+            _ct = [t - ts for t in ct if t >= ts]
+        else:  # closest in time
+            _ct = [t - ts for t in ct]
+        idx = np.argmin(np.abs(_ct))
+        # we pop, therefore no coordinate can be returned twice
+        ct.pop(idx)
+        yield didt.pop(idx)
+
+
 def list_nan_coords(count: int):
     return [[nan, nan, nan] for i in range(count)]
 

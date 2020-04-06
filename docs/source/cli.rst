@@ -78,7 +78,8 @@ offspect tms
                            <Required> positional arguments of pre and post
                            duration
      -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
-                           <Required> select event
+                           <Required> select events, e.g. stream and name or
+                           names depending on protocol
 
 
 offspect pes

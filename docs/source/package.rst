@@ -11,6 +11,6 @@ The documentation of the functions in this package
    offspect.cache.readout
    offspect.input.tms.cmep.__init__
    offspect.input.tms.cmep.smartmove
-   offspect.input.tms.cmep.xdfprot
-   offspect.input.tms.cmep.matprotconv
+   offspect.input.tms.cmep.xdf
+   offspect.input.tms.cmep.mat
    
