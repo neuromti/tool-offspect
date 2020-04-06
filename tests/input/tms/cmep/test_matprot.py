@@ -1,7 +1,7 @@
 import pkg_resources
 import pytest
 from pathlib import Path
-from offspect.input.tms.cmep.matprotconv import prepare_annotations, cut_traces
+from offspect.input.tms.cmep.mat import prepare_annotations, cut_traces
 from offspect.api import populate, CacheFile
 from matprot.convert.traces import is_matlab_installed
 from subprocess import Popen, PIPE

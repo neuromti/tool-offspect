@@ -23,7 +23,6 @@ from offspect.types import Annotations, FileName
 from typing import List, Union, Any, Dict
 from liesl.api import XDFFile
 from liesl.files.xdf.load import XDFStream
-from offspect.input.tms.cmep.matprotconv import get_coords_from_xml
 from offspect.types import FileName, Coordinate, MetaData, Annotations, TraceData
 from pathlib import Path
 from math import nan, inf
@@ -31,6 +30,7 @@ import time
 import json
 import numpy as np
 from offspect.cache.attrs import AnnotationFactory, decode
+from offspect.protocols.xdf import get_coords_from_xml
 
 
 def decode_marker(mark: str) -> Any:

@@ -48,19 +48,29 @@ def cli_tms(args: argparse.Namespace):
         suffixes[Path(source).suffix] = source
 
     if ".mat" in suffixes.keys() and ".xml" in suffixes.keys():
-        fmt = "matprotconv"
+        protocol = "mat"
     elif ".cnt" in suffixes.keys() and ".txt" in suffixes.keys():
-        fmt = "smartmove"
+        protocol = "smartmove"
     elif ".xdf" in suffixes.keys():
-        fmt = "xdfprot"
+        protocol = "xdf"
+        sinfos = peek(suffixes[".xdf"], at_most=99, max_duration=1)
+        if "localite_flow" not in (sinfo["name"] for sinfo in sinfos):
+            if ".xml" in suffixes:
+                protocol = "xdfxml"
+            else:
+                protocol = "xdfmanual"
+        else:
+            protocol = "xdf"
     else:
         raise NotImplementedError("Unknown input format")
 
-    prepare_annotations, cut_traces = get_protocol_handler(READIN, args.readout, fmt)
+    prepare_annotations, cut_traces = get_protocol_handler(
+        READIN, args.readout, protocol
+    )
 
-    print(f"Assuming source data is from {fmt} protocol")
+    print(f"Assuming source data is from {protocol} protocol")
     # MATPROT -----------------------------------------------------------------
-    if fmt == "matprot":
+    if protocol == "mat":
         for s in args.sources:
             if Path(s).suffix == ".xml":
                 xmlfile = Path(s)
@@ -78,7 +88,7 @@ def cli_tms(args: argparse.Namespace):
         traces = cut_traces(matfile, annotation)
 
     # SMARTMOVE ---------------------------------------------------------------
-    elif fmt == "smartmove":
+    elif protocol == "smartmove":
         cntfiles = []
         for s in args.sources:
             if Path(s).suffix == ".cnt":
@@ -100,19 +110,8 @@ def cli_tms(args: argparse.Namespace):
                 traces = cut_traces(f, annotation)
 
     # XDF -------------------------------------------------------
-    elif fmt == "xdfprot":
-        sinfos = peek(suffixes[".xdf"], at_most=99, max_duration=1)
-        if "localite_flow" not in (sinfo["name"] for sinfo in sinfos):
-            if ".xml" in suffixes:
-                fmt = "xmlxdf"
-            else:
-                fmt = "manuxdf"
-        else:
-            fmt = "autoxdf"
-
-        # if an xml file is present, use that one to fall back to it in case there are no coordinates saved in the streams
-        kwargs = {"xmlfile": suffixes.get(".xml", None)}
-
+    elif protocol == "xdf":
+        "classical xdf file with coordinates stored in the xdf as a stream from localite_flow"
         annotation = prepare_annotations(  # type: ignore
             xdffile=suffixes[".xdf"],
             readout=args.readout,
@@ -122,7 +121,20 @@ def cli_tms(args: argparse.Namespace):
             **kwargs,
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
+    elif protocol == "xdfxml":
+        # if an xml file is present, use that one to fall back to it in case there are no coordinates saved in the streams
+        annotation = prepare_annotations(  # type: ignore
+            xdffile=suffixes[".xdf"],
+            readout=args.readout,
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+            xmlfile=suffixes[".xml"],
+        )
+        traces = cut_traces(suffixes[".xdf"], annotation)
 
+    else:
+        print(f"Handling {protocol} for {rio} is ot implemented")
     # ---------------
 
     print(yaml.dump(annotation))

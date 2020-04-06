@@ -1,5 +1,5 @@
 import pytest
-from offspect.input.tms.cmep.xdfprot import *
+from offspect.input.tms.cmep.xdf import *
 from pathlib import Path
 
 
