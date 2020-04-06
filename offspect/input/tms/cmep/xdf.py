@@ -30,15 +30,18 @@ import time
 import json
 import numpy as np
 from offspect.cache.attrs import AnnotationFactory, decode
-from offspect.protocols.xdf import get_coords_from_xml
+from offspect.protocols.xdf import (
+    get_coords_from_xml,
+    decode_marker,
+    pick_stream_with_channel,
+    find_closest_samples,
+    yield_timestamps,
+    yield_comments,
+    list_nan,
+    list_nan_coords,
+)
 
-
-def decode_marker(mark: str) -> Any:
-    try:
-        msg = json.loads(mark[0])
-        return msg
-    except json.JSONDecodeError:
-        return mark[0]
+# -----------------------------------------------------------------------------
 
 
 def yield_events(stream, select_event="coil_0_didt"):
@@ -86,42 +89,15 @@ def yield_events(stream, select_event="coil_0_didt"):
         return
 
 
-def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDFStream:
-    chans: List[str] = []
-    datastream = None
-    for stream in streams.values():
-        if stream.channel_labels is not None:
-            chans.extend(stream.channel_labels)
-            if channel in stream.channel_labels:
-                datastream = stream
-
-    if datastream is None:
-        raise IndexError(
-            f"Could not find the channel {channel} in any stream in the file. Available are: {chans}"
-        )
-    return datastream
-
-
-def find_closest_samples(stream: XDFStream, tstamps: List[float]) -> List[int]:
-    event_samples = []
-    for ts in tstamps:
-        idx = int(np.argmin(np.abs(stream.time_stamps - ts)))
-        event_samples.append(idx)
-    return event_samples
-
-
-# -----------------------------------------------------------------------------
-
-
 def prepare_annotations(
     xdffile: FileName,
     channel: str,
-    readout: str,
     pre_in_ms: float,
     post_in_ms: float,
     xmlfile: FileName = None,
-    event_names="coil_0_didt",
+    event_name="coil_0_didt",
     event_stream="localite_marker",
+    comment_name=None,
 ) -> Annotations:
     """load a documentation.txt and cnt-files and distill annotations from them
     
@@ -147,42 +123,39 @@ def prepare_annotations(
     """
 
     # ------------------
-
     streams = XDFFile(xdffile)
-    try:
-        stream = streams[event_stream]
-        # initialize only when localite marker was found!
-        coords = []
-        trigout_times = []
-        stimulation_intensity_mso = []
-        stimulation_intensity_didt = []
-
-        for ts, xyz, mso, didt in yield_events(stream, event_names):
-            trigout_times.append(ts)
-            coords.append(xyz)
-            stimulation_intensity_mso.append(mso)
-            stimulation_intensity_didt.append(didt)
-
-    except KeyError:
-        if xmlfile is not None:
-            coords = get_coords_from_xml(xmlfile)
-            print(f"XDF: Fall back to coordinates from {xmlfile}")
-        else:
-            print(f"XDF: No coordinates available, Filling in [nan, nan, nan]")
-
-            def yield_nan():
-                while True:
-                    yield [nan, nan, nan]
-
-            coords = yield_nan()
-        stimulation_intensity_mso = [nan for i in range(len(coords))]
-        stimulation_intensity_didt = [nan for i in range(len(coords))]
-
     datastream = pick_stream_with_channel(channel, streams)
+    event_stream = streams[event_stream]
+    time_stamps = [ts for ts in yield_timestamps(event_stream, event_name)]
+    event_count = len(time_stamps)
+
+    if "localite_flow" in streams or "localite_marker" in streams:
+        print("Not implemented, but here we could parse coords and intensity")
+        coords = list_nan_coords(event_count)
+        stimulation_intensity_didt = list_nan(event_count)
+        stimulation_intensity_mso = list_nan(event_count)
+    else:
+        coords = list_nan_coords(event_count)
+        stimulation_intensity_didt = list_nan(event_count)
+        stimulation_intensity_mso = list_nan(event_count)
+    print(f"Found {event_count} events")
+
+    if "reiz_marker_sa" in streams and comment_name is not None:
+        comments = [
+            c
+            for c in yield_comments(
+                streams["reiz_marker_sa"],
+                time_stamps=time_stamps,
+                identifier="stimulus_idx",
+                relative="earlier",
+            )
+        ]
+    else:
+        comments = ["" for c in time_stamps]
 
     # global fields
     fs = datastream.nominal_srate
-    anno = AnnotationFactory(readin="tms", readout=readout, origin=Path(xdffile).name)
+    anno = AnnotationFactory(readin="tms", readout="cmep", origin=Path(xdffile).name)
     anno.set("filedate", time.ctime(Path(xdffile).stat().st_mtime))
     anno.set("subject", "")  # TODO parse from correctly organized file
     anno.set("samplingrate", fs)
@@ -191,7 +164,7 @@ def prepare_annotations(
     anno.set("channel_of_interest", channel)
     anno.set("channel_labels", [channel])
     # trace fields
-    event_samples = find_closest_samples(datastream, trigout_times)
+    event_samples = find_closest_samples(datastream, time_stamps)
     event_times = [
         float(t)
         for t in datastream.time_stamps[event_samples] - datastream.time_stamps[0]
@@ -203,7 +176,7 @@ def prepare_annotations(
     for idx, t in enumerate(event_samples):
         tattr = {
             "id": idx,
-            "event_name": event_stream + str(event_names),
+            "event_name": event_stream.name + "_" + str(event_name),
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
             "xyz_coords": coords[idx],

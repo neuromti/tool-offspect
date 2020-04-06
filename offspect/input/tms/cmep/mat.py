@@ -50,7 +50,6 @@ from offspect.protocols.mat import (
 def prepare_annotations(
     xmlfile: FileName,
     matfile: FileName,
-    readout: str,
     channel_of_interest: str,
     pre_in_ms: float,
     post_in_ms: float,
@@ -63,8 +62,6 @@ def prepare_annotations(
         the xmlfile with the target-entry pairs
     matfile: FileName
         the matfile with the physiological data
-    readout: str
-        which readout to use (see :data:`~.VALID_READOUTS`
     channel: str
         which channel to pick
     pre_in_ms: float
@@ -99,7 +96,7 @@ def prepare_annotations(
         a - b for a, b in zip(event_times[1:], event_times[0:-1])
     ]
 
-    anno = AnnotationFactory(readin="tms", readout=readout, origin=origin)
+    anno = AnnotationFactory(readin="tms", readout="cmep", origin=origin)
     anno.set("filedate", filedate)
     anno.set("subject", subject)
     anno.set("samplingrate", fs)

@@ -110,7 +110,7 @@ def get_parser() -> argparse.ArgumentParser:
         "-e",
         "--events",
         nargs="+",
-        help="<Required> select event",
+        help="<Required> select events, e.g. stream and name or names depending on protocol",
         required=False,
         type=str,
         dest="select_events",

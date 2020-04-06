@@ -58,13 +58,13 @@ class Ui(QtWidgets.QMainWindow):
         attrs["time_since_last_pulse_in_s"] = self.time_since_pulse_num.text()
         attrs["stimulation_intensity_didt"] = self.didt_num.text()
         attrs["comment"] = self.commentbox.toPlainText()
-        attrs["reject"] = self.reject
+        attrs["reject"] = self.reject or False
         attrs["xyz_coords"] = self.coil_coordinate_input.text()
         self.cf.set_trace_attrs(self.trace_idx, attrs)
         self.update_gui()
 
     def initialize_reject_button(self):
-        self.reject_button.setCheckable(self.reject)
+        self.reject_button.setCheckable(self.reject or False)
         if self.reject:
             self.reject_button.setStyleSheet("background-color: red")
         else:
@@ -103,6 +103,7 @@ class Ui(QtWidgets.QMainWindow):
         self.xyz_coords = attrs["xyz_coords"]
         self.coil_coordinate_input.setText(self.xyz_coords)
         self.reject = decode(attrs["reject"])
+        print(f"GUI: Pulled attributes for trace #{self.trace_idx}")
 
     @property
     def trace_idx(self):
@@ -154,21 +155,20 @@ class Ui(QtWidgets.QMainWindow):
             throw_em(self, str(e))
 
     def plot_trace(self):
-
         data = self.cf.get_trace_data(self.trace_idx)
+        print(f"GUI: Pulled data for trace #{self.trace_idx}")
         attrs = self.cf.get_trace_attrs(self.trace_idx)
-  
         # discards the old graph
         self.MplWidget1.canvas.axes.clear()
         plot_trace(self.MplWidget1.canvas.axes, data, attrs)
         # refresh canvas
         self.MplWidget1.canvas.draw()
+        print(f"GUI: Plotted trace #{self.trace_idx}")
 
     def plot_coords(self):
         coords = decode(self.cf.get_trace_attrs(self.trace_idx)["xyz_coords"])
-
-        print(f"Plotting {coords}")
-        plot_glass_on(self.MplWidget2.canvas.axes, [coords], [1000.0])
+        plot_glass_on(self.MplWidget2.canvas.axes, coords, [1000.0])
+        print(f"GUI: Stimulation was at {coords}")
         self.MplWidget2.canvas.axes.axis("off")
         self.MplWidget2.canvas.draw()
 

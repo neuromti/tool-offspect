@@ -12,12 +12,7 @@ import time
 def test_matprot(tmp_path, get_matprot):
     xmlfile, matfile = get_matprot
     annotation = prepare_annotations(
-        xmlfile,
-        matfile,
-        channel_of_interest="EDC_L",
-        pre_in_ms=100,
-        post_in_ms=100,
-        readout="cmep",
+        xmlfile, matfile, channel_of_interest="EDC_L", pre_in_ms=100, post_in_ms=100,
     )
     print(annotation)
     traces = cut_traces(matfile, annotation)

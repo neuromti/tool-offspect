@@ -273,7 +273,6 @@ def prepare_annotations(
     docfile: FileName,
     cntfiles: List[FileName],
     channel_of_interest: str,
-    readout: str,
     pre_in_ms: float,
     post_in_ms: float,
     select_events: List[str] = ["0001"],
@@ -287,8 +286,6 @@ def prepare_annotations(
     cntfiles: List[FileName]
         a list of the :code:`.cnt`-file with the EEG data and triggers and the 
         the :code:`.cnt`-file with the EMG data
-    readout: str
-        which readout to use (see :data:`~.VALID_READOUTS`)
     channel: str
         which channel to pick
     pre_in_ms: float
@@ -312,7 +309,6 @@ def prepare_annotations(
         eegfile,
         emgfile,
         channel_of_interest,
-        readout,
         pre_in_ms,
         post_in_ms,
         select_events,
@@ -324,7 +320,6 @@ def _prepare_annotations(
     eegfile: FileName,
     emgfile: FileName,
     channel_of_interest: str,
-    readout: str,
     pre_in_ms: float,
     post_in_ms: float,
     select_events: List[str] = ["0001"],
@@ -343,7 +338,7 @@ def _prepare_annotations(
     stimulation_intensity_mso = nan
     stimulation_intensity_didt = nan
 
-    anno = AnnotationFactory(readin="tms", readout=readout, origin=info["origin"])
+    anno = AnnotationFactory(readin="tms", readout="cmep", origin=info["origin"])
     anno.set("filedate", info["filedate"])
     anno.set("subject", info["subject"])
     anno.set("samplingrate", info["samplingrate"])

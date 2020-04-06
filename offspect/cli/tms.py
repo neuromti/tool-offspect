@@ -42,7 +42,7 @@ def cli_tms(args: argparse.Namespace):
         
 
     """
-    print(args)
+    # print(args)
     suffixes = dict()
     for source in args.sources:
         suffixes[Path(source).suffix] = source
@@ -53,24 +53,24 @@ def cli_tms(args: argparse.Namespace):
         protocol = "smartmove"
     elif ".xdf" in suffixes.keys():
         protocol = "xdf"
+        from offspect.protocols.xdf import has_localite
+
         sinfos = peek(suffixes[".xdf"], at_most=99, max_duration=1)
-        if "localite_flow" not in (sinfo["name"] for sinfo in sinfos):
+        stream_names = [sinfo["name"] for sinfo in sinfos]
+        # check whether localite is present
+        if has_localite(stream_names):
             if ".xml" in suffixes:
                 protocol = "xdfxml"
-            else:
-                protocol = "xdfmanual"
-        else:
-            protocol = "xdf"
+
     else:
         raise NotImplementedError("Unknown input format")
 
+    print(f"Assuming data is from {protocol} for {READIN}-{args.readout}")
     prepare_annotations, cut_traces = get_protocol_handler(
         READIN, args.readout, protocol
     )
-    rio = READIN + "-" + args.readout
 
-    print(f"Assuming source data is from {protocol} protocol")
-    # MATPROT -----------------------------------------------------------------
+    # MATLAB PROTOCOL ---------------------------------------------------------
     if protocol == "mat":
         for s in args.sources:
             if Path(s).suffix == ".xml":
@@ -81,7 +81,6 @@ def cli_tms(args: argparse.Namespace):
         annotation = prepare_annotations(  # type: ignore
             xmlfile=xmlfile,
             matfile=matfile,
-            readout=args.readout,
             channel_of_interest=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
@@ -100,7 +99,6 @@ def cli_tms(args: argparse.Namespace):
         annotation = prepare_annotations(  # type: ignore
             docfile=suffixes[".txt"],
             cntfiles=cntfiles,
-            readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
@@ -110,32 +108,57 @@ def cli_tms(args: argparse.Namespace):
             if f.name == annotation["origin"]:
                 traces = cut_traces(f, annotation)
 
-    # XDF -------------------------------------------------------
+    # XDF WITH COORDINATES in STREAM ------------------------------------------
     elif protocol == "xdf":
         "classical xdf file with coordinates stored in the xdf as a stream from localite_flow"
+        if args.select_events is None:
+            event_stream = "localite_marker"
+            event_name = "coil_0_didt"
+        elif len(args.select_events) == 2:
+            event_stream = args.select_events[0]
+            event_name = args.select_events[1]
+        else:
+            raise ValueError("Please specify event_stream and event_name")
+
         annotation = prepare_annotations(  # type: ignore
             xdffile=suffixes[".xdf"],
-            readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
+            event_stream=event_stream,
+            event_name=event_name,
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
+    # XDF WITHOUT COORDINATES in STREAM ---------------------------------------
     elif protocol == "xdfxml":
         # if an xml file is present, use that one to fall back to it in case there are no coordinates saved in the streams
         annotation = prepare_annotations(  # type: ignore
             xdffile=suffixes[".xdf"],
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+            event_name=args.select_events[1],
+            event_stream=args.select_events[0],
+            xmlfile=suffixes[".xml"],
+        )
+        traces = cut_traces(suffixes[".xdf"], annotation)
+    elif protocol == "xdfnolocalite":
+        annotation = prepare_annotations(  # type: ignore
+            xdffile=suffixes[".xdf"],
             readout=args.readout,
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
-            xmlfile=suffixes[".xml"],
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
-
     else:
-        print(f"Handling {protocol} for {rio} is ot implemented")
+        print(f"Handling {protocol} for {READIN}-{args.readout} is ot implemented")
     # ---------------
 
-    print(yaml.dump(annotation))
+    if len(traces) == 0:
+        print("Found no traces. Aborting")
+        return
+
+    print(f"Found {len(traces)} traces")
+    # print(yaml.dump(annotation))
     populate(args.to, [annotation], [traces])
