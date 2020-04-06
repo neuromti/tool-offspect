@@ -67,6 +67,7 @@ def cli_tms(args: argparse.Namespace):
     prepare_annotations, cut_traces = get_protocol_handler(
         READIN, args.readout, protocol
     )
+    rio = READIN + "-" + args.readout
 
     print(f"Assuming source data is from {protocol} protocol")
     # MATPROT -----------------------------------------------------------------
@@ -118,7 +119,6 @@ def cli_tms(args: argparse.Namespace):
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
-            **kwargs,
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
     elif protocol == "xdfxml":
