@@ -8,11 +8,25 @@ from offspect.cache.readout import valid_origin_keys, valid_trace_keys
 from offspect import release
 import importlib
 from functools import lru_cache
+from math import nan, inf
 
 
 def decode(value: str) -> Any:
     "decode any value from string"
-    return yaml.load(value, Loader=yaml.Loader)
+    dec = yaml.load(value, Loader=yaml.Loader)
+    if type(dec) == list:
+        _d = []
+        for i in dec:
+            if type(i) == str:
+                _d.append(decode(i))
+            else:
+                _d.append(dec)
+        dec = _d
+    if dec == "nan":
+        dec = nan
+    if dec == "inf":
+        dec = inf
+    return dec
 
 
 def encode(value: Any) -> str:
