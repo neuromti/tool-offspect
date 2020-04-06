@@ -21,4 +21,4 @@ metadata and the data for each trace.
 
    cachefile
    input
-   readouts
+   annotations

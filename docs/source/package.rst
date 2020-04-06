@@ -4,10 +4,13 @@ The documentation of the functions in this package
    :toctree: _autosummary
    :template: module.rst
 
-   offspect.cache.file
-   offspect.cache.check
    offspect.types
-   offspect.input.tms.smartmove
-   offspect.input.tms.xdfprot
-   offspect.input.tms.matprotconv
+   offspect.cache.file
+   offspect.cache.check   
+   offspect.cache.attrs
+   offspect.cache.readout
+   offspect.input.tms.cmep.__init__
+   offspect.input.tms.cmep.smartmove
+   offspect.input.tms.cmep.xdfprot
+   offspect.input.tms.cmep.matprotconv
    

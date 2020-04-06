@@ -70,8 +70,8 @@ offspect tms
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of input files
      -r READOUT, --readout READOUT
-                           the desired readout, valid are: ['cmep', 'imep',
-                           'erp']
+                           the desired readout, valid are: ['--pycache--',
+                           'imep', 'cmep', 'erp']
      -c CHANNEL, --channel CHANNEL
                            the desired channel
      -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
@@ -95,7 +95,8 @@ offspect pes
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of input files
      -r READOUT, --readout READOUT
-                           the desired readout, valid are: ['erp', 'mep']
+                           the desired readout, valid are: ['--pycache--', 'mep',
+                           'erp']
      -c CHANNEL, --channel CHANNEL
                            the desired channel
      -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]

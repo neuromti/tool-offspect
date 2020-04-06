@@ -11,17 +11,10 @@ Developing Readouts
 Currently implemented readouts can be found at :data:`~.VALID_READOUTS`. 
 Each readout comes with a definition of its :class:`~.TraceAttributes`, i.e.
 a specific set of keys and types for their required values. HDF5 can only store
-strings as keys and values, but during loading, every metadata will be parsed
-with :py:func:`~.parse_attrs`, which uses :func:`ast.literal_eval` from the
-Python standard library for safe parsing.
+strings as keys and values. When annotations are being accessed, it sensible to :py:func`~.decode` and :py:func`~.encode` for safe parsing. In general, we recommend that the value types are limited to :code:`str`, :code:`int`,:code:`float`, or :code:`List` of said types.
 
-This means, the strings can be of any type which can be parsed with
-:func:`ast.literal_eval`.
+It is the responsibility of the developer to add the respective definitions for each readin / readout combination. To allow for a clear organization, you can find the protocol handlers in the `input` folder. There, each `readin` has its `readout` folder. In this lowest level, the handlers for the protocols are defined in their own modules, while the valid trace keys are defined in their `__init__.py`.
 
-It is the responsibility of the developer to add the respective definitions as
-one value to :data:`~.SPECIFIC_TRACEKEYS`, with the key being the string-name
-of the new readout. Additionally, readout should be added to
-:data:`~.VALID_READOUTS`.
 
 .. _developing the gui:
 

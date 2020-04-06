@@ -20,7 +20,7 @@ from numpy import ndarray
 from functools import partial
 import ast
 from functools import lru_cache
-from .check import (
+from offspect.cache.check import (
     check_consistency,
     check_valid_suffix,
     FileName,

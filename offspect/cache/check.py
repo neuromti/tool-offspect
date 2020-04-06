@@ -7,7 +7,7 @@ import datetime
 from offspect.types import *
 from math import inf, isnan
 from offspect.cache.attrs import get_valid_trace_keys
-from offspect.cache.readout.generic import must_be_identical_in_merged_file
+from offspect.cache.readout import must_be_identical_in_merged_file
 
 VALID_SUFFIX = ".hdf5"  #: the  valid suffix for cachefiles
 
@@ -27,9 +27,6 @@ def check_consistency(annotations: List[Annotations]):
         raise Exception(f"Readouts are not identical: {ro}")
     if len(ri) != 1:
         raise Exception(f"Readins are not identical: {ri}")
-
-    rio = ri.pop() + "_" + ro.pop()
-    keys_required_for_consistency = get_valid_trace_keys(rio)
 
     # these keys must be identical across groups / origin files within a a cachefile
     for key in must_be_identical_in_merged_file:

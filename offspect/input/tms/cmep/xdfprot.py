@@ -131,7 +131,7 @@ def prepare_annotations(
         an option xml file with information about the target coordinates 
 
     readout: str
-        which readout to use (see :data:`~.VALID_READOUTS`)
+        which readout to use
     channel: str
         which channel to pick
     pre_in_ms: float
