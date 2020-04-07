@@ -9,6 +9,7 @@ from offspect import release
 import importlib
 from functools import lru_cache
 from math import nan, inf
+from typing import overload
 
 
 def decode(value: str) -> Any:
@@ -50,8 +51,11 @@ def encode(value: Any) -> str:
 
 
 @lru_cache(maxsize=1)
-def get_valid_trace_keys(rio: str) -> List[str]:
-    ri, ro = rio.split("_")
+def get_valid_trace_keys(readin: str, readout: str = None) -> List[str]:
+    if readout is None:
+        ri, ro = readin.split("_")
+    else:
+        ri, ro = readin, readout
     try:
         m = importlib.import_module(f"offspect.input.{ri}.{ro}")
         return m.valid_keys + valid_trace_keys  # type: ignore
