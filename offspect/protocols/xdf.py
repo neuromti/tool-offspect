@@ -125,6 +125,9 @@ def yield_comments(
             comments.append(m)
             ct.append(t)
     for ts in time_stamps:
+        if len(ct) == 0:
+            yield ""
+            continue
         if relative == "earlier":  # closest in time, but comment was earlier
             _ct = [t - ts for t in ct if t <= ts]
         elif relative == "later":  # closest in time, but comment was later

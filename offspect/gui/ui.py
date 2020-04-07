@@ -167,7 +167,8 @@ class Ui(QtWidgets.QMainWindow):
 
     def plot_coords(self):
         coords = decode(self.cf.get_trace_attrs(self.trace_idx)["xyz_coords"])
-        plot_glass_on(self.MplWidget2.canvas.axes, coords, [1000.0])
+        print(f"GUI: Stimulation target was at {coords}")
+        plot_glass_on(self.MplWidget2.canvas.axes, [coords], [1000.0])
         print(f"GUI: Stimulation was at {coords}")
         self.MplWidget2.canvas.axes.axis("off")
         self.MplWidget2.canvas.draw()

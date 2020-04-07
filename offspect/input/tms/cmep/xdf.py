@@ -134,7 +134,7 @@ def prepare_annotations(
     for idx, t in enumerate(event_samples):
         tattr = {
             "id": idx,
-            "event_name": event_stream.name + "_" + str(event_name),
+            "event_name": event_stream.name + "-" + str(event_name),
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
             "xyz_coords": coords[idx],

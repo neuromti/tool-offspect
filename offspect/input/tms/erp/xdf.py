@@ -20,6 +20,9 @@ from offspect.protocols.xdf import (
     find_closest_samples,
     yield_comments,
     yield_timestamps,
+    yield_loc_coords,
+    yield_loc_didt,
+    yield_loc_mso,
     list_nan_coords,
     list_nan,
 )
@@ -33,7 +36,7 @@ def get_datastream(streams: XDFFile, channels: List[str]) -> XDFStream:
 
 def prepare_annotations(
     xdffile: FileName,
-    stream_of_interest: str,
+    channel: str,
     pre_in_ms: float,
     post_in_ms: float,
     xmlfile: FileName = None,
@@ -58,22 +61,27 @@ def prepare_annotations(
     annotation: Annotations
         the annotations for this origin files
     """
+    stream_of_interest = channel  # rename to have same function signature
     streams = XDFFile(xdffile)
     if stream_of_interest in streams:
         datastream = streams[stream_of_interest]
     else:
         raise KeyError(f"Stream {stream_of_interest} was not found in the data")
 
-    event_stream = streams[event_stream]
-    time_stamps = [ts for ts in yield_timestamps(event_stream, event_name)]
+    e_stream = streams[event_stream]
+    time_stamps = [ts for ts in yield_timestamps(e_stream, event_name)]
     event_count = len(time_stamps)
 
     if "localite_flow" in streams or "localite_marker" in streams:
-        print("Not implemented, but here we could parse coords and intensity")
+        loc_stream = streams["localite_marker"]
+        coords = list(yield_loc_coords(loc_stream, time_stamps))
+        stimulation_intensity_didt = list(yield_loc_didt(loc_stream, time_stamps))
+        stimulation_intensity_mso = list(yield_loc_mso(loc_stream, time_stamps))
     else:
         coords = list_nan_coords(event_count)
         stimulation_intensity_didt = list_nan(event_count)
         stimulation_intensity_mso = list_nan(event_count)
+    print(f"Found {event_count} events")
 
     if "reiz_marker_sa" in streams:
         comments = [
@@ -111,7 +119,7 @@ def prepare_annotations(
     for idx in range(event_count):
         tattr = {
             "id": idx,
-            "event_name": event_stream + str(event_name),
+            "event_name": e_stream.name + "-" + str(event_name),
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
             "xyz_coords": coords[idx],

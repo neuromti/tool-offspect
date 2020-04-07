@@ -19,8 +19,8 @@ def decode(value: str) -> Any:
         for i in dec:
             if type(i) == str:
                 _d.append(decode(i))
-            else:
-                _d.append(dec)
+            elif type(i) == int or type(i) == float:
+                _d.append(i)
         dec = _d
     if dec == "nan":
         dec = nan
@@ -59,6 +59,37 @@ def get_valid_trace_keys(rio: str) -> List[str]:
         raise ImportError(
             f"offspect.input.{ri}.{ro} is invalid. Please define valid_keys in its __init__.py"
         )
+
+
+class AnnotationDictionary(dict):
+    """A subclass of dict storing all values internally as string
+    
+    encoding / decoding is performed with :func:`encode` and :func:`decode`, and valid values should be limited to int, float and str and the respective Lists of them.
+
+    .. hint::
+    
+        use the get and set methods to directly access the string representation, the [key] approach automatically decodes / encodes
+
+        use update to overwrite without encoding, e.g. if the values are already str
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(MetaData, self).__init__(*args, **kwargs)
+
+    def __getitem__(self, key):
+        if type(key) != str:
+            raise ValueError("Key must be str")
+        val = dict.__getitem__(self, key)
+        return decode(val)
+
+    def __setitem__(self, key, val):
+        if type(key) != str:
+            raise ValueError("Key must be str")
+        dict.__setitem__(self, key, encode(val))
+
+    def update(self, *args, **kwargs):
+        for k, v in dict(*args, **kwargs).items():
+            self[k] = v
 
 
 class AnnotationFactory:
