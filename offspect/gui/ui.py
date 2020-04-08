@@ -9,7 +9,6 @@ from offspect.api import CacheFile
 from offspect.gui.plot import plot_glass_on, plot_trace
 from offspect.api import decode, encode
 import numpy as np
-from offspect.gui.OWidgets import OTextEdit
 
 # Ensure using PyQt5 backend
 matplotlib.use("QT5Agg")
@@ -192,16 +191,19 @@ class Ui(QtWidgets.QMainWindow):
 def get_ui(resolution: str = ""):
     app = QtWidgets.QApplication([__file__])
     if resolution == "":
-        resolution = "HR"
-        print(f"GUI: Resolution not specified. Fall back to default")
+        print(f"GUI: Resolution not specified. Fall back to newest development version")
+        from offspect.gui.baseui import MainWindow
 
-    pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
-    print(f"GUI: Using {resolution}: {pygui.__name__}")
+        return app, MainWindow
+    else:
 
-    class useUI(Ui, pygui.Ui_MainWindow):  # type: ignore
-        pass
+        pygui = import_module(f"offspect.gui.uis.visual_inspection_gui_{resolution}")
+        print(f"GUI: Using {resolution}: {pygui.__name__}")
 
-    return app, useUI
+        class useUI(Ui, pygui.Ui_MainWindow):  # type: ignore
+            pass
+
+        return app, useUI
 
 
 def start_window(app, window):

@@ -11,10 +11,11 @@ from offspect.cli.pes import VALID_READOUTS as valid_pes_readouts
 
 try:
     from offspect.gui.__main__ import main as cli_gui
-except ImportError:
+except ImportError as e:
+    print("Import Error:", str(e))
 
     def cli_gui(*args, **kwargs):
-        print("GUI was not found")
+        print("GUI was not found", e)
 
 
 def cli_peek(args: argparse.Namespace):
