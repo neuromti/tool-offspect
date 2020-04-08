@@ -31,7 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         print(f"GUI: Loading {self.filename}")
 
     def refresh(self):
-        self.t = VWidgets.MplWidget()
+        self.t = VWidgets.TraceWidget(cf=self.cf, idx=self.c.trace_idx)
         self.w = VWidgets.TattrWidget(cf=self.cf, idx=self.c.trace_idx)
         self.o = VWidgets.OattrWidget(cf=self.cf, idx=self.c.trace_idx)
         layout = QtWidgets.QGridLayout()

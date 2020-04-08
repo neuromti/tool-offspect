@@ -22,11 +22,11 @@ class ControlWidget(QtWidgets.QWidget):
         self.next_button.clicked.connect(self.click_next_button)
 
         buttonlayout = QtWidgets.QHBoxLayout()
-        for button in [self.prev_button, self.reject_button, self.next_button]:
+        for button in [self.prev_button, self.trace_idx_num, self.next_button]:
             buttonlayout.addWidget(button)
 
         idxlayout = QtWidgets.QHBoxLayout()
-        for item in [self.trace_idx_num]:
+        for item in [self.reject_button]:
             idxlayout.addWidget(item)
 
         layout = QtWidgets.QVBoxLayout()

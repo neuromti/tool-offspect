@@ -12,15 +12,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.image as image
 import matplotlib.pyplot as plt
-from offspect.api import decode
+from offspect.api import decode, CacheFile
 from math import nan
 
 
-class MplWidget(QtWidgets.QWidget):  # type: ignore
-    def __init__(self, parent=None):
-
+class MplWidget(QtWidgets.QWidget):
+    def __init__(self, cf: CacheFile, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
-
+        self.cf = cf
         self.canvas = FigureCanvas(Figure())
 
         vertical_layout = QtWidgets.QVBoxLayout()
@@ -31,15 +30,9 @@ class MplWidget(QtWidgets.QWidget):  # type: ignore
         self.setLayout(vertical_layout)
 
 
-def plot_trace_on(ax, data, attrs):
-
-    pre = decode(attrs["samples_pre_event"])
-    post = decode(attrs["samples_post_event"])
-    fs = decode(attrs["samplingrate"])
-    t0 = -float(pre) / float(fs)
-    t1 = float(post) / float(fs)
-
-    # plot data
+# ------------------------------------------------------------------------------
+def plot_trace_on(ax, data, t0, t1, pre, post):
+    "plot trace data on an axes"
     ax.plot(data)
     ax.set_ylim(-200, 200)
     ax.grid(True, which="both")
@@ -47,3 +40,20 @@ def plot_trace_on(ax, data, attrs):
     ax.set_xticklabels((t0, 0, t1))
     ax.set_xticks(range(0, pre + post, (pre + post) // 10), minor=True)
     ax.tick_params(direction="in")
+
+
+class TraceWidget(MplWidget):
+    def __init__(self, cf: CacheFile, idx: int = 0, parent=None):
+        super().__init__(cf=cf, parent=parent)
+        self.plot_trace(idx)
+
+    def plot_trace(self, idx: int = 0):
+        data = self.cf.get_trace_data(idx)
+        attrs = self.cf.get_trace_attrs(idx)
+        pre = decode(attrs["samples_pre_event"])
+        post = decode(attrs["samples_post_event"])
+        fs = decode(attrs["samplingrate"])
+        t0 = -float(pre) / float(fs)
+        t1 = float(post) / float(fs)
+
+        plot_trace_on(self.canvas.axes, data, t0, t1, pre, post)
