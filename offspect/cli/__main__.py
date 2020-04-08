@@ -15,7 +15,7 @@ except ImportError as e:
     print("Import Error:", str(e))
 
     def cli_gui(*args, **kwargs):
-        print("GUI was not found", e)
+        print("GUI was not found")
 
 
 def cli_peek(args: argparse.Namespace):

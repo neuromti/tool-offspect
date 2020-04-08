@@ -19,6 +19,7 @@ import numpy as np
 from numpy import ndarray
 from functools import partial
 import ast
+from numpy import ndarray as TraceData
 from functools import lru_cache
 from offspect.cache.check import (
     check_consistency,
@@ -402,9 +403,9 @@ def populate(
             for tattr, trace in zip(settings["traces"], traces):
                 tattr.update(**attrs)
                 idx = str(tattr["id"])
-                trace = tracegrp.create_dataset(idx, data=trace)
+                cftrace = tracegrp.create_dataset(idx, data=trace)
                 for k, v in tattr.items():
-                    trace.attrs.modify(str(k), str(v))
+                    cftrace.attrs.modify(str(k), str(v))
     return tf
 
 
