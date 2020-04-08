@@ -78,7 +78,7 @@ class AnnotationDictionary(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        super(MetaData, self).__init__(*args, **kwargs)
+        super(AnnotationDictionary, self).__init__(*args, **kwargs)
 
     def __getitem__(self, key):
         if type(key) != str:

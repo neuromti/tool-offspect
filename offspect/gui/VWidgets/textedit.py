@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
-class OTextEdit(QtWidgets.QTextEdit):
+class VTextEdit(QtWidgets.QTextEdit):
     """
     A TextEdit editor that sends editingFinished events 
     when the text was changed and focus is lost.
@@ -11,19 +11,19 @@ class OTextEdit(QtWidgets.QTextEdit):
     receivedFocus = QtCore.pyqtSignal()
 
     def __init__(self, parent):
-        super(OTextEdit, self).__init__(parent)
+        super(VTextEdit, self).__init__(parent)
         self._changed = False
         self.setTabChangesFocus(True)
         self.textChanged.connect(self._handle_text_changed)
 
     def focusInEvent(self, event):
-        super(OTextEdit, self).focusInEvent(event)
+        super(VTextEdit, self).focusInEvent(event)
         self.receivedFocus.emit()
 
     def focusOutEvent(self, event):
         if self._changed:
             self.editingFinished.emit()
-        super(OTextEdit, self).focusOutEvent(event)
+        super(VTextEdit, self).focusOutEvent(event)
 
     def _handle_text_changed(self):
         self._changed = True
@@ -32,5 +32,5 @@ class OTextEdit(QtWidgets.QTextEdit):
         self._changed = state
 
     def setHtml(self, html):
-        super(OTextEdit, self).setHtml(self, html)
+        super(VTextEdit, self).setHtml(self, html)
         self._changed = False

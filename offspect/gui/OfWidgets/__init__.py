@@ -1,1 +1,0 @@
-from .textedit import OTextEdit
