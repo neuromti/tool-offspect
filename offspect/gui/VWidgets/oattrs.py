@@ -4,21 +4,7 @@ from functools import partial
 from offspect.cache.attrs import valid_origin_keys
 from .textedit import VTextEdit
 from typing import Callable
-
-
-def save_global(cf, idx: int, key: str, read: Callable):
-    tattr = cf.get_trace_attrs(idx)
-    text = read()
-    if tattr[key] == text:
-        return
-    else:
-        origin = tattr["origin"]
-        for idx in range(len(cf)):
-            tattr = cf.get_trace_attrs(idx)
-            if tattr["origin"] == origin:
-                tattr[key] = encode(text)
-                cf.set_trace_attrs(idx, tattr)
-        print(f"CF: Wrote globaly {origin}: {key} {text}")
+from offspect.gui.io import save_global
 
 
 class OattrWidget(QtWidgets.QWidget):

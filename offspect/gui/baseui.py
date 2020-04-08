@@ -16,6 +16,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None, idx: int = 0):
         super(MainWindow, self).__init__(parent)
         self.load_cache_file(filename, idx)
+        self.setWindowTitle(str(filename))
 
     def load_cache_file(self, filename=None, idx: int = 0):
         if filename is None:

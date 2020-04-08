@@ -4,17 +4,7 @@ from typing import Callable
 from functools import partial
 from offspect.cache.attrs import get_valid_trace_keys
 from .textedit import VTextEdit
-
-
-def save(cf, idx: int, key: str, read: Callable):
-    tattr = cf.get_trace_attrs(idx)
-    text = read()
-    if tattr[key] == text:
-        return
-    else:
-        tattr[key] = encode(text)
-        cf.set_trace_attrs(idx, tattr)
-        print(f"CF: Wrote {idx}: {key} {text}")
+from offspect.gui.io import save
 
 
 class TattrWidget(QtWidgets.QWidget):
@@ -32,6 +22,7 @@ class TattrWidget(QtWidgets.QWidget):
         tattr = cf.get_trace_attrs(idx)
         keys = get_valid_trace_keys(tattr["readin"], tattr["readout"]).copy()
         keys.remove("reject")
+        keys.remove("onset_shift")
         keys.remove("comment")
         layout = QtWidgets.QGridLayout()
         row = 0

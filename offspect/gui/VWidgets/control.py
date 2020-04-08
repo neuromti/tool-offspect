@@ -4,6 +4,60 @@ from typing import Callable
 from functools import partial
 from offspect.cache.attrs import get_valid_trace_keys
 from .textedit import VTextEdit
+from offspect.gui.io import save
+
+
+class IntegerAttribute(QtWidgets.QWidget):
+    def read(self):
+        text = self.line.text()
+        try:
+            text = str(int(text))
+        except Exception:
+            text = "0"
+            self.line.setText(text)
+
+        return str(text)
+
+    def on_edit(self):
+        save(cf=self.cf, idx=self.idx, key=self.key, read=self.read)
+        self.callback()
+
+    def draw_int(self, idx: int = 0):
+        self.idx = idx
+        tattr = self.cf.get_trace_attrs(self.idx)
+        val = decode(tattr[self.key])
+        val = val or 0
+        if type(val) == str:
+            val = 0
+        elif type(val) == float:
+            val = int(val)
+        val = "{0:3.0f}".format(val)
+        print(f"Loading {self.key}:{val} for {idx}")
+        self.line.setText(val)
+
+    def __init__(
+        self,
+        cf: CacheFile,
+        idx: int = 0,
+        key: str = "onset_shift",
+        callback: Callable = lambda: None,
+        parent=None,
+    ):
+        super().__init__()
+        self.key = key
+        self.cf = cf
+        self.idx = idx
+        self.callback = callback
+        self.label = QtWidgets.QLabel(text=key.replace("_", " ").capitalize())
+        self.line = QtWidgets.QLineEdit()
+        self.draw_int(idx)
+        self.line.editingFinished.connect(self.on_edit)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.label)
+        layout.addWidget(self.line)
+
+        self.setLayout(layout)
 
 
 class ControlWidget(QtWidgets.QWidget):
@@ -15,23 +69,27 @@ class ControlWidget(QtWidgets.QWidget):
         self.prev_button = QtWidgets.QPushButton(text="Prev")
         self.reject_button = QtWidgets.QPushButton(text="Reject")
         self.trace_idx_num = QtWidgets.QLineEdit(text=str(idx))
-
-        self.trace_idx_num.editingFinished.connect(self.check_trace_idx)
+        self.trace_idx_num.editingFinished.connect(self.refresh)
         self.reject_button.clicked.connect(self.flip_reject_button)
-        self.prev_button.clicked.connect(self.click_previous_button)
-        self.next_button.clicked.connect(self.click_next_button)
+        self.prev_button.clicked.connect(self.click_prev)
+        self.next_button.clicked.connect(self.click_next)
 
-        buttonlayout = QtWidgets.QHBoxLayout()
+        self.buttonlayout = QtWidgets.QHBoxLayout()
         for button in [self.prev_button, self.trace_idx_num, self.next_button]:
-            buttonlayout.addWidget(button)
+            self.buttonlayout.addWidget(button)
 
-        idxlayout = QtWidgets.QHBoxLayout()
+        self.idxlayout = QtWidgets.QHBoxLayout()
         for item in [self.reject_button]:
-            idxlayout.addWidget(item)
+            self.idxlayout.addWidget(item)
+
+        self.onset_shift = IntegerAttribute(
+            cf=self.cf, idx=self.trace_idx, key="onset_shift", callback=self.refresh
+        )
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(buttonlayout)
-        layout.addLayout(idxlayout)
+        layout.addLayout(self.buttonlayout)
+        layout.addLayout(self.idxlayout)
+        layout.addWidget(self.onset_shift)
         self.setLayout(layout)
         self.trace_idx = idx
 
@@ -60,21 +118,25 @@ class ControlWidget(QtWidgets.QWidget):
         else:
             self.prev_button.setEnabled(True)
             self.next_button.setEnabled(True)
-        print("Setting trace_idx from", self.trace_idx, "to", trace_idx)
+        print("Setting trace_idx from", self.trace_idx + 1, "to", trace_idx)
         self.trace_idx_num.setText(str(trace_idx))
-        self.set_reject_button()
-        self.callback()
+        self.refresh()
 
     def check_trace_idx(self):
         self.trace_idx += 0
 
-    def click_next_button(self):
+    def click_next(self):
         self.trace_idx += 1
 
-    def click_previous_button(self):
+    def click_prev(self):
         self.trace_idx -= 1
 
-    def set_reject_button(self):
+    def refresh(self):
+        self.onset_shift.draw_int(self.trace_idx)
+        self.draw_reject_button()
+        self.callback()
+
+    def draw_reject_button(self):
         tattrs = self.cf.get_trace_attrs(self.trace_idx)
         reject = decode(tattrs["reject"])
         reject = False if reject is None else reject
@@ -92,4 +154,4 @@ class ControlWidget(QtWidgets.QWidget):
         reject = True if reject is None else not reject
         tattrs["reject"] = reject
         self.cf.set_trace_attrs(self.trace_idx, tattrs)
-        self.set_reject_button()
+        self.draw_reject_button()

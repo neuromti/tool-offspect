@@ -14,6 +14,7 @@ import matplotlib.image as image
 import matplotlib.pyplot as plt
 from offspect.api import decode, CacheFile
 from math import nan
+import numpy as np
 
 
 class MplWidget(QtWidgets.QWidget):
@@ -31,14 +32,16 @@ class MplWidget(QtWidgets.QWidget):
 
 
 # ------------------------------------------------------------------------------
-def plot_trace_on(ax, data, t0, t1, pre, post):
+def plot_trace_on(ax, data, t0, t1, pre, post, shift=0):
     "plot trace data on an axes"
-    ax.plot(data)
+    x = np.arange(-pre, post) + shift
+    ax.plot(x, data)
     ax.set_ylim(-200, 200)
     ax.grid(True, which="both")
-    ax.set_xticks((0, pre, pre + post))
+    ax.set_xticks((-pre, 0, post))
     ax.set_xticklabels((t0, 0, t1))
     ax.set_xticks(range(0, pre + post, (pre + post) // 10), minor=True)
+    ax.set_xlim(-pre, post)
     ax.tick_params(direction="in")
 
 
@@ -53,7 +56,9 @@ class TraceWidget(MplWidget):
         pre = decode(attrs["samples_pre_event"])
         post = decode(attrs["samples_post_event"])
         fs = decode(attrs["samplingrate"])
+        shift = decode(attrs["onset_shift"])
+        shift = shift or 0
         t0 = -float(pre) / float(fs)
         t1 = float(post) / float(fs)
-
-        plot_trace_on(self.canvas.axes, data, t0, t1, pre, post)
+        plot_trace_on(self.canvas.axes, data, t0, t1, pre, post, shift)
+        print(f"Plotting {idx} shifted by {shift}")
