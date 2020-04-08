@@ -9,6 +9,7 @@ from offspect.api import CacheFile
 from offspect.gui.plot import plot_glass_on, plot_trace
 from offspect.api import decode, encode
 import numpy as np
+from offspect.gui.OWidgets import OTextEdit
 
 # Ensure using PyQt5 backend
 matplotlib.use("QT5Agg")

@@ -9,41 +9,7 @@ from offspect.cache.attrs import (
 from typing import Dict, Callable
 from offspect.cache.readout import valid_origin_keys, must_be_identical_in_merged_file
 from functools import partial
-
-
-class TextEdit(QtWidgets.QTextEdit):
-    """
-    A TextEdit editor that sends editingFinished events 
-    when the text was changed and focus is lost.
-    """
-
-    editingFinished = QtCore.pyqtSignal()
-    receivedFocus = QtCore.pyqtSignal()
-
-    def __init__(self, parent):
-        super(TextEdit, self).__init__(parent)
-        self._changed = False
-        self.setTabChangesFocus(True)
-        self.textChanged.connect(self._handle_text_changed)
-
-    def focusInEvent(self, event):
-        super(TextEdit, self).focusInEvent(event)
-        self.receivedFocus.emit()
-
-    def focusOutEvent(self, event):
-        if self._changed:
-            self.editingFinished.emit()
-        super(TextEdit, self).focusOutEvent(event)
-
-    def _handle_text_changed(self):
-        self._changed = True
-
-    def setTextChanged(self, state=True):
-        self._changed = state
-
-    def setHtml(self, html):
-        QtGui.QTextEdit.setHtml(self, html)
-        self._changed = False
+from offspect.gui import OfWidgets
 
 
 def save(cf, idx: int, key: str, read: Callable):
@@ -106,7 +72,7 @@ class TattrWidget(QtWidgets.QWidget):
 
         key = "comment"
         label = QtWidgets.QLabel(text=key)
-        line = TextEdit(tattr[key])
+        line = OfWidgets.OTextEdit(tattr[key])
         trig = partial(save, cf=cf, idx=idx, key=key, read=line.toPlainText)
         line.editingFinished.connect(trig)
         layout.addWidget(label, row, 0)
@@ -154,7 +120,7 @@ class OattrWidget(QtWidgets.QWidget):
         row += 1
         key = "global_comment"
         label = QtWidgets.QLabel(text=key)
-        line = TextEdit(tattr[key])
+        line = OfWidgets.OTextEdit(tattr[key])
         trig = partial(save_global, cf=cf, idx=idx, key=key, read=line.toPlainText)
         line.editingFinished.connect(trig)
         layout.addWidget(label, row, 0)
