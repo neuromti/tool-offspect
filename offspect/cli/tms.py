@@ -37,7 +37,7 @@ def cli_tms(args: argparse.Namespace):
 
         Convert directly from the source xdf file::
             
-            offspect tms -f mapping_contra_R004.xdf -t map.hdf5 -pp 100 100 -r contralateral_mep -c EDC_L
+            offspect tms -f mapping_contra_R004.xdf -t map.hdf5 -pp 100 100 -r cmep -c EDC_L
 
         
 
