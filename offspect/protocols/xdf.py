@@ -231,3 +231,8 @@ def has_localite(stream_names: List[str]) -> bool:
         if l in stream_names:
             return True
     return False
+
+def has_spongebob(stream_names: List[str]) -> bool:
+    spongebob_name = "Spongebob-Data"
+    return spongebob_name in stream_names
+

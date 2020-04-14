@@ -53,12 +53,15 @@ def cli_tms(args: argparse.Namespace):
         protocol = "smartmove"
     elif ".xdf" in suffixes.keys():
         protocol = "xdf"
-        from offspect.protocols.xdf import has_localite
+        from offspect.protocols.xdf import has_localite, has_spongebob
 
         sinfos = peek(suffixes[".xdf"], at_most=99, max_duration=1)
         stream_names = [sinfo["name"] for sinfo in sinfos]
+        # check whether spongebob is present
+        if has_spongebob(stream_names):
+            protocol = "xdfspongebob"
         # check whether localite is present
-        if has_localite(stream_names):
+        elif has_localite(stream_names):
             if ".xml" in suffixes:
                 protocol = "xdfxml"
 
@@ -149,6 +152,17 @@ def cli_tms(args: argparse.Namespace):
             channel=args.channel,
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
+        )
+    elif protocol == "xdfspongebob":
+        annotation = prepare_annotations(
+            xdffile=suffixes[".xdf"],
+            channel=args.channel,
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+            event_stream="Spongebob-Data",
+            event_mark = 1,
+            event_name = "Spongebob-Trigger",
+            comment_name="Stimulus comment"
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
     else:
