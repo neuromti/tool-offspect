@@ -116,6 +116,7 @@ def prepare_annotations(
             "event_name": event_stream.name + "-" + str(event_name),
             "event_sample": event_samples[idx],
             "event_time": event_times[idx],
+            "comment": comments[idx],
             "time_since_last_pulse_in_s": time_since_last_pulse[idx],
         }
         anno.append_trace_attr(tattr)
