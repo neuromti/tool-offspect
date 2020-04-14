@@ -54,6 +54,7 @@ def prepare_annotations(
     post_in_ms: float,
     xmlfile: FileName = None,
     event_name="coil_0_didt",
+    event_mark="coil_0_didt",
     event_stream="localite_marker",
     comment_name=None,
 ) -> Annotations:
@@ -84,10 +85,10 @@ def prepare_annotations(
     streams = XDFFile(xdffile)
     datastream = pick_stream_with_channel(channel, streams)
     event_stream = streams[event_stream]
-    time_stamps = [ts for ts in yield_timestamps(event_stream, event_name)]
+    time_stamps = [ts for ts in yield_timestamps(event_stream, event_mark)]
     event_count = len(time_stamps)
 
-    if "localite_flow" in streams or "localite_marker" in streams:
+    if (("localite_flow" in streams or "localite_marker") in streams) and not("Spongebob-Data" in streams):
         loc_stream = streams["localite_marker"]
         coords = list(yield_loc_coords(loc_stream, time_stamps))
         stimulation_intensity_didt = list(yield_loc_didt(loc_stream, time_stamps))
@@ -175,11 +176,3 @@ def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
         traces.append(trace)
     return traces
 
-
-if __name__ == "__main__":
-    anno = prepare_annotations(
-            xdffile = "/home/juli/acute_study/recordings/NoDi/IMONAS-acute-study-intervention_R001.xdf",
-            channel = "EDC_R",
-            pre_in_ms = 100,
-            post_in_ms = 100
-            )
