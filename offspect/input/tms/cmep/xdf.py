@@ -174,3 +174,12 @@ def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
         trace = datastream.time_series[onset - pre : onset + post, cix]
         traces.append(trace)
     return traces
+
+
+if __name__ == "__main__":
+    anno = prepare_annotations(
+            xdffile = "/home/juli/acute_study/recordings/NoDi/IMONAS-acute-study-intervention_R001.xdf",
+            channel = "EDC_R",
+            pre_in_ms = 100,
+            post_in_ms = 100
+            )

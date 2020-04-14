@@ -70,8 +70,8 @@ offspect tms
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of input files
      -r READOUT, --readout READOUT
-                           the desired readout, valid are: ['imep', 'cmep',
-                           'erp']
+                           the desired readout, valid are: ['cmep', 'erp',
+                           'imep']
      -c CHANNEL, --channel CHANNEL
                            the desired channel
      -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
