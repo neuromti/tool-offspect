@@ -4,11 +4,68 @@ CacheFile
 The python interface to the :py:class:`~.CacheFile` which checks for filename
 validity during instantiation. When one of its properties are called, it loads
 and parses the metadata and datasets fresh from the hdf5 and aggregatates them.
-Example::
+
+Examples
+++++++++
+
+Peek
+****
+
+The most straightforward example would be loading a CacheFile and printing its content. 
+
+.. code-block::
 
    from offspect.api import CacheFile
    cf = CacheFile("example.hdf5")
    print(cf)
+   
+
+
+Iterate
+*******
+
+
+Another use case would be printing a TraceAttribute across all traces in the file, using the iterator interface of the CacheFile, which returns data and attributes of each Trace.
+
+.. code-block::
+
+   from offspect.api import CacheFile
+   cf = CacheFile("example.hdf5")
+   for data, attrs in cf:
+        print("rejected?:", attrs["reject"])
+
+Manipulate
+**********
+
+We can change the value for a key of the annotations for a specific trace by indexing :meth:`CacheFile.get_trace_attrs` with a specific index. Please note that we now decode and encode the values of the attrs. This is because they are stored as string in the CacheFile, but we need them in their respective type to manipulate them properly. Additionally, we encode them, before we set the attributes again with :meth:`~.CacheFile.set_trace_attrs`. 
+
+.. code-block::
+
+    from offspect.api import CacheFile, encode
+    cf = CacheFile("example.hdf5")
+    attrs = cf.get_trace_attrs(0)
+    attrs["stimulation_intensity_mso"] = encode(66)
+    cf.set_trace_attrs(0, attrs)
+
+
+Batch-Manipulate
+****************
+
+Another typical use case would be changing one TraceAttribute across all traces in the file. Here, we iterate across all traces, and shift the onset of the TMS 5 samples to the right. 
+
+.. code-block::
+
+   from offspect.api import CacheFile, decode, encode
+   cf = CacheFile("merged.hdf5")
+   for ix, (data, attrs) in enumerate(cf):
+       key = "onset_shift"
+       old = decode(attrs[key])
+       print(f"Trace {ix} {key}:", old, end=" ")
+       new = old + 5
+       attrs["onset_shift"] = encode(new)
+       cf.set_trace_attrs(ix, attrs)
+       test = decode(cf.get_trace_attrs(ix)["onset_shift"])
+       print("to", test)
 
 """
 from typing import Union, List, Dict, Tuple, Iterator
@@ -188,6 +245,10 @@ class CacheFile:
                     pass
                 cnt = idx
         return int(cnt)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self.get_trace_data(i), self.get_trace_attrs(i)
 
 
 # -----------------------------------------------------------------------------

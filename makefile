@@ -21,3 +21,8 @@ test: build
 upload: build
 	twine check dist/*
 	twine upload dist/* --verbose
+
+.PHONY: docs
+docs:
+	#rm -rf docs/source/_autosummary
+	make -C docs clean html

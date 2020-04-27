@@ -1,3 +1,7 @@
+Full API documentation
+----------------------
+
+
 The documentation of the functions in this package
 
 .. autosummary::
