@@ -272,7 +272,7 @@ def load_ephys_file(
 def prepare_annotations(
     docfile: FileName,
     cntfiles: List[FileName],
-    channel_of_interest: str,
+    channel: str,
     pre_in_ms: float,
     post_in_ms: float,
     select_events: List[str] = ["0001"],
@@ -305,13 +305,7 @@ def prepare_annotations(
             emgfile = f
 
     return _prepare_annotations(
-        docfile,
-        eegfile,
-        emgfile,
-        channel_of_interest,
-        pre_in_ms,
-        post_in_ms,
-        select_events,
+        docfile, eegfile, emgfile, channel, pre_in_ms, post_in_ms, select_events,
     )
 
 
@@ -319,7 +313,7 @@ def _prepare_annotations(
     docfile: FileName,
     eegfile: FileName,
     emgfile: FileName,
-    channel_of_interest: str,
+    channel: str,
     pre_in_ms: float,
     post_in_ms: float,
     select_events: List[str] = ["0001"],
@@ -332,7 +326,7 @@ def _prepare_annotations(
         pre_in_ms=pre_in_ms,
         post_in_ms=post_in_ms,
         select_events=select_events,
-        select_channel=channel_of_interest,
+        select_channel=channel,
     )
     coords = load_documentation_txt(docfile)
     stimulation_intensity_mso = nan
@@ -344,7 +338,7 @@ def _prepare_annotations(
     anno.set("samplingrate", info["samplingrate"])
     anno.set("samples_pre_event", info["samples_pre_event"])
     anno.set("samples_post_event", info["samples_post_event"])
-    anno.set("channel_of_interest", [channel_of_interest])
+    anno.set("channel_of_interest", [channel])
     anno.set("channel_labels", info["channel_labels"])
 
     # trace fields
