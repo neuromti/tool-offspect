@@ -13,7 +13,7 @@ Peek
 
 The most straightforward example would be loading a CacheFile and printing its content. 
 
-.. code-block::
+.. code-block:: python
 
    from offspect.api import CacheFile
    cf = CacheFile("example.hdf5")
@@ -27,7 +27,7 @@ Iterate
 
 Another use case would be printing a TraceAttribute across all traces in the file, using the iterator interface of the CacheFile, which returns data and attributes of each Trace.
 
-.. code-block::
+.. code-block:: python
 
    from offspect.api import CacheFile
    cf = CacheFile("example.hdf5")
@@ -39,7 +39,7 @@ Manipulate
 
 We can change the value for a key of the annotations for a specific trace by indexing :meth:`CacheFile.get_trace_attrs` with a specific index. Please note that we now decode and encode the values of the attrs. This is because they are stored as string in the CacheFile, but we need them in their respective type to manipulate them properly. Additionally, we encode them, before we set the attributes again with :meth:`~.CacheFile.set_trace_attrs`. 
 
-.. code-block::
+.. code-block:: python
 
     from offspect.api import CacheFile, encode
     cf = CacheFile("example.hdf5")
@@ -53,7 +53,7 @@ Batch-Manipulate
 
 Another typical use case would be changing one TraceAttribute across all traces in the file. Here, we iterate across all traces, and shift the onset of the TMS 5 samples to the right. 
 
-.. code-block::
+.. code-block:: python
 
    from offspect.api import CacheFile, decode, encode
    cf = CacheFile("merged.hdf5")
