@@ -254,6 +254,14 @@ class CacheFile:
 # -----------------------------------------------------------------------------
 
 
+def sort_keys(okeys: List[str]) -> List[str]:
+    # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
+    keys = [int(k) for k in okeys]
+    # for indexing, we need them again as str, though
+    sorted_keys = [str(k) for k in sorted(keys)]
+    return sorted_keys
+
+
 def update_trace_attributes(attrs: TraceAttributes):
     """overwrite the traceattributes for a trace
     
@@ -286,9 +294,7 @@ def update_trace_attributes(attrs: TraceAttributes):
         with write_file(fname) as f:
             for origin in f.keys():
                 # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
-                keys = [int(k) for k in f[origin]["traces"].keys()]
-                # for indexing, we need them again as str, though
-                keys = [str(k) for k in sorted(keys)]
+                keys = sort_keys(f[origin]["traces"].keys())
                 # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
                 for idx, key in enumerate(keys, start=cnt + 1):
                     if idx == index:
@@ -323,9 +329,7 @@ def read_trace(
         with read_file(cf.fname) as f:
             for origin in f.keys():
                 # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
-                keys = [int(k) for k in f[origin]["traces"].keys()]
-                # for indexing, we need them again as str, though
-                keys = [str(k) for k in sorted(keys)]
+                keys = sort_keys(f[origin]["traces"].keys())
                 # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
                 for ix, key in enumerate(keys, start=cnt + 1):
                     # if the trace is the one indexed, we load the dset
