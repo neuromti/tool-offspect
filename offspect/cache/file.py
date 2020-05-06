@@ -264,18 +264,33 @@ def update_trace_attributes(attrs: TraceAttributes):
     attrs: TraceAttributes
     """
     index: int
-    if isindex(attrs["cache_file_index"]):
+    if isindex(attrs["cache_file_index"]):  # this is a transient attribute
         index = int(attrs["cache_file_index"])
     else:
         raise ValueError("Index must be an integer")
     fname = attrs["cache_file"]
     # attrs = filter_trace_attrs(attrs)
 
+    # skip transient attributes
+    old = attrs
+    attrs = dict()
+    for key, value in old.items():
+        if key == "cache_file_index":
+            continue
+        if key == "cache_file":
+            continue
+        attrs[key] = value
+
     if index >= 0:
         cnt = -1
         with write_file(fname) as f:
             for origin in f.keys():
-                for idx, key in enumerate(f[origin]["traces"], start=cnt + 1):
+                # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
+                keys = [int(k) for k in f[origin]["traces"].keys()]
+                # for indexing, we need them again as str, though
+                keys = [str(k) for k in sorted(keys)]
+                # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
+                for idx, key in enumerate(keys, start=cnt + 1):
                     if idx == index:
                         dset = f[origin]["traces"][key]
                         for key in attrs.keys():
@@ -304,10 +319,17 @@ def read_trace(
     if type(idx) != int:
         raise ValueError("Index must be an integer")
     if idx >= 0:
-        cnt = -1
+        cnt = -1  # we use cnt to allow indexing across origin files
         with read_file(cf.fname) as f:
             for origin in f.keys():
-                for ix, key in enumerate(f[origin]["traces"], start=cnt + 1):
+                # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
+                keys = [int(k) for k in f[origin]["traces"].keys()]
+                # for indexing, we need them again as str, though
+                keys = [str(k) for k in sorted(keys)]
+                # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
+                for ix, key in enumerate(keys, start=cnt + 1):
+                    # if the trace is the one indexed, we load the dset
+                    # fresh from hdd
                     if idx == ix:
                         dset = f[origin]["traces"][key]
                         dset.id.refresh()  # load fresh from file
@@ -325,6 +347,7 @@ def read_trace(
                             return data
                         else:
                             raise NotImplementedError(f"{what} can not be loaded")
+                    # we set cnt to ix to allow cross-origin indexing
                     cnt = ix
 
     raise IndexError(f"{idx} not in cachefile")
