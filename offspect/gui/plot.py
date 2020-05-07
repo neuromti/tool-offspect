@@ -7,6 +7,9 @@ from numpy.linalg import pinv
 import matplotlib.pyplot as plt
 from offspect.api import decode
 from math import nan
+import matplotlib
+from tempfile import TemporaryDirectory
+from pathlib import Path
 
 
 def plot_trace(ax, data, attrs):
@@ -142,9 +145,6 @@ def plot_glass(
 def plot_glass_on(axes, coords, values):
     if "nan" in coords:
         return
-    import matplotlib
-    from tempfile import TemporaryDirectory
-    from pathlib import Path
 
     bg = plot_glass(
         coords,

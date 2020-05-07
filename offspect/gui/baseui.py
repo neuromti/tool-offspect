@@ -26,20 +26,31 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.filename = filename
         self.cf = CacheFile(self.filename)
-        self.c = VWidgets.ControlWidget(cf=self.cf, idx=idx)
-        self.c.callback = self.refresh
+
+        self.ctrl = VWidgets.ControlWidget(cf=self.cf, idx=idx)
+        self.ctrl.callback = self.refresh
+
         self.refresh()
         print(f"GUI: Loading {self.filename}")
 
     def refresh(self):
-        self.t = VWidgets.TraceWidget(cf=self.cf, idx=self.c.trace_idx)
-        self.w = VWidgets.TattrWidget(cf=self.cf, idx=self.c.trace_idx)
-        self.o = VWidgets.OattrWidget(cf=self.cf, idx=self.c.trace_idx)
+        self.trc = VWidgets.TraceWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.coords = VWidgets.CoordsWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+
+        right_column = QtWidgets.QWidget()
+        lt = QtWidgets.QVBoxLayout()
+        lt.addWidget(self.oattr)
+        lt.addWidget(self.coords)
+        right_column.setLayout(lt)
+
         layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.w, 0, 0, 2, 1)
-        layout.addWidget(self.c, 0, 1, 1, 1)
-        layout.addWidget(self.t, 1, 1, 1, 1)
-        layout.addWidget(self.o, 0, 2, 2, 1)
+        layout.addWidget(self.tattr, 0, 0, 2, 1)
+        layout.addWidget(self.ctrl, 0, 1, 1, 1)
+        layout.addWidget(self.trc, 1, 1, 1, 1)
+        layout.addWidget(right_column, 0, 2, 2, 1)
+
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)

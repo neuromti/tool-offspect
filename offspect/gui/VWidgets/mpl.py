@@ -23,12 +23,12 @@ class MplWidget(QtWidgets.QWidget):
         self.cf = cf
         self.canvas = FigureCanvas(Figure())
 
-        vertical_layout = QtWidgets.QVBoxLayout()
-        vertical_layout.addWidget(self.canvas)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.canvas)
 
         self.canvas.axes = self.canvas.figure.add_subplot(111)
         self.canvas.figure.tight_layout()
-        self.setLayout(vertical_layout)
+        self.setLayout(self.layout)
 
 
 # ------------------------------------------------------------------------------
