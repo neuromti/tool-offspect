@@ -64,7 +64,10 @@ def project_into_nifti(
     base = np.zeros(shape)
     for pos, val in zip(coords, values):
         apos = pinv(affine).dot(list(chain(pos, [1])))
-        x, y, z, s = (int(p) for p in apos)
+        try:
+            x, y, z, s = (int(p) for p in apos)
+        except ValueError:
+            return
         try:
             base[x, y, z] = val
         except IndexError:
