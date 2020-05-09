@@ -75,7 +75,13 @@ class ControlWidget(QtWidgets.QWidget):
         self.next_button.clicked.connect(self.click_next)
 
         self.buttonlayout = QtWidgets.QHBoxLayout()
-        for button in [self.prev_button, self.trace_idx_num, self.next_button]:
+        self.trace_count = QtWidgets.QLabel(f" of {len(self.cf)}")
+        for button in [
+            self.prev_button,
+            self.trace_idx_num,
+            self.trace_count,
+            self.next_button,
+        ]:
             self.buttonlayout.addWidget(button)
 
         self.idxlayout = QtWidgets.QHBoxLayout()
@@ -132,6 +138,7 @@ class ControlWidget(QtWidgets.QWidget):
         self.trace_idx -= 1
 
     def refresh(self):
+        trace_count = len(self.cf)
         self.onset_shift.draw_int(self.trace_idx)
         self.draw_reject_button()
         self.callback()
