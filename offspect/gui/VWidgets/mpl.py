@@ -35,6 +35,7 @@ class MplWidget(QtWidgets.QWidget):
 def plot_trace_on(ax, data, t0, t1, pre, post, shift=0):
     "plot trace data on an axes"
     x = np.arange(-pre, post) + shift
+    ax.plot([0, 0], [-200, 200], ":r")
     ax.plot(x, data)
     ax.set_ylim(-200, 200)
     ax.grid(True, which="both")

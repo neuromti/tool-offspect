@@ -21,6 +21,7 @@ def plot_trace(ax, data, attrs):
     t1 = float(post) / float(fs)
 
     # plot data
+    ax.plot([pre, pre], [-200, 200], ":r")
     ax.plot(data)
     ax.set_ylim(-200, 200)
     ax.grid(True, which="both")
