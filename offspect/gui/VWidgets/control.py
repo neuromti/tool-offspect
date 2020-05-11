@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from offspect.api import CacheFile, decode, encode
 from typing import Callable
 from functools import partial
@@ -65,6 +65,10 @@ class ControlWidget(QtWidgets.QWidget):
         super(ControlWidget, self).__init__(*args, **kwargs)
         self.callback = callback
         self.cf = cf
+
+        # Navigation Line
+        self.navigationlayout = QtWidgets.QHBoxLayout()
+        self.trace_count = QtWidgets.QLabel(f" of {len(self.cf)}")
         self.next_button = QtWidgets.QPushButton(text="Next")
         self.prev_button = QtWidgets.QPushButton(text="Prev")
         self.reject_button = QtWidgets.QPushButton(text="Reject")
@@ -73,29 +77,36 @@ class ControlWidget(QtWidgets.QWidget):
         self.reject_button.clicked.connect(self.flip_reject_button)
         self.prev_button.clicked.connect(self.click_prev)
         self.next_button.clicked.connect(self.click_next)
-
-        self.buttonlayout = QtWidgets.QHBoxLayout()
-        self.trace_count = QtWidgets.QLabel(f" of {len(self.cf)}")
         for button in [
             self.prev_button,
             self.trace_idx_num,
             self.trace_count,
             self.next_button,
         ]:
-            self.buttonlayout.addWidget(button)
+            self.navigationlayout.addWidget(button)
 
-        self.idxlayout = QtWidgets.QHBoxLayout()
+        # Rejection Line
+        self.rejectionlayout = QtWidgets.QHBoxLayout()
         for item in [self.reject_button]:
-            self.idxlayout.addWidget(item)
+            self.rejectionlayout.addWidget(item)
 
+        # Onset Shift
+        self.onsetlayout = QtWidgets.QHBoxLayout()
         self.onset_shift = IntegerAttribute(
             cf=self.cf, idx=self.trace_idx, key="onset_shift", callback=self.refresh
         )
+        for item in [self.onset_shift]:
+            self.onsetlayout.addWidget(item)
+
+        verticalSpacer = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addLayout(self.buttonlayout)
-        layout.addLayout(self.idxlayout)
-        layout.addWidget(self.onset_shift)
+        layout.addLayout(self.navigationlayout)
+        layout.addLayout(self.rejectionlayout)
+        layout.addLayout(self.onsetlayout)
+        layout.addItem(verticalSpacer)
         self.setLayout(layout)
         self.trace_idx = idx
 
