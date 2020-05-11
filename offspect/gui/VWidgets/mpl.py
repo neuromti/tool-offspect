@@ -18,9 +18,8 @@ import numpy as np
 
 
 class MplWidget(QtWidgets.QWidget):
-    def __init__(self, cf: CacheFile, parent=None):
+    def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
-        self.cf = cf
         self.canvas = FigureCanvas(Figure())
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -29,6 +28,7 @@ class MplWidget(QtWidgets.QWidget):
         self.canvas.axes = self.canvas.figure.add_subplot(111)
         self.canvas.figure.tight_layout()
         self.setLayout(self.layout)
+        self.axes = self.canvas.axes
 
 
 # ------------------------------------------------------------------------------
@@ -48,14 +48,19 @@ def plot_trace_on(ax, data, t0, t1, pre, post, shift=0):
     ax.tick_params(direction="in")
 
 
-class TraceWidget(MplWidget):
+class TraceWidget(QtWidgets.QWidget):
     def __init__(self, cf: CacheFile, idx: int = 0, parent=None):
-        super().__init__(cf=cf, parent=parent)
-        self.plot_trace(idx)
 
-    def plot_trace(self, idx: int = 0):
-        data = self.cf.get_trace_data(idx)
-        attrs = self.cf.get_trace_attrs(idx)
+        super().__init__(parent=parent)
+        self.canvas = MplWidget()
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+        self.plot_trace(cf, idx)
+
+    def plot_trace(self, cf, idx: int = 0):
+        data = cf.get_trace_data(idx)
+        attrs = cf.get_trace_attrs(idx)
         pre = decode(attrs["samples_pre_event"])
         post = decode(attrs["samples_post_event"])
         fs = decode(attrs["samplingrate"])

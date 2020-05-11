@@ -5,6 +5,7 @@ from functools import partial
 from offspect.cache.attrs import get_valid_trace_keys
 from .textedit import VTextEdit
 from offspect.gui.io import save
+from offspect.cache.file import write_tracedata
 
 
 class IntegerAttribute(QtWidgets.QWidget):
@@ -98,6 +99,10 @@ class ControlWidget(QtWidgets.QWidget):
         for item in [self.onset_shift]:
             self.onsetlayout.addWidget(item)
 
+        self.baseline_button = QtWidgets.QPushButton(text="Baseline Correction")
+        self.baseline_button.clicked.connect(self.click_baseline)
+
+        # Vertical Spaces
         verticalSpacer = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
         )
@@ -106,6 +111,8 @@ class ControlWidget(QtWidgets.QWidget):
         layout.addLayout(self.navigationlayout)
         layout.addLayout(self.rejectionlayout)
         layout.addLayout(self.onsetlayout)
+        layout.addWidget(self.baseline_button)
+
         layout.addItem(verticalSpacer)
         self.setLayout(layout)
         self.trace_idx = idx
@@ -173,3 +180,17 @@ class ControlWidget(QtWidgets.QWidget):
         tattrs["reject"] = reject
         self.cf.set_trace_attrs(self.trace_idx, tattrs)
         self.draw_reject_button()
+
+    def click_baseline(self):
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        attrs = self.cf.get_trace_attrs(idx)
+        pre = decode(attrs["samples_pre_event"])
+        shift = decode(attrs["onset_shift"])
+
+        bl = data[: pre + shift].mean(0)
+        print(bl)
+        print(f"Performing baseline correction with {float(bl):3.2f}")
+        data = data - bl
+        write_tracedata(self.cf, data, idx)
+        self.callback()

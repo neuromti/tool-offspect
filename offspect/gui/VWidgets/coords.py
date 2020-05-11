@@ -5,8 +5,8 @@ from PyQt5.QtCore import QSize
 
 
 class CoordsWidget(MplWidget):
-    def __init__(self, cf, idx):
-        super().__init__(self)
+    def __init__(self, cf, idx, parent=None):
+        MplWidget.__init__(self, parent=parent)
         tattrs = cf.get_trace_attrs(idx)
         coords = decode(tattrs["xyz_coords"])
         self._draw(coords)

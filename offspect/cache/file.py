@@ -357,6 +357,28 @@ def read_trace(
     raise IndexError(f"{idx} not in cachefile")
 
 
+def write_tracedata(cf, data: ndarray, idx: int):
+    if type(idx) != int:
+        raise ValueError("Index must be an integer")
+    if idx >= 0:
+        cnt = -1  # we use cnt to allow indexing across origin files
+        with write_file(cf.fname) as f:
+            for origin in f.keys():
+                # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
+                keys = sort_keys(f[origin]["traces"].keys())
+                # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
+                for ix, key in enumerate(keys, start=cnt + 1):
+                    # if the trace is the one indexed, we load the dset
+                    # fresh from hdd
+                    if idx == ix:
+                        dset = f[origin]["traces"][key]
+                        if dset.shape == data.shape:
+                            dset = f[origin]["traces"][key][:] = data
+                        else:
+                            print("Trace shape is not identical. Can't overwrite")
+                            return
+
+
 def asdict(attrs: h5py.AttributeManager) -> Dict[str, str]:
     "parse the metadata from a cachefile and return it as dictionary"
     return dict(attrs)
