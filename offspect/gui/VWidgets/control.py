@@ -99,8 +99,14 @@ class ControlWidget(QtWidgets.QWidget):
         for item in [self.onset_shift]:
             self.onsetlayout.addWidget(item)
 
+        self.estimatelayout = QtWidgets.QHBoxLayout()
+
         self.baseline_button = QtWidgets.QPushButton(text="Baseline Correction")
         self.baseline_button.clicked.connect(self.click_baseline)
+        self.estimate_button = QtWidgets.QPushButton(text="Estimate Peak Parameters")
+        self.estimate_button.clicked.connect(self.click_estimate_parameters)
+        for item in [self.baseline_button, self.estimate_button]:
+            self.estimatelayout.addWidget(item)
 
         # Vertical Spaces
         verticalSpacer = QtWidgets.QSpacerItem(
@@ -111,8 +117,7 @@ class ControlWidget(QtWidgets.QWidget):
         layout.addLayout(self.navigationlayout)
         layout.addLayout(self.rejectionlayout)
         layout.addLayout(self.onsetlayout)
-        layout.addWidget(self.baseline_button)
-
+        layout.addLayout(self.estimatelayout)
         layout.addItem(verticalSpacer)
         self.setLayout(layout)
         self.trace_idx = idx
@@ -193,4 +198,26 @@ class ControlWidget(QtWidgets.QWidget):
         print(f"Performing baseline correction with {float(bl):3.2f}")
         data = data - bl
         write_tracedata(self.cf, data, idx)
+        self.callback()
+
+    def click_estimate_parameters(self):
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        tattrs = self.cf.get_trace_attrs(idx)
+        pre = decode(tattrs["samples_pre_event"])
+        shift = decode(tattrs["onset_shift"])
+        onset = pre - shift
+        a = onset + 15
+        b = onset + 45
+        mep = data[a:b]
+        nlat = mep.argmin()
+        plat = mep.argmax()
+        namp = float(mep[nlat])
+        pamp = float(mep[plat])
+
+        tattrs["neg_peak_latency_ms"] = encode(float(nlat + 15))
+        tattrs["neg_peak_magnitude_uv"] = encode(namp)
+        tattrs["pos_peak_latency_ms"] = encode(float(plat + 15))
+        tattrs["pos_peak_magnitude_uv"] = encode(pamp)
+        self.cf.set_trace_attrs(idx, tattrs)
         self.callback()

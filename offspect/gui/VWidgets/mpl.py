@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.image as image
 import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 from offspect.api import decode, CacheFile
 from math import nan
 import numpy as np
@@ -32,12 +33,33 @@ class MplWidget(QtWidgets.QWidget):
 
 
 # ------------------------------------------------------------------------------
-def plot_trace_on(ax, data, t0, t1, pre, post, shift=0):
+def plot_trace_on(ax, data, t0, t1, pre, post, mepidx, namp, pamp, shift=0):
     "plot trace data on an axes"
     x = np.arange(-pre, post) + shift
+    onset = pre - shift
     ax.plot([0, 0], [-200, 200], ":r")
-    data = data.copy()
-    data += data[0 : pre + shift].mean()
+    peak = x[mepidx[0] + onset]
+    ax.plot([peak, peak], [0, namp], "k")
+    peak = x[mepidx[-1] + onset]
+    ax.plot([peak, peak], [0, pamp], "k")
+
+    facecolor = "0.8"
+    if data[mepidx[0] + onset, 0] != namp:
+        facecolor = "1"
+        print("namp:", data[mepidx[0] + onset, 0], namp)
+    if data[mepidx[-1] + onset, 0] != pamp:
+        facecolor = "1"
+        print("pamp:", data[mepidx[-1] + onset, 0], pamp)
+
+    verts = []
+
+    verts.append((x[mepidx[0] + onset], 0))
+    for _x in mepidx:
+        _y = data[_x + onset, 0]
+        verts.append((x[_x + onset], _y))
+    verts.append((x[mepidx[-1] + onset], 0))
+    poly = Polygon(verts, facecolor=facecolor, edgecolor="0.5")
+    ax.add_patch(poly)
     ax.plot(x, data)
     ax.set_ylim(-200, 200)
     ax.grid(True, which="both")
@@ -68,5 +90,16 @@ class TraceWidget(QtWidgets.QWidget):
         shift = shift or 0
         t0 = -float(pre) / float(fs)
         t1 = float(post) / float(fs)
-        plot_trace_on(self.canvas.axes, data, t0, t1, pre, post, shift)
+        nlat = int(decode(attrs["neg_peak_latency_ms"]) * float(fs) / 1000)
+        plat = int(decode(attrs["pos_peak_latency_ms"]) * float(fs) / 1000)
+        latencies = sorted([nlat, plat])
+        mepidx = [idx for idx in range(latencies[0], latencies[1] + 1)]
+
+        namp = decode(attrs["neg_peak_magnitude_uv"])
+        pamp = decode(attrs["pos_peak_magnitude_uv"])
+
+        plot_trace_on(
+            self.canvas.axes, data, t0, t1, pre, post, mepidx, namp, pamp, shift
+        )
+
         print(f"Plotting {idx} shifted by {shift}")
