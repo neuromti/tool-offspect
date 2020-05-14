@@ -191,7 +191,7 @@ class ControlWidget(QtWidgets.QWidget):
         data = self.cf.get_trace_data(idx)
         attrs = self.cf.get_trace_attrs(idx)
         pre = decode(attrs["samples_pre_event"])
-        shift = decode(attrs["onset_shift"])
+        shift = decode(attrs["onset_shift"]) or 0
 
         bl = data[: pre + shift].mean(0)
         print(bl)
@@ -206,15 +206,21 @@ class ControlWidget(QtWidgets.QWidget):
         tattrs = self.cf.get_trace_attrs(idx)
         pre = decode(tattrs["samples_pre_event"])
         shift = decode(tattrs["onset_shift"]) or 0
+        fs = decode(tattrs["samplingrate"])
         onset = pre - shift
-        a = onset + 15
-        b = onset + 45
+        print(shift, fs)
+        minlat = int(15 * fs / 1000)
+        maxlat = int(45 * fs / 1000)
+        a = onset + minlat
+        b = onset + maxlat
         mep = data[a:b]
         nlat = mep.argmin()
         plat = mep.argmax()
+        print(nlat, plat, mep.shape)
         namp = float(mep[nlat])
         pamp = float(mep[plat])
-
+        nlat = mep.argmin() * 1000 / fs
+        plat = mep.argmax() * 1000 / fs
         tattrs["neg_peak_latency_ms"] = encode(float(nlat + 15))
         tattrs["neg_peak_magnitude_uv"] = encode(namp)
         tattrs["pos_peak_latency_ms"] = encode(float(plat + 15))

@@ -33,35 +33,37 @@ class MplWidget(QtWidgets.QWidget):
 
 
 # ------------------------------------------------------------------------------
-def plot_trace_on(ax, data, t0, t1, pre, post, mepidx, namp, pamp, shift=0):
+def plot_trace_on(ax, data, t0, t1, pre, post, lats, amps, shift=0):
     "plot trace data on an axes"
     x = np.arange(-pre, post) + shift
     onset = pre - shift
     ax.plot([0, 0], [-200, 200], ":r")
-    peak = x[mepidx[0] + onset]
-    ax.plot([peak, peak], [0, namp], "k")
-    peak = x[mepidx[-1] + onset]
-    ax.plot([peak, peak], [0, pamp], "k")
+    peak = x[lats[0] + onset]
+    ax.plot([peak, peak], [0, amps[0]], "k")
+    peak = x[lats[1] + onset]
+    ax.plot([peak, peak], [0, amps[1]], "k")
 
     facecolor = "0.8"
-    if data[mepidx[0] + onset] != namp:
+    if data[lats[0] + onset] != amps[0]:
         facecolor = "1"
-        print("namp:", data[mepidx[0] + onset], namp)
-    if data[mepidx[-1] + onset] != pamp:
+        print("First estimate deviates:", data[lats[0] + onset], amps[0])
+    if data[lats[1] + onset] != amps[1]:
         facecolor = "1"
-        print("pamp:", data[mepidx[-1] + onset], pamp)
+        print("Second estimate deviates:", data[lats[-1] + onset], amps[1])
+    if facecolor == "0.8":
+        print("Estimates in order")
 
     verts = []
-
-    verts.append((x[mepidx[0] + onset], 0))
-    for _x in mepidx:
+    verts.append((x[lats[0] + onset], 0))
+    for _x in range(lats[0], lats[1], 1):
         _y = data[_x + onset]
         verts.append((x[_x + onset], _y))
-    verts.append((x[mepidx[-1] + onset], 0))
+    verts.append((x[lats[1] + onset], 0))
     poly = Polygon(verts, facecolor=facecolor, edgecolor="0.5")
     ax.add_patch(poly)
     ax.plot(x, data)
-    ax.set_ylim(-200, 200)
+    ylim = max(abs(amps[0]), abs(amps[1]), 200)
+    ax.set_ylim(-ylim, ylim)
     ax.grid(True, which="both")
     ax.set_xticks((-pre, 0, post))
     ax.set_xticklabels((t0, 0, t1))
@@ -98,14 +100,14 @@ class TraceWidget(QtWidgets.QWidget):
 
         nlat = int(nlat * float(fs) / 1000)
         plat = int(plat * float(fs) / 1000)
-        if nlat > plat:
-            namp, pamp = pamp, namp
-
-        latencies = sorted([nlat, plat])
-        print(latencies)
-        mepidx = [idx for idx in range(latencies[0], latencies[1] + 1)]
-        plot_trace_on(
-            self.canvas.axes, data, t0, t1, pre, post, mepidx, namp, pamp, shift
-        )
-
-        print(f"Plotting {idx} shifted by {shift}")
+        if nlat < plat:
+            amps = (namp, pamp)
+            lats = (nlat, plat)
+        else:
+            amps = (pamp, namp)
+            lats = (plat, nlat)
+        try:
+            plot_trace_on(self.canvas.axes, data, t0, t1, pre, post, lats, amps, shift)
+            print(f"Plotting {idx} shifted by {shift}")
+        except Exception as e:
+            print(e)
