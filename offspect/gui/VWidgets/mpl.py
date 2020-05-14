@@ -44,18 +44,18 @@ def plot_trace_on(ax, data, t0, t1, pre, post, mepidx, namp, pamp, shift=0):
     ax.plot([peak, peak], [0, pamp], "k")
 
     facecolor = "0.8"
-    if data[mepidx[0] + onset, 0] != namp:
+    if data[mepidx[0] + onset] != namp:
         facecolor = "1"
-        print("namp:", data[mepidx[0] + onset, 0], namp)
-    if data[mepidx[-1] + onset, 0] != pamp:
+        print("namp:", data[mepidx[0] + onset], namp)
+    if data[mepidx[-1] + onset] != pamp:
         facecolor = "1"
-        print("pamp:", data[mepidx[-1] + onset, 0], pamp)
+        print("pamp:", data[mepidx[-1] + onset], pamp)
 
     verts = []
 
     verts.append((x[mepidx[0] + onset], 0))
     for _x in mepidx:
-        _y = data[_x + onset, 0]
+        _y = data[_x + onset]
         verts.append((x[_x + onset], _y))
     verts.append((x[mepidx[-1] + onset], 0))
     poly = Polygon(verts, facecolor=facecolor, edgecolor="0.5")
@@ -90,14 +90,20 @@ class TraceWidget(QtWidgets.QWidget):
         shift = shift or 0
         t0 = -float(pre) / float(fs)
         t1 = float(post) / float(fs)
-        nlat = int(decode(attrs["neg_peak_latency_ms"]) * float(fs) / 1000)
-        plat = int(decode(attrs["pos_peak_latency_ms"]) * float(fs) / 1000)
+
+        nlat = decode(attrs["neg_peak_latency_ms"]) or 0.0
+        plat = decode(attrs["pos_peak_latency_ms"]) or 1.0
+        namp = decode(attrs["neg_peak_magnitude_uv"]) or 0.0
+        pamp = decode(attrs["pos_peak_magnitude_uv"]) or 0.0
+
+        nlat = int(nlat * float(fs) / 1000)
+        plat = int(plat * float(fs) / 1000)
+        if nlat > plat:
+            namp, pamp = pamp, namp
+
         latencies = sorted([nlat, plat])
+        print(latencies)
         mepidx = [idx for idx in range(latencies[0], latencies[1] + 1)]
-
-        namp = decode(attrs["neg_peak_magnitude_uv"])
-        pamp = decode(attrs["pos_peak_magnitude_uv"])
-
         plot_trace_on(
             self.canvas.axes, data, t0, t1, pre, post, mepidx, namp, pamp, shift
         )

@@ -205,7 +205,7 @@ class ControlWidget(QtWidgets.QWidget):
         data = self.cf.get_trace_data(idx)
         tattrs = self.cf.get_trace_attrs(idx)
         pre = decode(tattrs["samples_pre_event"])
-        shift = decode(tattrs["onset_shift"])
+        shift = decode(tattrs["onset_shift"]) or 0
         onset = pre - shift
         a = onset + 15
         b = onset + 45
