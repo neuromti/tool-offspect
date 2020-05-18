@@ -62,13 +62,22 @@ def plot_trace_on(ax, data, t0, t1, pre, post, lats, amps, shift=0):
     poly = Polygon(verts, facecolor=facecolor, edgecolor="0.5")
     ax.add_patch(poly)
     ax.plot(x, data)
-    ylim = max(abs(amps[0]), abs(amps[1]), 200)
+
+    ylim = np.ceil(max(max(abs(data[onset + 10 :])), 20) / 10) * 10
+    yticks = np.linspace(-ylim, ylim, 11)
+    ax.set_yticks(yticks)
     ax.set_ylim(-ylim, ylim)
-    ax.grid(True, which="both")
-    ax.set_xticks((-pre, 0, post))
-    ax.set_xticklabels((t0, 0, t1))
-    ax.set_xticks(range(0, pre + post, (pre + post) // 10), minor=True)
+    ax.set_ylabel("Amplitude in microvolt")
+
+    xticks = [-pre] + np.linspace(0, post, 6).tolist()
+    xticklabels = [t0] + np.linspace(0, t1, 6).tolist()
+    xticklabels = [t * 1000 for t in xticklabels]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
     ax.set_xlim(-pre, post)
+    ax.set_xlabel("Time in ms relative to TMS")
+
+    ax.grid(True, which="both")
     ax.tick_params(direction="in")
 
 

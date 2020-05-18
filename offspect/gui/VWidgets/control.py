@@ -99,13 +99,23 @@ class ControlWidget(QtWidgets.QWidget):
         for item in [self.onset_shift]:
             self.onsetlayout.addWidget(item)
 
-        self.estimatelayout = QtWidgets.QHBoxLayout()
-
+        self.manipulatelayout = QtWidgets.QHBoxLayout()
         self.baseline_button = QtWidgets.QPushButton(text="Baseline Correction")
         self.baseline_button.clicked.connect(self.click_baseline)
-        self.estimate_button = QtWidgets.QPushButton(text="Estimate Peak Parameters")
+        self.flip_sign_button = QtWidgets.QPushButton(text="Flip Signal Direction")
+        self.flip_sign_button.clicked.connect(self.click_flipsign)
+        for item in [
+            self.baseline_button,
+            self.flip_sign_button,
+        ]:
+            self.manipulatelayout.addWidget(item)
+
+        self.estimatelayout = QtWidgets.QHBoxLayout()
+        self.estimate_button = QtWidgets.QPushButton(text="Estimate Peak")
         self.estimate_button.clicked.connect(self.click_estimate_parameters)
-        for item in [self.baseline_button, self.estimate_button]:
+        self.estimate_amp_button = QtWidgets.QPushButton(text="Amplitude from Latency")
+        self.estimate_amp_button.clicked.connect(self.click_estimate_amplitudes)
+        for item in [self.estimate_button, self.estimate_amp_button]:
             self.estimatelayout.addWidget(item)
 
         # Vertical Spaces
@@ -117,6 +127,7 @@ class ControlWidget(QtWidgets.QWidget):
         layout.addLayout(self.navigationlayout)
         layout.addLayout(self.rejectionlayout)
         layout.addLayout(self.onsetlayout)
+        layout.addLayout(self.manipulatelayout)
         layout.addLayout(self.estimatelayout)
         layout.addItem(verticalSpacer)
         self.setLayout(layout)
@@ -194,13 +205,20 @@ class ControlWidget(QtWidgets.QWidget):
         shift = decode(attrs["onset_shift"]) or 0
 
         bl = data[: pre + shift].mean(0)
-        print(bl)
         print(f"Performing baseline correction with {float(bl):3.2f}")
         data = data - bl
         write_tracedata(self.cf, data, idx)
         self.callback()
 
+    def click_flipsign(self):
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        print(f"Flipping sign of trace")
+        write_tracedata(self.cf, -data, idx)
+        self.callback()
+
     def click_estimate_parameters(self):
+        window = (15, 120)
         idx = self.trace_idx
         data = self.cf.get_trace_data(idx)
         tattrs = self.cf.get_trace_attrs(idx)
@@ -209,8 +227,8 @@ class ControlWidget(QtWidgets.QWidget):
         fs = decode(tattrs["samplingrate"])
         onset = pre - shift
         print(shift, fs)
-        minlat = int(15 * fs / 1000)
-        maxlat = int(45 * fs / 1000)
+        minlat = int(window[0] * fs / 1000)
+        maxlat = int(window[1] * fs / 1000)
         a = onset + minlat
         b = onset + maxlat
         mep = data[a:b]
@@ -221,9 +239,26 @@ class ControlWidget(QtWidgets.QWidget):
         pamp = float(mep[plat])
         nlat = mep.argmin() * 1000 / fs
         plat = mep.argmax() * 1000 / fs
-        tattrs["neg_peak_latency_ms"] = encode(float(nlat + 15))
+        tattrs["neg_peak_latency_ms"] = encode(float(nlat + window[0]))
         tattrs["neg_peak_magnitude_uv"] = encode(namp)
-        tattrs["pos_peak_latency_ms"] = encode(float(plat + 15))
+        tattrs["pos_peak_latency_ms"] = encode(float(plat + window[0]))
+        tattrs["pos_peak_magnitude_uv"] = encode(pamp)
+        self.cf.set_trace_attrs(idx, tattrs)
+        self.callback()
+
+    def click_estimate_amplitudes(self):
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        tattrs = self.cf.get_trace_attrs(idx)
+        fs = decode(tattrs["samplingrate"])
+        nlat = int(decode(tattrs["neg_peak_latency_ms"]) * fs / 1000)
+        plat = int(decode(tattrs["pos_peak_latency_ms"]) * fs / 1000)
+        pre = decode(tattrs["samples_pre_event"])
+        shift = decode(tattrs["onset_shift"]) or 0
+        namp = float(data[nlat + pre + shift])
+        pamp = float(data[plat + pre + shift])
+        print(pamp, namp)
+        tattrs["neg_peak_magnitude_uv"] = encode(namp)
         tattrs["pos_peak_magnitude_uv"] = encode(pamp)
         self.cf.set_trace_attrs(idx, tattrs)
         self.callback()
