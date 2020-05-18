@@ -204,6 +204,10 @@ def yield_loc_didt(
                 didt.append(msg[event_mark])
                 ct.append(t)
 
+    if len(ct) == 0:
+        yield from list_nan(len(time_stamps))
+        return
+
     for ts in time_stamps:
         if relative == "earlier":  # closest in time, but comment was earlier
             _ct = [t - ts for t in ct if t <= ts]
@@ -232,7 +236,7 @@ def has_localite(stream_names: List[str]) -> bool:
             return True
     return False
 
+
 def has_spongebob(stream_names: List[str]) -> bool:
     spongebob_name = "Spongebob-Data"
     return spongebob_name in stream_names
-
