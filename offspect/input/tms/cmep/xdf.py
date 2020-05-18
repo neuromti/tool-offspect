@@ -35,6 +35,9 @@ from offspect.protocols.xdf import (
     decode_marker,
     pick_stream_with_channel,
     find_closest_samples,
+    find_closest_idx,
+    find_closest,
+    correct_tkeo,
     yield_timestamps,
     yield_comments,
     list_nan,
@@ -84,11 +87,30 @@ def prepare_annotations(
     streams = XDFFile(xdffile)
     datastream = pick_stream_with_channel(channel, streams)
     event_stream = streams[event_stream]
+    print(f"Reading events from {event_stream.name} using {event_name}")
     time_stamps = [ts for ts in yield_timestamps(event_stream, event_name)]
     event_count = len(time_stamps)
+    print(f"Found {event_count} events")
+
+    if "BrainVision RDA Markers" in streams:
+        rda_stamps = list(yield_timestamps(streams["BrainVision RDA Markers"], "S  2"))
+        print(f"Found {len(rda_stamps)} RDA events")
+        if len(rda_stamps) == len(time_stamps):
+            time_stamps = [find_closest(ts, rda_stamps) for ts in time_stamps]
+            print("Corrected event timestamps for RDA 'S  2'")
+        else:
+            print("Count mismatch between RDA and Localite events")
+
+        if "BrainVision RDA" in streams:
+            bvr = streams["BrainVision RDA"]
+            time_stamps = correct_tkeo(bvr, time_stamps)
+            print(
+                "Corrected event timestamps for TMS artifact found with TKEO of the EEG GMFP"
+            )
 
     if "localite_flow" in streams or "localite_marker" in streams:
         loc_stream = streams["localite_marker"]
+        print(f"Reading information from {loc_stream.name}")
         coords = list(yield_loc_coords(loc_stream, time_stamps))
         stimulation_intensity_didt = list(yield_loc_didt(loc_stream, time_stamps))
         stimulation_intensity_mso = list(yield_loc_mso(loc_stream, time_stamps))
@@ -96,9 +118,9 @@ def prepare_annotations(
         coords = list_nan_coords(event_count)
         stimulation_intensity_didt = list_nan(event_count)
         stimulation_intensity_mso = list_nan(event_count)
-    print(f"Found {event_count} events")
 
     if "reiz_marker_sa" in streams and comment_name is not None:
+        print("Reading comments from reiz_marker_sa")
         comments = [
             c
             for c in yield_comments(
