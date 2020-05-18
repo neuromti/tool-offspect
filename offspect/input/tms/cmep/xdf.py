@@ -92,22 +92,6 @@ def prepare_annotations(
     event_count = len(time_stamps)
     print(f"Found {event_count} events")
 
-    if "BrainVision RDA Markers" in streams:
-        rda_stamps = list(yield_timestamps(streams["BrainVision RDA Markers"], "S  2"))
-        print(f"Found {len(rda_stamps)} RDA events")
-        if len(rda_stamps) == len(time_stamps):
-            time_stamps = [find_closest(ts, rda_stamps) for ts in time_stamps]
-            print("Corrected event timestamps for RDA 'S  2'")
-        else:
-            print("Count mismatch between RDA and Localite events")
-
-        if "BrainVision RDA" in streams:
-            bvr = streams["BrainVision RDA"]
-            time_stamps = correct_tkeo(bvr, time_stamps)
-            print(
-                "Corrected event timestamps for TMS artifact found with TKEO of the EEG GMFP"
-            )
-
     if "localite_flow" in streams or "localite_marker" in streams:
         loc_stream = streams["localite_marker"]
         print(f"Reading information from {loc_stream.name}")
@@ -132,6 +116,20 @@ def prepare_annotations(
         ]
     else:
         comments = ["" for c in time_stamps]
+
+    if "BrainVision RDA Markers" in streams:
+        rda_stamps = list(yield_timestamps(streams["BrainVision RDA Markers"], "S  2"))
+        print(f"Found {len(rda_stamps)} 'S  2' for {event_count} events")
+        if len(rda_stamps) >= len(time_stamps):
+            time_stamps = [find_closest(ts, rda_stamps) for ts in time_stamps]
+            print("Corrected event timestamps for RDA 'S  2'")
+        else:
+            print("Count mismatch between RDA and Localite events")
+
+        if "BrainVision RDA" in streams:
+            bvr = streams["BrainVision RDA"]
+            time_stamps = correct_tkeo(bvr, time_stamps)
+            print("Corrected event timestamps for TMS artifact")
 
     # global fields
     fs = datastream.nominal_srate
@@ -194,5 +192,7 @@ def cut_traces(xdffile: FileName, annotation: Annotations) -> List[TraceData]:
     for attrs in annotation["traces"]:
         onset = decode(attrs["event_sample"])
         trace = datastream.time_series[onset - pre : onset + post, cix]
+        bl = trace[0:pre].mean()
+        trace -= bl
         traces.append(trace)
     return traces

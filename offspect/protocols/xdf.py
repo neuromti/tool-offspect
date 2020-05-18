@@ -147,7 +147,7 @@ def correct_tkeo(bvr, time_stamps: List[float]) -> List[float]:
 
     new_ts = []
     for ts in time_stamps:
-        onset = find_closest_idx(ts, bvr.time_stamps)
+        onset = np.argmin(np.abs(bvr.time_stamps - ts))
         hood = artifact[onset - 50 : onset + 50]
         new_ts.append(bvr.time_stamps[onset + np.argmax(hood) - 50])
     return new_ts
@@ -290,7 +290,11 @@ def yield_loc_coords(
             _ct = [t - ts for t in ct if t >= ts]
         else:  # closest in time
             _ct = [t - ts for t in ct]
-        idx = np.argmin(np.abs(_ct))
+        try:
+            idx = np.argmin(np.abs(_ct))
+        except Exception as e:
+            print(coords, ct)
+            raise (e)
         # we pop, therefore no coordinate can be returned twice
         ct.pop(idx)
         yield coords.pop(idx)
