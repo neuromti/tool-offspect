@@ -111,11 +111,19 @@ class ControlWidget(QtWidgets.QWidget):
             self.manipulatelayout.addWidget(item)
 
         self.estimatelayout = QtWidgets.QHBoxLayout()
-        self.estimate_button = QtWidgets.QPushButton(text="Estimate Peak")
+        self.estimate_button = QtWidgets.QPushButton(
+            text="Estimate Amplitude and Latency"
+        )
         self.estimate_button.clicked.connect(self.click_estimate_parameters)
         self.estimate_amp_button = QtWidgets.QPushButton(text="Amplitude from Latency")
         self.estimate_amp_button.clicked.connect(self.click_estimate_amplitudes)
-        for item in [self.estimate_button, self.estimate_amp_button]:
+        self.hasmep_button = QtWidgets.QPushButton(text="MEP positive")
+        self.hasmep_button.clicked.connect(self.click_hasmep)
+        for item in [
+            self.estimate_button,
+            self.hasmep_button,
+            self.estimate_amp_button,
+        ]:
             self.estimatelayout.addWidget(item)
 
         # Vertical Spaces
@@ -175,6 +183,7 @@ class ControlWidget(QtWidgets.QWidget):
         trace_count = len(self.cf)
         self.onset_shift.draw_int(self.trace_idx)
         self.draw_reject_button()
+        self.draw_hasmep_button()
         self.callback()
 
     def draw_reject_button(self):
@@ -196,6 +205,30 @@ class ControlWidget(QtWidgets.QWidget):
         tattrs["reject"] = reject
         self.cf.set_trace_attrs(self.trace_idx, tattrs)
         self.draw_reject_button()
+
+    def draw_hasmep_button(self):
+        tattrs = self.cf.get_trace_attrs(self.trace_idx)
+        pamp = decode(tattrs["pos_peak_magnitude_uv"]) or 0
+        namp = decode(tattrs["neg_peak_magnitude_uv"]) or 0
+        ptp = pamp - namp
+        if ptp != 0:
+            self.hasmep_button.setStyleSheet("background-color: green")
+            self.hasmep_button.setText("MEP positive")
+        else:
+            self.hasmep_button.setStyleSheet("background-color: red")
+            self.hasmep_button.setText("MEP negative")
+
+    def click_hasmep(self):
+        print(self.hasmep_button.text())
+        if self.hasmep_button.text() == "MEP positive":
+            tattrs = self.cf.get_trace_attrs(self.trace_idx)
+            tattrs["neg_peak_latency_ms"] = encode(0)
+            tattrs["pos_peak_latency_ms"] = encode(0)
+            tattrs["neg_peak_magnitude_uv"] = encode(0)
+            tattrs["pos_peak_magnitude_uv"] = encode(0)
+            self.cf.set_trace_attrs(self.trace_idx, tattrs)
+            self.draw_hasmep_button()
+            self.callback()
 
     def click_baseline(self):
         idx = self.trace_idx
@@ -234,16 +267,18 @@ class ControlWidget(QtWidgets.QWidget):
         mep = data[a:b]
         nlat = mep.argmin()
         plat = mep.argmax()
-        print(nlat, plat, mep.shape)
         namp = float(mep[nlat])
         pamp = float(mep[plat])
         nlat = mep.argmin() * 1000 / fs
         plat = mep.argmax() * 1000 / fs
+        print("Estimating latencies to be", nlat, plat)
+        print("Estimating amplitudes to be", namp, pamp)
         tattrs["neg_peak_latency_ms"] = encode(float(nlat + window[0]))
         tattrs["neg_peak_magnitude_uv"] = encode(namp)
         tattrs["pos_peak_latency_ms"] = encode(float(plat + window[0]))
         tattrs["pos_peak_magnitude_uv"] = encode(pamp)
         self.cf.set_trace_attrs(idx, tattrs)
+        self.draw_hasmep_button()
         self.callback()
 
     def click_estimate_amplitudes(self):
@@ -257,8 +292,9 @@ class ControlWidget(QtWidgets.QWidget):
         shift = decode(tattrs["onset_shift"]) or 0
         namp = float(data[nlat + pre + shift])
         pamp = float(data[plat + pre + shift])
-        print(pamp, namp)
+        print("Estimating amplitudes to be", namp, pamp)
         tattrs["neg_peak_magnitude_uv"] = encode(namp)
         tattrs["pos_peak_magnitude_uv"] = encode(pamp)
         self.cf.set_trace_attrs(idx, tattrs)
+        self.draw_hasmep_button()
         self.callback()
