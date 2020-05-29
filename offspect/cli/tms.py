@@ -50,7 +50,7 @@ def cli_tms(args: argparse.Namespace):
     if ".mat" in suffixes.keys() and ".xml" in suffixes.keys():
         protocol = "mat"
     elif ".cnt" in suffixes.keys() and ".txt" in suffixes.keys():
-        protocol = "smartmove"
+        protocol = "cnt"
     elif ".xdf" in suffixes.keys():
         protocol = "xdf"
         from offspect.protocols.xdf import has_localite, has_spongebob
@@ -91,6 +91,28 @@ def cli_tms(args: argparse.Namespace):
         traces = cut_traces(matfile, annotation)
 
     # SMARTMOVE ---------------------------------------------------------------
+    elif protocol == "cnt":
+        from offspect.input.tms.cmep.cnt import cut_traces, prepare_annotations
+
+        cntfiles = []
+        for s in args.sources:
+            if Path(s).suffix == ".cnt":
+                cntfiles.append(Path(s))
+        if len(cntfiles) != 1:
+            raise ValueError("Specify only a single .cnt file")
+
+        annotation = prepare_annotations(
+            fname=suffixes[".cnt"],
+            docname=suffixes[".txt"],
+            pre_in_ms=float(args.prepost[0]),
+            post_in_ms=float(args.prepost[1]),
+            select_events=args.select_events,
+            select_channel=args.channel,
+            mso=100,
+            didt="",
+        )
+        traces = cut_traces(suffixes[".cnt"], annotation)
+
     elif protocol == "smartmove":
         cntfiles = []
         for s in args.sources:
