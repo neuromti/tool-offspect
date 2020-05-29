@@ -160,9 +160,9 @@ def cli_tms(args: argparse.Namespace):
             pre_in_ms=float(args.prepost[0]),
             post_in_ms=float(args.prepost[1]),
             event_stream="Spongebob-Data",
-            event_mark = 1,
-            event_name = "Spongebob-Trigger",
-            comment_name="Stimulus comment"
+            event_mark=1,
+            event_name="Spongebob-Trigger",
+            comment_name="Stimulus comment",
         )
         traces = cut_traces(suffixes[".xdf"], annotation)
     else:

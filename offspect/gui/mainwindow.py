@@ -54,23 +54,3 @@ class MainWindow(QtWidgets.QMainWindow):
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
-
-
-if __name__ == "__main__":
-    import sys
-
-    app = QtWidgets.QApplication([])
-    tattr = {"test": "this", "and": "that"}
-    # w = TattrWidget(cf=CacheFile(sys.argv[1]), idx=int(sys.argv[2]))
-    # w.show()
-
-    # o = OattrWidget(cf=CacheFile(sys.argv[1]), idx=int(sys.argv[2]))
-    # o.show()
-
-    # c = ControlWidget(filename=sys.argv[1])
-    # c.show()
-
-    ui = MainWindow(filename=sys.argv[1], idx=int(sys.argv[2]) - 1)
-    ui.show()
-
-    app.exec_()

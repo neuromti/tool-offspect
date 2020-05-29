@@ -1,32 +1,10 @@
 from pathlib import Path
 from typing import Union, List
-from offspect.cache.file import CacheFile, merge
 import argparse
 from ast import literal_eval
 from offspect.cli.tms import cli_tms
 from offspect.cli.tms import VALID_READOUTS as valid_tms_readouts
-from offspect.cli.pes import cli_pes
-from offspect.cli.pes import VALID_READOUTS as valid_pes_readouts
-
-
-try:
-    from offspect.gui.__main__ import main as cli_gui
-except ImportError as e:
-    print("Import Error:", str(e))
-
-    def cli_gui(*args, **kwargs):
-        print("GUI was not found")
-
-
-def cli_peek(args: argparse.Namespace):
-    print(CacheFile(args.fname))
-
-
-def cli_merge(args: argparse.Namespace):
-    tf = merge(to=args.to, sources=args.sources)
-    if args.verbose:
-        print("Content of target file is now:")
-        print(CacheFile(tf))
+from offspect.cli.various import cli_gui, cli_merge, cli_peek
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -60,7 +38,7 @@ def get_parser() -> argparse.ArgumentParser:
         required=True,
         dest="sources",
     )
-    merge.add_argument("-verbose", "-v", help="be more verbose", action="store_true")
+    merge.add_argument("--verbose", "-v", help="be more verbose", action="store_true")
 
     # TMS ---------------------------------------------------------------------
 
@@ -116,60 +94,7 @@ def get_parser() -> argparse.ArgumentParser:
         type=str,
         dest="select_events",
     )
-    # PES ---------------------------------------------------------------------
 
-    pes = subparsers.add_parser(
-        name="pes", help="prepare cachefiles for a pes protocol"
-    )
-    pes.add_argument(
-        "-t",
-        "--to",
-        help="filename of the cachefile to be populated",
-        type=str,
-        required=True,
-        dest="to",
-    )
-    pes.add_argument(
-        "-f",
-        "--from",
-        nargs="+",
-        help="<Required> list of input files",
-        required=True,
-        dest="sources",
-    )
-    pes.add_argument(
-        "-r",
-        "--readout",
-        type=str,
-        help=f"the desired readout, valid are: {valid_pes_readouts}",
-        required=True,
-        dest="readout",
-    )
-    pes.add_argument(
-        "-c",
-        "--channel",
-        type=str,
-        help="the desired channel",
-        required=True,
-        dest="channel",
-    )
-    pes.add_argument(
-        "-pp",
-        "--prepost",
-        nargs="+",
-        help="<Required> positional arguments of pre and post duration",
-        required=True,
-        dest="prepost",
-    )
-    pes.add_argument(
-        "-e",
-        "--events",
-        nargs="+",
-        help="<Required> select event",
-        required=False,
-        type=str,
-        dest="select_events",
-    )
     # GUI ---------------------------------------------------------------------
     gui = subparsers.add_parser(name="gui", help="start the visual inspection GUI")
     gui.add_argument(
@@ -204,8 +129,6 @@ def main():
         cli_merge(args)
     elif args.sub == "tms":
         cli_tms(args)
-    elif args.sub == "pes":
-        cli_pes(args)
     elif args.sub == "gui":
         cli_gui(args)
     else:
