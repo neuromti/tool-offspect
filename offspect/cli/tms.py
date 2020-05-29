@@ -92,7 +92,6 @@ def cli_tms(args: argparse.Namespace):
 
     # SMARTMOVE ---------------------------------------------------------------
     elif protocol == "cnt":
-        from offspect.input.tms.cmep.cnt import cut_traces, prepare_annotations
 
         cntfiles = []
         for s in args.sources:

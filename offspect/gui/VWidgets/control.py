@@ -286,15 +286,24 @@ class ControlWidget(QtWidgets.QWidget):
         data = self.cf.get_trace_data(idx)
         tattrs = self.cf.get_trace_attrs(idx)
         fs = decode(tattrs["samplingrate"])
-        nlat = int(decode(tattrs["neg_peak_latency_ms"]) * fs / 1000)
-        plat = int(decode(tattrs["pos_peak_latency_ms"]) * fs / 1000)
-        pre = decode(tattrs["samples_pre_event"])
-        shift = decode(tattrs["onset_shift"]) or 0
-        namp = float(data[nlat + pre + shift])
-        pamp = float(data[plat + pre + shift])
-        print("Estimating amplitudes to be", namp, pamp)
-        tattrs["neg_peak_magnitude_uv"] = encode(namp)
-        tattrs["pos_peak_magnitude_uv"] = encode(pamp)
+        nlat = int((decode(tattrs["neg_peak_latency_ms"]) or 0) * fs / 1000)
+        plat = int((decode(tattrs["pos_peak_latency_ms"]) or 0) * fs / 1000)
+        # MEP negative trials
+        if nlat == plat:
+            print("MEP negative or identical latencies", nlat, plat)
+            tattrs["neg_peak_latency_ms"] = encode(0)
+            tattrs["pos_peak_latency_ms"] = encode(0)
+            tattrs["neg_peak_magnitude_uv"] = encode(0)
+            tattrs["pos_peak_magnitude_uv"] = encode(0)
+        else:
+            pre = decode(tattrs["samples_pre_event"])
+            shift = decode(tattrs["onset_shift"]) or 0
+            namp = float(data[nlat + pre + shift])
+            pamp = float(data[plat + pre + shift])
+            print("Estimating amplitudes to be", namp, pamp)
+            tattrs["neg_peak_magnitude_uv"] = encode(namp)
+            tattrs["pos_peak_magnitude_uv"] = encode(pamp)
+
         self.cf.set_trace_attrs(idx, tattrs)
         self.draw_hasmep_button()
         self.callback()
