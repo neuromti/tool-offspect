@@ -10,11 +10,30 @@ from typing import Dict, Callable
 from offspect.cache.readout import valid_origin_keys, must_be_identical_in_merged_file
 from functools import partial
 from offspect.gui import VWidgets
+from tempfile import mkdtemp
+from pathlib import Path
+
+
+def close_tmpdir(tmpdir):
+    import shutil
+
+    shutil.rmtree(tmpdir)
+    print(f"Cleared temporary directory {tmpdir}")
+
+
+def open_tmpdir():
+    import atexit
+
+    tmpdir = Path(mkdtemp())
+    print(f"Created temporary directory {tmpdir}")
+    atexit.register(lambda: close_tmpdir(tmpdir))
+    return tmpdir
 
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None, idx: int = 0):
         super(MainWindow, self).__init__(parent)
+        self.tmpdir = open_tmpdir()
         self.load_cache_file(filename, idx)
         self.setWindowTitle(str(filename))
 
@@ -37,7 +56,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.trc = VWidgets.TraceWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
-        self.coords = VWidgets.CoordsWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.coords = VWidgets.CoordsWidget(
+            cf=self.cf, idx=self.ctrl.trace_idx, tmpdir=self.tmpdir
+        )
 
         right_column = QtWidgets.QWidget()
         lt = QtWidgets.QVBoxLayout()

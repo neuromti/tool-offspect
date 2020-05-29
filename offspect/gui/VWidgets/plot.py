@@ -127,7 +127,24 @@ def plot_glass(
     # - either based on the data or the argument
 
     # plot the image
-    fig = plt.figure(figsize=(6, 6), dpi=125)
+    # the resolution sets the intercept and slope used for easy 2D plotting of
+    # coordinates
+    # for figsize=(5, 5), dpi=100 these are roughly the
+    # origin at (247, 207) and each mm step is 2.6 pixels away
+    #
+    # from scipy.stats import linregress
+    #
+    # x = [-50, 0, 10, 20, 50]
+    # y = [166, 247, 273, 299, 377]
+    # slope, intercept, *_ = linregress(x, y)
+    # print(f"{intercept} + {slope} * x")
+
+    # x = [-40, 0, 10, 40]
+    # y = [314, 207, 181, 103]
+    # slope, intercept, *_ = linregress(x, y)
+    # print(f"{intercept} + {slope} * y")
+
+    fig = plt.figure(figsize=(5, 5), dpi=100)
     display = plotting.plot_glass_brain(
         filled_img,
         colorbar=colorbar,
@@ -146,7 +163,7 @@ def plot_glass(
     return display
 
 
-def plot_glass_on(axes, coords, values):
+def plot_glass_on_old(axes, coords, values):
     if "nan" in coords:
         return
 
@@ -170,7 +187,47 @@ def plot_glass_on(axes, coords, values):
     axes.imshow(im)
 
 
+def plot_glass_on(axes, coords, tmpdir, width=10):
+    if "nan" in coords:
+        return
+
+    im = get_glass_bg(tmpdir)
+    origin = (247, 207)
+    scale = (2.6, 2.6)
+    x, y, z = coords
+    wpx = int(width * scale[0] / 2)
+    wpy = int(width * scale[1] / 2)
+    wlen = ((2 * wpx), (2 * wpy))
+    xp = int(origin[0] + scale[0] * x)
+    yp = int(origin[1] - scale[1] * y)
+    for xnum, xpos in enumerate(range(xp - wpx, xp + wpx)):
+        for ynum, ypos in enumerate(range(yp - wpy, yp + wpy)):
+            col = im[ypos, xpos, :] = [1, 0.17, 0, 1]
+            if xnum <= 2 or xnum >= wlen[0] - 3 or ynum <= 2 or ynum >= wlen[1] - 3:
+                im[ypos, xpos, :] = [0, 0, 0, 1]
+    axes.imshow(im)
+
+
+def get_glass_bg(tmpdir: Path):
+    fname = (tmpdir / "background.png").expanduser().absolute()
+    if not fname.exists():
+        import warnings
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            display = plot_glass([], [0], colorbar=False)
+            display.savefig(fname)
+            print(f"Initialized glass brain background in {fname}")
+            display.close()
+    else:
+        print(f"Reused glass brain background in {fname}")
+    im = matplotlib.pyplot.imread(str(fname))
+    return im
+
+
 if __name__ == "__main__":
+    display = plot_glass([[0, 0, 0]], [1], colorbar=False)
+
     coords = [
         [37.0, 54.2, 22.8],
         [37.1, 54.4, 22.1],
@@ -178,6 +235,6 @@ if __name__ == "__main__":
         [37.2, 54.3, 21.9],
     ]
     values = [1000.0] * 4
-    plot_glass(coords, values)
+    display = plot_glass(coords, values)
     M1 = [-36.6300, -17.6768, 54.3147]
     plot_glass([M1], [1])
