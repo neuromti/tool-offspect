@@ -10,6 +10,7 @@ from math import nan
 import matplotlib
 from tempfile import TemporaryDirectory
 from pathlib import Path
+from functools import lru_cache
 
 
 def plot_trace(ax, data, attrs):
@@ -191,7 +192,7 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     if "nan" in coords:
         return
 
-    im = get_glass_bg(tmpdir)
+    im = get_glass_bg(tmpdir).copy()
     origin = (247, 207)
     scale = (2.6, 2.6)
     x, y, z = coords
@@ -208,6 +209,7 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     axes.imshow(im)
 
 
+@lru_cache(maxsize=1)
 def get_glass_bg(tmpdir: Path):
     fname = (tmpdir / "background.png").expanduser().absolute()
     if not fname.exists():
