@@ -18,11 +18,3 @@ Every CacheFile has one or more original files. Each file comes with *original* 
 .. automodule:: offspect.input.tms.erp
    :noindex:
    :members: valid_keys
-   
-.. automodule:: offspect.input.pes.erp
-   :noindex:
-   :members: valid_keys
-   
-.. automodule:: offspect.input.pes.mep
-   :noindex:
-   :members: valid_keys

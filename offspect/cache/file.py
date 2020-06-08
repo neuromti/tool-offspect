@@ -67,6 +67,18 @@ Another typical use case would be changing one TraceAttribute across all traces 
        test = decode(cf.get_trace_attrs(ix)["onset_shift"])
        print("to", test)
 
+Plotting
+********
+
+Eventually, and ideally after visual inspection, you might want to plot the resulting map. You can do so with using :py:func:`~.plot_map`, as in the following example.
+
+.. code-block:: python
+
+    from offspect.api import plot_map, CacheFile
+    from math import log10
+    cf = CacheFile("example.hdf5")
+    plot_map(cf, foo = lambda x : log10(x + 1))
+
 """
 from typing import Union, List, Dict, Tuple, Iterator
 from pathlib import Path

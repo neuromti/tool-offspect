@@ -12,17 +12,16 @@ offspect
 ~~~~~~~~
 .. code-block:: none
 
-   usage: offspect [-h] {peek,merge,tms,pes,gui} ...
+   usage: offspect [-h] {peek,merge,tms,gui} ...
    
    Create, manipulate and inspect cachefiles for offline inspection of evoked
    potentials
    
    positional arguments:
-     {peek,merge,tms,pes,gui}
+     {peek,merge,tms,gui}
        peek                peek into a cachefile and print essential information
        merge               merge two cachefiles into one
        tms                 prepare cachefiles for a tms protocol
-       pes                 prepare cachefiles for a pes protocol
        gui                 start the visual inspection GUI
    
    optional arguments:
@@ -46,14 +45,14 @@ offspect merge
 ~~~~~~~~~~~~~~
 .. code-block:: none
 
-   usage: offspect merge [-h] -t TO -f SOURCES [SOURCES ...] [-verbose]
+   usage: offspect merge [-h] -t TO -f SOURCES [SOURCES ...] [--verbose]
    
    optional arguments:
      -h, --help            show this help message and exit
      -t TO, --to TO        filename to merge into. May not already exist
      -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
                            <Required> list of files to merge
-     -verbose, -v          be more verbose
+     --verbose, -v         be more verbose
 
 
 offspect tms
@@ -80,30 +79,6 @@ offspect tms
      -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
                            <Required> select events, e.g. stream and name or
                            names depending on protocol
-
-
-offspect pes
-~~~~~~~~~~~~
-.. code-block:: none
-
-   usage: offspect pes [-h] -t TO -f SOURCES [SOURCES ...] -r READOUT -c CHANNEL
-                       -pp PREPOST [PREPOST ...]
-                       [-e SELECT_EVENTS [SELECT_EVENTS ...]]
-   
-   optional arguments:
-     -h, --help            show this help message and exit
-     -t TO, --to TO        filename of the cachefile to be populated
-     -f SOURCES [SOURCES ...], --from SOURCES [SOURCES ...]
-                           <Required> list of input files
-     -r READOUT, --readout READOUT
-                           the desired readout, valid are: ['mep', 'erp']
-     -c CHANNEL, --channel CHANNEL
-                           the desired channel
-     -pp PREPOST [PREPOST ...], --prepost PREPOST [PREPOST ...]
-                           <Required> positional arguments of pre and post
-                           duration
-     -e SELECT_EVENTS [SELECT_EVENTS ...], --events SELECT_EVENTS [SELECT_EVENTS ...]
-                           <Required> select event
 
 
 offspect gui

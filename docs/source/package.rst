@@ -17,4 +17,5 @@ The documentation of the functions in this package
    offspect.input.tms.cmep.smartmove
    offspect.input.tms.cmep.xdf
    offspect.input.tms.cmep.mat
+   offspect.cache.plot
    

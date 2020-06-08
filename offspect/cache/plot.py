@@ -5,12 +5,13 @@ import numpy as np
 from itertools import chain
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
-from offspect.api import decode
+from offspect.cache.attrs import decode
 from math import nan
 import matplotlib
 from tempfile import TemporaryDirectory
 from pathlib import Path
 from functools import lru_cache
+from offspect.cache.file import CacheFile
 
 
 def plot_trace(ax, data, attrs):
@@ -100,6 +101,7 @@ def plot_glass(
     title: str = "",
 ):
     """takes a list of coordinates and values and plots them as glass-brain
+
     args
     ----
     coords:
@@ -116,10 +118,12 @@ def plot_glass(
         the maximum value for scaling the colorbar. Defaults to adapting it to the data at hand
     title:
         a textual annotation to print into the upper left corner
+
     returns
     -------
     display:
         the glass-plot object
+    
     """
     # project coordinages and values into a Nifti-Image
     filled_img = project_into_nifti(coords, values, smooth)
@@ -227,6 +231,43 @@ def get_glass_bg(tmpdir: Path):
     return im
 
 
+def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True):
+    """plot the whole map for a complete cachefile
+
+    args
+    ----
+    cf: CacheFile    
+        the cachefile to be plotted
+    foo: Callable
+        will be applied to each value, and defaults to passing the
+        original. But could be, e.g. lambda x : log10(x + 1) to plot logarithmized values
+    ignore_rejected: bool 
+        defaults to True, and ignores any traces which have been flagged for rejection. Alternatively, ignore the rejection and plot their values anyways.
+
+    returns
+    -------
+    display: the figure handle for the mapping plot
+        
+
+    """
+    coords = []
+    values = []
+    rejected = 0.0
+    for trace, tattr in cf:
+        if not ignore_rejected or not decode(tattr["reject"]):
+            npk = decode(tattr["neg_peak_magnitude_uv"])
+            ppk = decode(tattr["pos_peak_magnitude_uv"])
+            val = ppk - npk
+            xyz = decode(tattr["xyz_coords"])
+            coords.append(xyz)
+            values.append(val)
+        else:
+            rejected += 1.0
+
+    values = list(map(foo, values))
+    return plot_glass(coords, values, vmax=None)
+
+
 if __name__ == "__main__":
     display = plot_glass([[0, 0, 0]], [1], colorbar=False)
 
@@ -240,3 +281,16 @@ if __name__ == "__main__":
     display = plot_glass(coords, values)
     M1 = [-36.6300, -17.6768, 54.3147]
     plot_glass([M1], [1])
+
+    from pathlib import Path
+    from offspect.api import CacheFile, decode
+    from math import log
+
+    path = Path("/home/rtgugg/Desktop/test-offspect/betti/inspected")
+    fname = path / "KaBe_ipsilesional_cmep_screening1.hdf5"
+    for fname in path.glob("*.hdf5"):
+        cf = CacheFile(fname)
+        plot_map(cf)
+        display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)
+
+        display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)

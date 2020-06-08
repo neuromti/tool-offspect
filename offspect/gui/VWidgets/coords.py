@@ -1,5 +1,5 @@
 from offspect.gui.VWidgets.mpl import MplWidget
-from .plot import plot_glass_on, get_glass_bg
+from offspect.cache.plot import plot_glass_on, get_glass_bg
 from offspect.api import decode
 from PyQt5.QtCore import QSize
 
