@@ -291,7 +291,7 @@ if __name__ == "__main__":
 
     from pathlib import Path
     from offspect.api import CacheFile, decode
-    from math import log
+    from math import log10
 
     path = Path("/home/rtgugg/Desktop/test-offspect/betti/inspected")
     fname = path / "KaBe_ipsilesional_cmep_screening1.hdf5"
