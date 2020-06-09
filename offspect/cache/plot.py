@@ -252,18 +252,25 @@ def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True):
     """
     coords = []
     values = []
-    rejected = 0.0
+    uninspected = 0.0
     for trace, tattr in cf:
         if not ignore_rejected or not decode(tattr["reject"]):
             npk = decode(tattr["neg_peak_magnitude_uv"])
             ppk = decode(tattr["pos_peak_magnitude_uv"])
-            val = ppk - npk
+            if ppk is not None and npk is not None:
+                val = ppk - npk
+            else:
+                val = 0
+                uninspected += 1.0
+
             xyz = decode(tattr["xyz_coords"])
             coords.append(xyz)
             values.append(val)
-        else:
-            rejected += 1.0
 
+    rejected = len(cf) - len(values)
+    print(f"This plot is based on {len(values)}/{len(cf)} traces.")
+    print(f"{rejected:3.0f} traces were rejected.")
+    print(f"{uninspected:3.0f} traces were not inspected.")
     values = list(map(foo, values))
     return plot_glass(coords, values, vmax=None)
 
