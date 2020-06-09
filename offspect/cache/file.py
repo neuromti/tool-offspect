@@ -74,10 +74,33 @@ Eventually, and ideally after visual inspection, you might want to plot the resu
 
 .. code-block:: python
 
-    from offspect.api import plot_map, CacheFile
-    from math import log10
+    from offspect.api import plot_map, CacheFile    
+    # we load a cachefile
     cf = CacheFile("example.hdf5")
+    # and plot and show it.
+    display = plot_map(cf)
+    display.show()
+    # you can also save the figure with
+    display.savefig("example_map.png")
+
+There is a variety of options to tune the plotting to your whims. For example, you can normalize the values, e.g. by taking the logarithm or thresholding by giving the foo argument a sensible Callable. Note that we add 1 to be able to deal with a Vpp of 0 from e.g. MEP-negative traces.
+
+.. code-block:: python
+
+    from math import log10
+    # taking the log10
     plot_map(cf, foo = lambda x : log10(x + 1))
+    # thresholding
+    def threshold(x):
+        return float(x>50)
+    plot_map(cf, foo = threshold)
+    
+Additionally, you can use all the keywords from :py:func:`~.plot_glass` to beautify your plot.
+
+.. code-block:: python
+
+    plot_map(cf, vmax=100, title="Example", smooth=25)
+
 
 """
 from typing import Union, List, Dict, Tuple, Iterator
