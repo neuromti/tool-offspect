@@ -231,7 +231,7 @@ def get_glass_bg(tmpdir: Path):
     return im
 
 
-def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True):
+def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True, **kwargs):
     """plot the whole map for a complete cachefile
 
     args
@@ -243,6 +243,9 @@ def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True):
         original. But could be, e.g. lambda x : log10(x + 1) to plot logarithmized values
     ignore_rejected: bool 
         defaults to True, and ignores any traces which have been flagged for rejection. Alternatively, ignore the rejection and plot their values anyways.
+    **kwargs
+        additional keyword arguments are passed to :py:func:`~.plot_glass`
+
 
     returns
     -------
@@ -272,7 +275,7 @@ def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True):
     print(f"{rejected:3.0f} traces were rejected.")
     print(f"{uninspected:3.0f} traces were not inspected.")
     values = list(map(foo, values))
-    return plot_glass(coords, values, vmax=None)
+    return plot_glass(coords, values, **kwargs)
 
 
 if __name__ == "__main__":
