@@ -169,6 +169,7 @@ def plot_glass(
 
 
 def plot_glass_on_old(axes, coords, values):
+    print("Deprecated, please use plot_glass instead")
     if "nan" in coords:
         return
 
@@ -193,8 +194,12 @@ def plot_glass_on_old(axes, coords, values):
 
 
 def plot_glass_on(axes, coords, tmpdir, width=10):
-    if "nan" in coords:
-        return
+
+    error = False
+    if "nan" in coords or "None" in coords:
+        raise Exception(
+            f"GUI:xyz_coordinates at {coords} are invalid, as they contain 'nan' or 'None' and can not be visualized:Try correcting the 'xyz_coords'-field"
+        )
 
     im = get_glass_bg(tmpdir).copy()
     origin = (247, 207)
@@ -205,11 +210,17 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     wlen = ((2 * wpx), (2 * wpy))
     xp = int(origin[0] + scale[0] * x)
     yp = int(origin[1] - scale[1] * y)
-    for xnum, xpos in enumerate(range(xp - wpx, xp + wpx)):
-        for ynum, ypos in enumerate(range(yp - wpy, yp + wpy)):
-            col = im[ypos, xpos, :] = [1, 0.17, 0, 1]
-            if xnum <= 2 or xnum >= wlen[0] - 3 or ynum <= 2 or ynum >= wlen[1] - 3:
-                im[ypos, xpos, :] = [0, 0, 0, 1]
+    try:
+        for xnum, xpos in enumerate(range(xp - wpx, xp + wpx)):
+            for ynum, ypos in enumerate(range(yp - wpy, yp + wpy)):
+                col = im[ypos, xpos, :] = [1, 0.17, 0, 1]
+                if xnum <= 2 or xnum >= wlen[0] - 3 or ynum <= 2 or ynum >= wlen[1] - 3:
+                    im[ypos, xpos, :] = [0, 0, 0, 1]
+    except IndexError:
+        im = get_glass_bg(tmpdir).copy()
+        raise Exception(
+            f"GUI:xyz_coordinates at {coords} are out of bounds and can not be visualized:Try correcting the 'xyz_coords'-field"
+        )
     axes.imshow(im)
 
 
