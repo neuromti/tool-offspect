@@ -54,11 +54,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def refresh(self):
         print("GUI: Refreshing GUI for new trace")
         self.trc = VWidgets.TraceWidget(cf=self.cf, idx=self.ctrl.trace_idx)
-        self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
-        self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.coords = VWidgets.CoordsWidget(
             cf=self.cf, idx=self.ctrl.trace_idx, tmpdir=self.tmpdir
         )
+        self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
 
         right_column = QtWidgets.QWidget()
         lt = QtWidgets.QVBoxLayout()

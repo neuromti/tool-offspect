@@ -195,11 +195,15 @@ def plot_glass_on_old(axes, coords, values):
 
 def plot_glass_on(axes, coords, tmpdir, width=10):
 
-    error = False
-    if "nan" in coords or "None" in coords:
+    if type(coords) != list:
         raise Exception(
-            f"COORDS:xyz_coordinates at {coords} are invalid, as they contain 'nan' or 'None' and can not be visualized:Try correcting the 'xyz_coords'-field"
+            f"COORDS:xyz_coordinates {coords} are invalid, as they are not a list of floats"
         )
+    for pos in coords:
+        if type(pos) not in [int, float]:
+            raise Exception(
+                f"COORDS:xyz_coordinates {coords} are invalid, as they are not a list of floats"
+            )
 
     im = get_glass_bg(tmpdir).copy()
     origin = (247, 207)
@@ -219,7 +223,7 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     except IndexError:
         im = get_glass_bg(tmpdir).copy()
         raise Exception(
-            f"COORDS:xyz_coordinates at {coords} are out of bounds and can not be visualized:Try correcting the 'xyz_coords'-field"
+            f"COORDS:xyz_coordinates at {coords} are out of bounds and can not be visualized"
         )
     axes.imshow(im)
 

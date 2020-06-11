@@ -1,10 +1,11 @@
 from offspect.gui.VWidgets.mpl import MplWidget
-from offspect.gui.VWidgets.message import raise_error
 from offspect.cache.plot import plot_glass_on, get_glass_bg
 from offspect.api import decode
 from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox, QPushButton, QDialog
 from offspect.cache.file import CacheFile
+from functools import partial
 
 
 class CoordsWidget(MplWidget):
@@ -15,7 +16,7 @@ class CoordsWidget(MplWidget):
     def _draw(self, cf: CacheFile, idx: int, tmpdir):
         tattrs = cf.get_trace_attrs(idx)
         coords = decode(tattrs["xyz_coords"])
-        print(f"GUI: Stimulation target was at {coords}")
+        print(f"COORDS: Stimulation target was at {coords}")
         try:
             plot_glass_on(axes=self.canvas.axes, coords=coords, tmpdir=tmpdir)
         except Exception as e:
@@ -27,15 +28,8 @@ class CoordsWidget(MplWidget):
         return QSize(200, 200)
 
 
-class InvalidCoordsDialog(QMessageBox):
-    """Widget listing all Origin Attributes
-        
-
-    Example::
-
-        python -m offspect.gui.baseui stroke_map.hdf5  0
-        python -m offspect.gui.baseui stroke_mep.hdf5  0
-    """
+class InvalidCoordsDialog(QDialog):
+    "Widget opening a dialog to correct invalid coordinates"
 
     def __init__(
         self,
@@ -46,9 +40,34 @@ class InvalidCoordsDialog(QMessageBox):
         **kwargs,
     ):
         super(InvalidCoordsDialog, self).__init__(*args, **kwargs)
-        kind, msg, info = message.split(":")
-        self.setIcon(QMessageBox.Critical)
+        self.cf = cf
+        self.idx = idx
+        kind, msg = message.split(":")
+        print(message)
+        prv = QPushButton(text="Replace with previous")
+        prv.clicked.connect(partial(self.replace, which=idx - 1))
+        ign = QPushButton(text="Ignore")
+        ign.clicked.connect(self.close)
+        nxt = QPushButton(text="Replace with next")
+        nxt.clicked.connect(partial(self.replace, which=idx + 1))
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QtWidgets.QLabel(text="\n".join(message.split(":"))))
+        buttons = QtWidgets.QHBoxLayout()
+        for w in [prv, ign, nxt]:
+            buttons.addWidget(w)
+        layout.addLayout(buttons)
+        self.setLayout(layout)
         self.setWindowTitle(kind + " Error")
-        self.setText(msg)
-        self.setInformativeText(info)
         self.exec_()
+
+    def replace(self, which: int):
+        trace_num = len(self.cf)
+        if which == self.idx or which < 0 or which > trace_num:
+            pass
+        else:
+            new_attrs = self.cf.get_trace_attrs(which)
+            tattrs = self.cf.get_trace_attrs(self.idx)
+            tattrs["xyz_coords"] = new_attrs["xyz_coords"]
+            self.cf.set_trace_attrs(self.idx, tattrs)
+        self.close()
