@@ -18,14 +18,14 @@ def close_tmpdir(tmpdir):
     import shutil
 
     shutil.rmtree(tmpdir)
-    print(f"Cleared temporary directory {tmpdir}")
+    print(f"ENV: Cleared temporary directory {tmpdir}")
 
 
 def open_tmpdir():
     import atexit
 
     tmpdir = Path(mkdtemp())
-    print(f"Created temporary directory {tmpdir}")
+    print(f"ENV: Created temporary directory {tmpdir}")
     atexit.register(lambda: close_tmpdir(tmpdir))
     return tmpdir
 
@@ -48,11 +48,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ctrl = VWidgets.ControlWidget(cf=self.cf, idx=idx)
         self.ctrl.callback = self.refresh
-
         self.refresh()
         print(f"GUI: Loading {self.filename}")
 
     def refresh(self):
+        print("GUI: Refreshing GUI for new trace")
         self.trc = VWidgets.TraceWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)

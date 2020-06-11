@@ -33,7 +33,7 @@ class IntegerAttribute(QtWidgets.QWidget):
         elif type(val) == float:
             val = int(val)
         val = "{0:3.0f}".format(val)
-        print(f"Loading {self.key}:{val} for {idx}")
+        print(f"TATTR: Loading {self.key}:{val} for {idx}")
         self.line.setText(val)
 
     def __init__(
@@ -52,7 +52,7 @@ class IntegerAttribute(QtWidgets.QWidget):
         self.label = QtWidgets.QLabel(text=key.replace("_", " ").capitalize())
         self.line = QtWidgets.QLineEdit()
         self.draw_int(idx)
-        self.line.editingFinished.connect(self.on_edit)
+        self.line.returnPressed.connect(self.on_edit)
 
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.label)
@@ -74,7 +74,7 @@ class ControlWidget(QtWidgets.QWidget):
         self.prev_button = QtWidgets.QPushButton(text="Prev")
         self.reject_button = QtWidgets.QPushButton(text="Reject")
         self.trace_idx_num = QtWidgets.QLineEdit(text=str(idx))
-        self.trace_idx_num.editingFinished.connect(self.refresh)
+        self.trace_idx_num.returnPressed.connect(self.switch_trace)
         self.reject_button.clicked.connect(self.flip_reject_button)
         self.prev_button.clicked.connect(self.click_prev)
         self.next_button.clicked.connect(self.click_next)
@@ -166,12 +166,9 @@ class ControlWidget(QtWidgets.QWidget):
         else:
             self.prev_button.setEnabled(True)
             self.next_button.setEnabled(True)
-        print("Setting trace_idx from", self.trace_idx + 1, "to", trace_idx)
+        print("CTRL: Setting trace_idx from", self.trace_idx + 1, "to", trace_idx)
         self.trace_idx_num.setText(str(trace_idx))
         self.refresh()
-
-    def check_trace_idx(self):
-        self.trace_idx += 0
 
     def click_next(self):
         self.trace_idx += 1
@@ -179,8 +176,11 @@ class ControlWidget(QtWidgets.QWidget):
     def click_prev(self):
         self.trace_idx -= 1
 
+    def switch_trace(self):
+        print("CTRL: Switching trace_idx manually to", self.trace_idx + 1)
+        self.refresh()
+
     def refresh(self):
-        trace_count = len(self.cf)
         self.onset_shift.draw_int(self.trace_idx)
         self.draw_reject_button()
         self.draw_hasmep_button()

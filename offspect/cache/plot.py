@@ -198,7 +198,7 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     error = False
     if "nan" in coords or "None" in coords:
         raise Exception(
-            f"GUI:xyz_coordinates at {coords} are invalid, as they contain 'nan' or 'None' and can not be visualized:Try correcting the 'xyz_coords'-field"
+            f"COORDS:xyz_coordinates at {coords} are invalid, as they contain 'nan' or 'None' and can not be visualized:Try correcting the 'xyz_coords'-field"
         )
 
     im = get_glass_bg(tmpdir).copy()
@@ -219,7 +219,7 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     except IndexError:
         im = get_glass_bg(tmpdir).copy()
         raise Exception(
-            f"GUI:xyz_coordinates at {coords} are out of bounds and can not be visualized:Try correcting the 'xyz_coords'-field"
+            f"COORDS:xyz_coordinates at {coords} are out of bounds and can not be visualized:Try correcting the 'xyz_coords'-field"
         )
     axes.imshow(im)
 
@@ -234,10 +234,10 @@ def get_glass_bg(tmpdir: Path):
             warnings.simplefilter("ignore")
             display = plot_glass([], [0], colorbar=False)
             display.savefig(fname)
-            print(f"Initialized glass brain background in {fname}")
+            print(f"COORDS: Initialized glass brain background in {fname}")
             display.close()
     else:
-        print(f"Reused glass brain background in {fname}")
+        print(f"COORDS: Reused glass brain background in {fname}")
     im = matplotlib.pyplot.imread(str(fname))
     return im
 

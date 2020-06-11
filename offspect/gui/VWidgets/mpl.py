@@ -46,12 +46,12 @@ def plot_trace_on(ax, data, t0, t1, pre, post, lats, amps, shift=0):
     facecolor = "0.8"
     if data[lats[0] + onset] != amps[0]:
         facecolor = "1"
-        print("First estimate deviates:", data[lats[0] + onset], amps[0])
+        print("PLOT: First estimate deviates:", data[lats[0] + onset], amps[0])
     if data[lats[1] + onset] != amps[1]:
         facecolor = "1"
-        print("Second estimate deviates:", data[lats[-1] + onset], amps[1])
+        print("PLOT: Second estimate deviates:", data[lats[-1] + onset], amps[1])
     if facecolor == "0.8":
-        print("Estimates in order")
+        print("PLOT: Estimates in order")
 
     verts = []
     verts.append((x[lats[0] + onset], 0))
@@ -117,6 +117,6 @@ class TraceWidget(QtWidgets.QWidget):
             lats = (plat, nlat)
         try:
             plot_trace_on(self.canvas.axes, data, t0, t1, pre, post, lats, amps, shift)
-            print(f"Plotting {idx} shifted by {shift}")
+            print(f"PLOT: Plotting trace number {idx+1} shifted by {shift} samples")
         except Exception as e:
             print(e)

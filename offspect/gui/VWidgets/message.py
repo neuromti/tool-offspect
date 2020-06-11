@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMessageBox
 
 
-def raise_error(message: str = "Error", info: str = "More iInformation"):
+def raise_error(message: str = "DEFAULT:Error Description:More Information"):
     box = QMessageBox()
     kind, msg, info = message.split(":")
     box.setIcon(QMessageBox.Critical)

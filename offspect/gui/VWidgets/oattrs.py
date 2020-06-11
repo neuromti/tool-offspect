@@ -8,14 +8,7 @@ from offspect.gui.io import save_global
 
 
 class OattrWidget(QtWidgets.QWidget):
-    """Widget listing all Origin Attributes
-        
-
-    Example::
-
-        python -m offspect.gui.baseui stroke_map.hdf5  0
-        python -m offspect.gui.baseui stroke_mep.hdf5  0
-    """
+    """Widget listing all Origin Attributes"""
 
     def __init__(self, cf: CacheFile, idx: int, *args, **kwargs):
         super(OattrWidget, self).__init__(*args, **kwargs)
