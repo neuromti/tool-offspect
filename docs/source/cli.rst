@@ -12,17 +12,18 @@ offspect
 ~~~~~~~~
 .. code-block:: none
 
-   usage: offspect [-h] {peek,merge,tms,gui} ...
+   usage: offspect [-h] {peek,merge,tms,gui,plot} ...
    
    Create, manipulate and inspect cachefiles for offline inspection of evoked
    potentials
    
    positional arguments:
-     {peek,merge,tms,gui}
+     {peek,merge,tms,gui,plot}
        peek                peek into a cachefile and print essential information
        merge               merge two cachefiles into one
        tms                 prepare cachefiles for a tms protocol
        gui                 start the visual inspection GUI
+       plot                plot the map for a cachefile
    
    optional arguments:
      -h, --help            show this help message and exit
@@ -94,5 +95,21 @@ offspect gui
                            for default, or set to LR or HR
      -f FILENAME, --file FILENAME
                            Which file to load during startup
+
+
+offspect plot
+~~~~~~~~~~~~~
+.. code-block:: none
+
+   usage: offspect plot [-h] -f CFNAME [-t SFNAME] [--kwargs KWARGS]
+   
+   optional arguments:
+     -h, --help            show this help message and exit
+     -f CFNAME, --filename CFNAME
+                           Which cachefile to plot
+     -t SFNAME, --figname SFNAME
+                           The name of the imagefile to save the plot
+     --kwargs KWARGS       A dictionary of additional keyword arguments to
+                           finetune the plotting
 
 

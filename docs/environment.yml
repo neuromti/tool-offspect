@@ -1,0 +1,11 @@
+
+name: example-environment
+channels:
+  - tstenner
+dependencies:
+  - pylsl
+  - pip:
+      - recommonmark
+      - sphinx-autodoc-typehints
+      - sphinx-rtd-theme
+      - Sphinx<=1.7.0
