@@ -4,8 +4,3 @@ channels:
   - tstenner
 dependencies:
   - pylsl
-  - pip:
-      - recommonmark
-      - sphinx-autodoc-typehints
-      - sphinx-rtd-theme
-      - Sphinx==2.4

@@ -1,3 +1,4 @@
 sphinx-autodoc-typehints
-sphinx
+sphinx==2.4
 sphinx_rtd_theme
+recommonmark
