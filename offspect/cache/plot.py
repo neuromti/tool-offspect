@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 from functools import lru_cache
 from offspect.cache.file import CacheFile
+from collections import Counter
 
 
 def plot_trace(ax, data, attrs):
@@ -65,16 +66,32 @@ def project_into_nifti(
     shape = (181, 217, 181)
 
     base = np.zeros(shape)
+    reps = np.zeros(shape)
+    out_of_scope = 0.0
     for pos, val in zip(coords, values):
         apos = pinv(affine).dot(list(chain(pos, [1])))
         try:
             x, y, z, s = (int(p) for p in apos)
-        except ValueError:
-            return
-        try:
-            base[x, y, z] = val
+            base[x, y, z] += val
+            reps[x, y, z] += 1
+
         except IndexError:
-            pass
+            out_of_scope += 1
+            continue
+    # print("Valid", pos, "->", x, y, z, val)
+
+    if out_of_scope > 0:
+        print(
+            f"{out_of_scope:3.0f} values were ignored because their coords are outside of the plot"
+        )
+
+    reps[reps == 0] = 1
+    averaged = base / reps
+
+    unto: dict = Counter(reps.flatten())
+    del unto[1.0]
+    for k, v in sorted(unto.items(), reverse=True):
+        print(f"{v:3.0f} times, {k:0.0f} values were projected on a single voxel.")
 
     filled_img = Nifti1Image(base, affine)
     filled_img = image.smooth_img(filled_img, smooth)
@@ -84,7 +101,7 @@ def project_into_nifti(
     # get the maximum of the smoothened data
     emax = filled_img.get_fdata().max()
     # get the maximum of the original data
-    bmax = max(values)
+    bmax = averaged.max()
     # rescale accordingly
     filled_img._dataobj /= emax
     filled_img._dataobj *= bmax
@@ -294,28 +311,29 @@ def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True, **kwargs):
 
 
 if __name__ == "__main__":
-    display = plot_glass([[0, 0, 0]], [1], colorbar=False)
+    pass
+    # display = plot_glass([[0, 0, 0]], [1], colorbar=False)
 
-    coords = [
-        [37.0, 54.2, 22.8],
-        [37.1, 54.4, 22.1],
-        [37.2, 53.9, 23.2],
-        [37.2, 54.3, 21.9],
-    ]
-    values = [1000.0] * 4
-    display = plot_glass(coords, values)
-    M1 = [-36.6300, -17.6768, 54.3147]
-    plot_glass([M1], [1])
+    # coords = [
+    #     [37.0, 54.2, 22.8],
+    #     [37.1, 54.4, 22.1],
+    #     [37.2, 53.9, 23.2],
+    #     [37.2, 54.3, 21.9],
+    # ]
+    # values = [1000.0] * 4
+    # display = plot_glass(coords, values)
+    # M1 = [-36.6300, -17.6768, 54.3147]
+    # plot_glass([M1], [1])
 
-    from pathlib import Path
-    from offspect.api import CacheFile, decode
-    from math import log10
+    # from pathlib import Path
+    # from offspect.api import CacheFile, decode
+    # from math import log10
 
-    path = Path("/home/rtgugg/Desktop/test-offspect/betti/inspected")
-    fname = path / "KaBe_ipsilesional_cmep_screening1.hdf5"
-    for fname in path.glob("*.hdf5"):
-        cf = CacheFile(fname)
-        plot_map(cf)
-        display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)
+    # path = Path("/home/rtgugg/Desktop/test-offspect/betti/inspected")
+    # fname = path / "KaBe_ipsilesional_cmep_screening1.hdf5"
+    # for fname in path.glob("*.hdf5"):
+    #     cf = CacheFile(fname)
+    #     plot_map(cf)
+    #     display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)
 
-        display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)
+    #     display = plot_map(cf, foo=lambda x: log10(x + 1), ignore_rejected=False)

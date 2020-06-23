@@ -23,3 +23,18 @@ def cli_merge(args: argparse.Namespace):
     if args.verbose:
         print("Content of target file is now:")
         print(CacheFile(tf))
+
+
+def cli_plot(args: argparse.Namespace):
+    from offspect.cache.file import CacheFile
+    from offspect.cache.plot import plot_map
+
+    cf = CacheFile(args.cfname)
+    if args.kwargs is None:
+        display = plot_map(cf)
+    else:
+        display = plot_map(cf, **args.kwargs)
+    display.show()
+    if args.sfname is not None:
+        display.savefig(args.sfname)
+        print("Saving to", args.sfname)

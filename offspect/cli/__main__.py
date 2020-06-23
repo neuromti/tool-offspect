@@ -4,7 +4,7 @@ import argparse
 from ast import literal_eval
 from offspect.cli.tms import cli_tms
 from offspect.cli.tms import VALID_READOUTS as valid_tms_readouts
-from offspect.cli.various import cli_gui, cli_merge, cli_peek
+from offspect.cli.various import cli_gui, cli_merge, cli_peek, cli_plot
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -114,6 +114,32 @@ def get_parser() -> argparse.ArgumentParser:
         dest="filename",
     )
 
+    # GUI ---------------------------------------------------------------------
+    plt = subparsers.add_parser(name="plot", help="plot the map for a cachefile")
+    plt.add_argument(
+        "-f",
+        "--filename",
+        help="Which cachefile to plot",
+        required=True,
+        dest="cfname",
+    )
+    plt.add_argument(
+        "-t",
+        "--figname",
+        help="The name of the imagefile to save the plot",
+        required=False,
+        dest="sfname",
+        default=None,
+    )
+    plt.add_argument(
+        "--kwargs",
+        help="A dictionary of additional keyword arguments to finetune the plotting",
+        type=literal_eval,
+        required=False,
+        dest="kwargs",
+        default=None,
+    )
+
     # ------------------------------------------------------------------------
     return parser
 
@@ -131,6 +157,8 @@ def main():
         cli_tms(args)
     elif args.sub == "gui":
         cli_gui(args)
+    elif args.sub == "plot":
+        cli_plot(args)
     else:
         print("No valid subcommand specified")
 
