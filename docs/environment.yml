@@ -8,4 +8,4 @@ dependencies:
       - recommonmark
       - sphinx-autodoc-typehints
       - sphinx-rtd-theme
-      - Sphinx<=1.7.0
+      - Sphinx==2.4
