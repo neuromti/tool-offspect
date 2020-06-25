@@ -102,10 +102,15 @@ def project_into_nifti(
     emax = filled_img.get_fdata().max()
     # get the maximum of the original data
     bmax = averaged.max()
-    # rescale accordingly
-    filled_img._dataobj /= emax
-    filled_img._dataobj *= bmax
-    return filled_img
+
+    if emax == 0 or bmax == 0:
+        print("All usable values were zero")
+        return filled_img
+    else:
+        # rescale accordingly
+        filled_img._dataobj /= emax
+        filled_img._dataobj *= bmax
+        return filled_img
 
 
 def plot_glass(
@@ -178,8 +183,11 @@ def plot_glass(
 
     # scale and label colorbar
     if colorbar:
-        ticks = display._cbar.get_ticks()
-        display._cbar.set_ticklabels([f"{t:3.0f}µV" for t in ticks])
+        if not hasattr(display, "_cbar"):
+            print("Invalid cbar likely because all values are zero")
+        else:
+            ticks = display._cbar.get_ticks()
+            display._cbar.set_ticklabels([f"{t:3.0f}µV" for t in ticks])
     # display.add_contours(filled_img, filled=True, levels=[0], colors='r')
     display.show = plotting.show
     return display
