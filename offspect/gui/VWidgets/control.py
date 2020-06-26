@@ -6,6 +6,8 @@ from offspect.cache.attrs import get_valid_trace_keys
 from .textedit import VTextEdit
 from offspect.gui.io import save
 from offspect.cache.file import write_tracedata
+import numpy as np
+from datetime import datetime
 
 
 class IntegerAttribute(QtWidgets.QWidget):
@@ -100,12 +102,19 @@ class ControlWidget(QtWidgets.QWidget):
             self.onsetlayout.addWidget(item)
 
         self.manipulatelayout = QtWidgets.QHBoxLayout()
-        self.baseline_button = QtWidgets.QPushButton(text="Baseline Correction")
+        self.baseline_button = QtWidgets.QPushButton(text="Baseline")
         self.baseline_button.clicked.connect(self.click_baseline)
+        self.detrend_button = QtWidgets.QPushButton(text="Detrend")
+        self.detrend_button.clicked.connect(self.click_detrend)
+        self.linenoise_button = QtWidgets.QPushButton(text="LineNoise")
+        self.linenoise_button.clicked.connect(self.click_linenoise)
+
         self.flip_sign_button = QtWidgets.QPushButton(text="Flip Signal Direction")
         self.flip_sign_button.clicked.connect(self.click_flipsign)
         for item in [
             self.baseline_button,
+            self.detrend_button,
+            self.linenoise_button,
             self.flip_sign_button,
         ]:
             self.manipulatelayout.addWidget(item)
@@ -241,6 +250,46 @@ class ControlWidget(QtWidgets.QWidget):
         print(f"Performing baseline correction with {float(bl):3.2f}")
         data = data - bl
         write_tracedata(self.cf, data, idx)
+        self.callback()
+
+    def click_detrend(self):
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        slope = np.mean(np.diff(data), 0)
+        correction = np.arange(0, len(data)) * slope
+        print(f"Performing detrend correction with {float(slope):3.2f}")
+        data = data - correction
+        write_tracedata(self.cf, data, idx)
+        self.callback()
+
+    def click_linenoise(self):
+
+        idx = self.trace_idx
+        data = self.cf.get_trace_data(idx)
+        signal = data.copy()
+        attrs = self.cf.get_trace_attrs(idx)
+        fs = decode(attrs["samplingrate"])
+        timestep = 1 / fs
+        original_len = len(signal)
+        filter_order = 100
+        while len(signal) < fs:
+            signal = np.pad(signal, (1, 0), "constant", constant_values=(0))
+        fourier = np.fft.fft(signal)
+        freq = np.fft.fftfreq(len(signal), d=timestep)
+        fidx = int(np.where(freq == 50)[0][0])
+        fourier[fidx] = 0
+        signal = np.fft.ifft(fourier)
+        signal = signal[-original_len:]
+
+        data[:] = signal
+        print(f"Performing 50 Hz filter")
+        write_tracedata(self.cf, data, idx)
+        attrs = self.cf.get_trace_attrs(idx)
+        comment = decode(attrs["comment"]) or ""
+
+        comment += "\nlinenoise at " + datetime.now().strftime("%y/%m/%d/%H:%M")
+        attrs["comment"] = encode(comment)
+        self.cf.set_trace_attrs(self.trace_idx, attrs)
         self.callback()
 
     def click_flipsign(self):
