@@ -200,11 +200,13 @@ class ControlWidget(QtWidgets.QWidget):
         self.callback()
 
     def draw_undo_button(self):
-        log = "\n".join(decode(self.cf.get_trace_attrs(self.trace_idx).get("_log", "")))
-        self.undo_button.setToolTip(log)
-        if log != "":
+        _log = decode(self.cf.get_trace_attrs(self.trace_idx).get("_log", "[]"))
+        if _log != []:
+            log = "\n".join(_log)
+            self.undo_button.setToolTip(log)
             self.undo_button.setStyleSheet("background-color: gray")
         else:
+            self.undo_button.setToolTip("No processing steps in cache")
             self.undo_button.setStyleSheet("background-color: None")
 
     def draw_reject_button(self):
