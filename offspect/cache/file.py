@@ -125,6 +125,7 @@ from offspect.cache.check import (
 )
 from math import inf, nan
 from offspect.cache.attrs import encode
+from offspect.cache.steps import PreProcessor
 
 read_file = partial(
     h5py.File, mode="r", libver="latest", swmr=True

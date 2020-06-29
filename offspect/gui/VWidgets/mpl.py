@@ -16,16 +16,15 @@ from matplotlib.patches import Polygon
 from offspect.api import decode, CacheFile
 from math import nan
 import numpy as np
+from offspect.cache.steps import process_data
 
 
 class MplWidget(QtWidgets.QWidget):
     def __init__(self, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.canvas = FigureCanvas(Figure())
-
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.canvas)
-
         self.canvas.axes = self.canvas.figure.add_subplot(111)
         self.canvas.figure.tight_layout()
         self.setLayout(self.layout)
@@ -116,7 +115,10 @@ class TraceWidget(QtWidgets.QWidget):
             amps = (pamp, namp)
             lats = (plat, nlat)
         try:
+            # perform preprocessing steps
+            data = process_data(data, attrs, key="_log")
             plot_trace_on(self.canvas.axes, data, t0, t1, pre, post, lats, amps, shift)
             print(f"PLOT: Plotting trace number {idx+1} shifted by {shift} samples")
         except Exception as e:
             print(e)
+

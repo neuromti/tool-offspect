@@ -50,14 +50,14 @@ class TattrWidget(QtWidgets.QWidget):
 
     def get_cleaned_tattrs(self, cf, idx):
         tattrs = cf.get_trace_attrs(idx)
-        set_init = [
+        initialize_with_zero = [
             "onset_shift",
             "neg_peak_latency_ms",
             "pos_peak_latency_ms",
             "neg_peak_magnitude_uv",
             "pos_peak_magnitude_uv",
         ]
-        for key in set_init:
+        for key in initialize_with_zero:
             tattrs[key] = encode(decode(tattrs[key]) or 0)
         cf.set_trace_attrs(idx, tattrs)
         keys = get_valid_trace_keys(tattrs["readin"], tattrs["readout"]).copy()
@@ -66,5 +66,6 @@ class TattrWidget(QtWidgets.QWidget):
         keys.remove("comment")
         show_tattrs = dict()
         for key in sorted(keys):
-            show_tattrs[key] = tattrs[key]
+            if key[0] != "_":
+                show_tattrs[key] = tattrs[key]
         return show_tattrs
