@@ -12,6 +12,8 @@ from functools import partial
 from offspect.gui import VWidgets
 from tempfile import mkdtemp
 from pathlib import Path
+from offspect.cache.steps import process_data
+from offspect.cache.file import write_tracedata, encode
 
 
 def close_tmpdir(tmpdir):
@@ -37,19 +39,51 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_cache_file(filename, idx)
         self.setWindowTitle(str(filename))
 
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu("&File")
+
+        apply = QtWidgets.QAction("&Apply", self)
+        apply.setShortcut("Ctrl+A")
+        apply.setToolTip(
+            "Applies all preprocessing steps to this trace and writes them permanently into the CacheFile"
+        )
+        apply.triggered.connect(self.save_tracedata)
+
+        load = QtWidgets.QAction("&Open", self)
+        load.setShortcut("Ctrl+O")
+        load.setToolTip("Open a new CacheFile")
+        load.triggered.connect(lambda: self.load_cache_file(None, 0))
+
+        fileMenu.addAction(apply)
+        fileMenu.addAction(load)
+        fileMenu.setToolTipsVisible(True)
+
     def load_cache_file(self, filename=None, idx: int = 0):
         if filename is None:
-            self.filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open file", "/", "CacheFiles (*.hdf5)"
             )
+            if filename is not "":
+                self.filename = filename
         else:
             self.filename = filename
+        print("Opening", self.filename)
         self.cf = CacheFile(self.filename)
 
         self.ctrl = VWidgets.ControlWidget(cf=self.cf, idx=idx)
         self.ctrl.callback = self.refresh
         self.refresh()
         print(f"GUI: Loading {self.filename}")
+
+    def save_tracedata(self):
+        idx = self.ctrl.trace_idx
+        data = self.cf.get_trace_data(idx)
+        attrs = self.cf.get_trace_attrs(idx)
+        data = process_data(data, attrs, key="_log")
+        write_tracedata(self.cf, data, idx)
+        attrs["_log"] = encode([])
+        print("Applied preprocessing and wrote into CacheFile")
+        self.cf.set_trace_attrs(idx, attrs)
 
     def refresh(self):
         print("GUI: Refreshing GUI for new trace")
