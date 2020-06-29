@@ -402,6 +402,7 @@ def write_tracedata(cf, data: ndarray, idx: int):
             for origin in f.keys():
                 # because keys are stored as strings, the are sorted alphanumerically, but we need them sorted numerically
                 keys = sort_keys(f[origin]["traces"].keys())
+                print(f"CF: Searching through {len(keys)} traces from {origin}")
                 # we use a running index across origin files, so we start at the last index (defaulting to -1, so -1+1=> 0)
                 for ix, key in enumerate(keys, start=cnt + 1):
                     # if the trace is the one indexed, we load the dset
@@ -410,9 +411,27 @@ def write_tracedata(cf, data: ndarray, idx: int):
                         dset = f[origin]["traces"][key]
                         if dset.shape == data.shape:
                             dset = f[origin]["traces"][key][:] = data
-                        else:
-                            print("Trace shape is not identical. Can't overwrite")
+                            print(
+                                "CF: Overwriting data for trace #",
+                                idx,
+                                "id:",
+                                key,
+                                "from",
+                                origin,
+                            )
                             return
+                        else:
+                            print(
+                                "CF: Trace shape #",
+                                idx,
+                                "id:",
+                                key,
+                                "from",
+                                origin,
+                                "does not conform. Can not overwrite",
+                            )
+                            return
+                cnt = ix
 
 
 def asdict(attrs: h5py.AttributeManager) -> Dict[str, str]:

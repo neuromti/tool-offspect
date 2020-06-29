@@ -85,7 +85,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cf.set_trace_attrs(idx, attrs)
         self.refresh()
         print(
-            "APPLY: Applied all preprocessing steps and wrote them into the CacheFile"
+            "APPLY: Applied all preprocessing steps and wrote them into the CacheFile for trace#",
+            idx,
         )
 
     def refresh(self):

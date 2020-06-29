@@ -72,4 +72,6 @@ def process_data(data, attrs, key: str = "_log", delim: str = " on ") -> TraceDa
             step, when = event.split(delim)
             print("STEPS: Replaying", step, "from", when)
             data = PreProcessor[step](data, attrs)
+    else:
+        print("No processing steps cached")
     return data
