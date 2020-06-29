@@ -48,7 +48,7 @@ PreProcessor = {
 }
 
 
-def process_data(data, attrs, key: str = "_log") -> TraceData:
+def process_data(data, attrs, key: str = "_log", delim: str = " on ") -> TraceData:
     """return TraceData processed by the steps in the field indexed by key
                 
         args
@@ -69,7 +69,7 @@ def process_data(data, attrs, key: str = "_log") -> TraceData:
     if key in attrs.keys():
         log = decode(attrs[key])
         for event in log:
-            step, when = event.split(" on ")
-            print("Replaying", step, "from", when)
+            step, when = event.split(delim)
+            print("STEPS: Replaying", step, "from", when)
             data = PreProcessor[step](data, attrs)
     return data

@@ -82,8 +82,11 @@ class MainWindow(QtWidgets.QMainWindow):
         data = process_data(data, attrs, key="_log")
         write_tracedata(self.cf, data, idx)
         attrs["_log"] = encode([])
-        print("Applied preprocessing and wrote into CacheFile")
         self.cf.set_trace_attrs(idx, attrs)
+        self.refresh()
+        print(
+            "APPLY: Applied all preprocessing steps and wrote them into the CacheFile"
+        )
 
     def refresh(self):
         print("GUI: Refreshing GUI for new trace")
@@ -93,6 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         self.tattr = VWidgets.TattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
         self.oattr = VWidgets.OattrWidget(cf=self.cf, idx=self.ctrl.trace_idx)
+        self.ctrl.draw_undo_button()
 
         right_column = QtWidgets.QWidget()
         lt = QtWidgets.QVBoxLayout()
