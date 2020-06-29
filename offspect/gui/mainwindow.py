@@ -63,7 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
             filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open file", "/", "CacheFiles (*.hdf5)"
             )
-            if filename is not "":
+            if filename != "":
                 self.filename = filename
         else:
             self.filename = filename
