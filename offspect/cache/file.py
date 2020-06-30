@@ -256,7 +256,7 @@ class CacheFile:
         s = ""
         h = "-" * 79 + "\n"
         gap = 20
-        for attrs in recover_annotations(self):
+        for ox, attrs in enumerate(recover_annotations(self), start=1):
             k = "origin"
             v = attrs[k]
             o = f"{k:{gap}s} : {v}\n"
@@ -270,6 +270,8 @@ class CacheFile:
             tc = f"{k:{gap}s} : {v}\n"
 
             s += "".join((h, o, a, tc))
+        s += h
+        s += f"In total, there are {len(self)} traces from {ox} origins"
         return s
 
     @lru_cache(maxsize=1)
@@ -283,6 +285,15 @@ class CacheFile:
         return int(cnt)
 
     def __iter__(self):
+        """iterate over all traces in the cachefile
+        
+        return
+        data: TraceData
+            the data of this trace
+        attrs: TraceAttributes
+            the attributes of this trace
+
+        """
         for i in range(len(self)):
             yield self.get_trace_data(i), self.get_trace_attrs(i)
 

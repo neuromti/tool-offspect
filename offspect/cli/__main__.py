@@ -19,6 +19,14 @@ def get_parser() -> argparse.ArgumentParser:
         name="peek", help="peek into a cachefile and print essential information"
     )
     peek.add_argument("fname", help="filename to peek into", type=str)
+    peek.add_argument(
+        "-s",
+        "--similarity-threshold",
+        help="the cutoff for Pearson's r to report two traces as similar",
+        type=float,
+        required=False,
+        dest="similarity",
+    )
 
     # MERGE -------------------------------------------------------------------
     merge = subparsers.add_parser(name="merge", help="merge two cachefiles into one")
