@@ -19,7 +19,7 @@ def cli_peek(args: argparse.Namespace):
     cf = CacheFile(args.fname)
     print(cf)
 
-    D = defaultdict(list)
+    D: defaultdict = defaultdict(list)
     for ix, (data, attrs) in enumerate(cf):
         data = process_data(data, attrs, verbose=False)
         traceID = attrs["id"]

@@ -33,13 +33,17 @@ offspect peek
 ~~~~~~~~~~~~~
 .. code-block:: none
 
-   usage: offspect peek [-h] fname
+   usage: offspect peek [-h] [-s SIMILARITY] fname
    
    positional arguments:
-     fname       filename to peek into
+     fname                 filename to peek into
    
    optional arguments:
-     -h, --help  show this help message and exit
+     -h, --help            show this help message and exit
+     -s SIMILARITY, --similarity-threshold SIMILARITY
+                           the threshold for Pearson's r. If this threshold is
+                           passed, peek warns that the traces are similar.
+                           Example: -s 0.75
 
 
 offspect merge

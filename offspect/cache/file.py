@@ -288,6 +288,7 @@ class CacheFile:
         """iterate over all traces in the cachefile
         
         return
+        ------
         data: TraceData
             the data of this trace
         attrs: TraceAttributes

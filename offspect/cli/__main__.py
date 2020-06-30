@@ -22,7 +22,7 @@ def get_parser() -> argparse.ArgumentParser:
     peek.add_argument(
         "-s",
         "--similarity-threshold",
-        help="the cutoff for Pearson's r to report two traces as similar",
+        help="the threshold for Pearson's r. If this threshold is passed, peek warns that the traces are similar. Example: -s 0.75",
         type=float,
         required=False,
         dest="similarity",
