@@ -38,7 +38,7 @@ def cli_peek(args: argparse.Namespace):
                     for col in range(len(traces)):
                         if row > col:
                             coeff = r[row, col]
-                            if coeff > args.similarity:
+                            if abs(coeff) > args.similarity:
                                 print(
                                     f"WARNING: traces [{idx[col]}, {idx[row]}] share ID {key} and are similar with r = {coeff:3.2f}"
                                 )
