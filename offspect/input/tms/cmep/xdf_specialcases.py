@@ -68,6 +68,15 @@ def prepare_annotations_multfile(
     comment_name=None,
 ):
 
+    # we assume that all mapping was done after any spongebob assessments, 
+    # therefore everything earlier than the latest spongebob trigger is 
+    # considered irrelevant
+    # alternatively, everything in an xdf-file earlier than a reiz_marker of 
+    # "" or earlier than any other marker is irrelevant. This is because every 
+    # start of a reiz-marker sends out an "" to see whether the marker-server 
+    # is running, while for all other assessments but mapping, the reiz-marker 
+    # was used to send markers
+    
     for streams in files:
         if streams["reiz_marker_sa"].time_series[-1] == [""]:
             iu1 = 0
@@ -78,7 +87,7 @@ def prepare_annotations_multfile(
         if len(spbob) == 0:  # we never triggered Spongebob in this file
             iu2 = 0
         else:
-            idx = [-1]
+            idx = spbob[-1]
             iu2 = streams["Spongebob-Data"].time_stamps[idx]
         if max((iu1, iu2)) == 0:
             continue
@@ -86,6 +95,11 @@ def prepare_annotations_multfile(
             irrelevant_until = max((iu1, iu2))
         print(irrelevant_until)
 
+
+    # we concatenate the time_series and time_stamps from the multiple xdf \
+    # files. Because the clock is continuous and monotonic, we do not need to 
+    # correct for any possible reset between xdf files, and gaps are jumped 
+    # later
     time_stamps = []
     data_series = None
     data_stamps = None
