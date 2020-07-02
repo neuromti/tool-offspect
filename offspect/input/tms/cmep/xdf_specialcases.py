@@ -68,13 +68,13 @@ def prepare_annotations_multfile(
     comment_name=None,
 ):
 
-    # we assume that all mapping was done after any spongebob assessments, 
-    # therefore everything earlier than the latest spongebob trigger is 
+    # we assume that all mapping was done after any spongebob assessments,
+    # therefore everything earlier than the latest spongebob trigger is
     # considered irrelevant
-    # alternatively, everything in an xdf-file earlier than a reiz_marker of 
-    # "" or earlier than any other marker is irrelevant. This is because every 
-    # start of a reiz-marker sends out an "" to see whether the marker-server 
-    # is running, while for all other assessments but mapping, the reiz-marker 
+    # alternatively, everything in an xdf-file earlier than a reiz_marker of
+    # "" or earlier than any other marker is irrelevant. This is because every
+    # start of a reiz-marker sends out an "" to see whether the marker-server
+    # is running, while for all other assessments but mapping, the reiz-marker
     # was used to send markers
 
     for streams in files:
@@ -95,10 +95,9 @@ def prepare_annotations_multfile(
             irrelevant_until = max((iu1, iu2))
         print(irrelevant_until)
 
-
     # we concatenate the time_series and time_stamps from the multiple xdf \
-    # files. Because the clock is continuous and monotonic, we do not need to 
-    # correct for any possible reset between xdf files, and gaps are jumped 
+    # files. Because the clock is continuous and monotonic, we do not need to
+    # correct for any possible reset between xdf files, and gaps are jumped
     # later
     time_stamps = []
     data_series = None
@@ -213,7 +212,8 @@ def cut_traces_multifile(files, annotation: Annotations) -> List[TraceData]:
         if data_series is None:
             data_series = datastream.time_series
             data_stamps = datastream.time_stamps
-        else:"""
+        else:
+            """
 XDF based protocols
 -------------------
 
@@ -234,6 +234,8 @@ In the optimal case, the :code:`.xdf`-file contains already sufficient informati
 If multiple protocols were recorded in one :code:`xdf`-file, as often happened during manual recording, we will have hundreds of stimuli. Worse, it can be that even marker-streams are missing, and there is no information when a protocol started within the long recording. Linking them to the correct coordinates is tricky, and the best chance is probably taking account of the relative latency between subsequent stimuli.
 
 """
+
+
 import numpy as np
 from offspect.types import Annotations, FileName
 from typing import List, Union, Any, Dict
@@ -283,13 +285,13 @@ def prepare_annotations_multifile(
     comment_name=None,
 ):
 
-    # we assume that all mapping was done after any spongebob assessments, 
-    # therefore everything earlier than the latest spongebob trigger is 
+    # we assume that all mapping was done after any spongebob assessments,
+    # therefore everything earlier than the latest spongebob trigger is
     # considered irrelevant
-    # alternatively, everything in an xdf-file earlier than a reiz_marker of 
-    # "" or earlier than any other marker is irrelevant. This is because every 
-    # start of a reiz-marker sends out an "" to see whether the marker-server 
-    # is running, while for all other assessments but mapping, the reiz-marker 
+    # alternatively, everything in an xdf-file earlier than a reiz_marker of
+    # "" or earlier than any other marker is irrelevant. This is because every
+    # start of a reiz-marker sends out an "" to see whether the marker-server
+    # is running, while for all other assessments but mapping, the reiz-marker
     # was used to send markers
 
     for streams in files:
@@ -306,7 +308,9 @@ def prepare_annotations_multifile(
             iu2 = streams["Spongebob-Data"].time_stamps[idx]
 
         if iu1 > iu2:
-            print("WARNING: Spongebob data was not transmitted after NMES-IOC. Possible reason: Death of Outlet?")
+            print(
+                "WARNING: Spongebob data was not transmitted after NMES-IOC. Possible reason: Death of Outlet?"
+            )
         else:
             print("Spongebob data was transmitted after NMES-IOC")
         if max((iu1, iu2)) == 0:
@@ -315,10 +319,9 @@ def prepare_annotations_multifile(
             irrelevant_until = max((iu1, iu2))
         print(irrelevant_until)
 
-
     # we concatenate the time_series and time_stamps from the multiple xdf \
-    # files. Because the clock is continuous and monotonic, we do not need to 
-    # correct for any possible reset between xdf files, and gaps are jumped 
+    # files. Because the clock is continuous and monotonic, we do not need to
+    # correct for any possible reset between xdf files, and gaps are jumped
     # later
     time_stamps = []
     data_series = None
@@ -398,29 +401,29 @@ def prepare_annotations_multifile(
     max_allowed_counts = int(360 * 1.2)
     if event_count > max_allowed_counts:
         print("WARNING: There are too many pulses, throwing away possible faulty ones")
-        template = np.ones(180)        
+        template = np.ones(180)
         template[0::5] = 1.5
         template[0] = 100
-        
+
         selection = []
         old_xcorr = 0
         new_xcorr = 0
-        to = 1 
+        to = 1
         fr = 181
-        while fr < max_allowed_counts:            
+        while fr < max_allowed_counts:
             new_xcorr = np.correlate(time_since_last_pulse[-fr:-to], template)
             print(fr, to, new_xcorr)
-            if new_xcorr < old_xcorr/2:
+            if new_xcorr < old_xcorr / 2:
                 # the last was a good fit, at least twice better than now
-                winner = (fr-1, to-1)
-                selection.extend(list(range(to+1, fr+1)))
+                winner = (fr - 1, to - 1)
+                selection.extend(list(range(to + 1, fr + 1)))
                 fr += 180
                 to += 180
                 old_xcorr = 0
                 new_xcorr = 0
                 print("We found a winner", winner)
-                
-            else:                
+
+            else:
                 old_xcorr = new_xcorr
                 fr += 1
                 to += 1
@@ -432,7 +435,9 @@ def prepare_annotations_multifile(
         coords = drop_selection(coords, selection)
         time_since_last_pulse = drop_selection(time_since_last_pulse, selection)
         stimulation_intensity_mso = drop_selection(stimulation_intensity_mso, selection)
-        stimulation_intensity_didt = drop_selection(stimulation_intensity_didt, selection)
+        stimulation_intensity_didt = drop_selection(
+            stimulation_intensity_didt, selection
+        )
         aptp = drop_selection(aptp, selection)
 
     for idx, t in enumerate(event_samples):
@@ -450,8 +455,10 @@ def prepare_annotations_multifile(
         anno.append_trace_attr(tattr)
     return anno.anno
 
+
 def drop_selection(which, selection):
     return [which[idx] for idx in selection]
+
 
 def cut_traces_multifile(files, annotation: Annotations) -> List[TraceData]:
     """cut the tracedate from a matfile given Annotations
@@ -621,18 +628,16 @@ def cut_traces(streams, annotation: Annotations) -> List[TraceData]:
     """
     channel = decode(annotation["attrs"]["channel_of_interest"])
     print("Selecting traces for channel", channel)
-    datastream = pick_stream_with_channel(channel, streams)
-    cix = datastream.channel_labels.index(channel)
 
-    pre = decode(annotation["attrs"]["samples_pre_event"])
-    post = decode(annotation["attrs"]["samples_post_event"])
-    traces = []
-    for attrs in annotation["traces"]:
-        onset = decode(attrs["event_sample"])
-        trace = datastream.time_series[onset - pre : onset + post, cix]
-        traces.append(trace)
-    return traces
-
+    data_series = None
+    data_stamps = None
+    for streams in files:
+        datastream = pick_stream_with_channel(channel, streams)
+        cix = datastream.channel_labels.index(channel)
+        if data_series is None:
+            data_series = datastream.time_series
+            data_stamps = datastream.time_stamps
+        else:
             data_series = np.concatenate((data_series, datastream.time_series), axis=0)
             data_stamps = np.concatenate((data_stamps, datastream.time_stamps), axis=0)
 
@@ -789,11 +794,11 @@ def cut_traces(streams, annotation: Annotations) -> List[TraceData]:
 
 
 if __name__ == "__main__":
-    
-    #folder = "/media/rtgugg/sd/Desktop/test-offspect/betti/nocoords"    
-    #fname = "TMS_NMES_AmWo_pre2.xdf"
-    #fname = Path(folder) / fname
-    #xdf = XDFFile(fname)
+
+    # folder = "/media/rtgugg/sd/Desktop/test-offspect/betti/nocoords"
+    # fname = "TMS_NMES_AmWo_pre2.xdf"
+    # fname = Path(folder) / fname
+    # xdf = XDFFile(fname)
 
     folder = "/media/rtgugg/sd/Desktop/test-offspect/betti/toomanytraces"
     fname = Path(folder) / "TMS_NMES_MaBa_pre2.xdf"
