@@ -57,7 +57,7 @@ def cli_plot(args: argparse.Namespace):
     from offspect.cache.file import CacheFile
     from offspect.cache.plot import plot_map
 
-    cf = CacheFile(args.cfname)
+    cf = [CacheFile(fname) for fname in args.cfname]
     if args.kwargs is None:
         display = plot_map(cf)
     else:

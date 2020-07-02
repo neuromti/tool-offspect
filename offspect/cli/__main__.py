@@ -122,11 +122,12 @@ def get_parser() -> argparse.ArgumentParser:
         dest="filename",
     )
 
-    # GUI ---------------------------------------------------------------------
+    # PLOT MAP =---------------------------------------------------------------
     plt = subparsers.add_parser(name="plot", help="plot the map for a cachefile")
     plt.add_argument(
         "-f",
         "--filename",
+        nargs="+",
         help="Which cachefile to plot",
         required=True,
         dest="cfname",

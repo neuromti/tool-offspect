@@ -271,13 +271,13 @@ def get_glass_bg(tmpdir: Path):
     return im
 
 
-def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True, **kwargs):
+def plot_map(cachefiles: List[CacheFile], foo=lambda x: x, ignore_rejected=True, **kwargs):
     """plot the whole map for a complete cachefile
 
     args
     ----
-    cf: CacheFile    
-        the cachefile to be plotted
+    cachefiles: List[CacheFile]
+        a list of the cachefiles to be plotted
     foo: Callable
         will be applied to each value, and defaults to passing the
         original. But could be, e.g. lambda x : log10(x + 1) to plot logarithmized values
@@ -296,19 +296,20 @@ def plot_map(cf: CacheFile, foo=lambda x: x, ignore_rejected=True, **kwargs):
     coords = []
     values = []
     uninspected = 0.0
-    for trace, tattr in cf:
-        if not ignore_rejected or not decode(tattr["reject"]):
-            npk = decode(tattr["neg_peak_magnitude_uv"])
-            ppk = decode(tattr["pos_peak_magnitude_uv"])
-            if ppk is not None and npk is not None:
-                val = ppk - npk
-            else:
-                val = 0
-                uninspected += 1.0
+    for cf in cachefiles:
+        for trace, tattr in cf:
+            if not ignore_rejected or not decode(tattr["reject"]):
+                npk = decode(tattr["neg_peak_magnitude_uv"])
+                ppk = decode(tattr["pos_peak_magnitude_uv"])
+                if ppk is not None and npk is not None:
+                    val = ppk - npk
+                else:
+                    val = 0
+                    uninspected += 1.0
 
-            xyz = decode(tattr["xyz_coords"])
-            coords.append(xyz)
-            values.append(val)
+                xyz = decode(tattr["xyz_coords"])
+                coords.append(xyz)
+                values.append(val)
 
     rejected = len(cf) - len(values)
     print(f"This plot is based on {len(values)}/{len(cf)} traces.")
