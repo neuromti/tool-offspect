@@ -273,7 +273,7 @@ def concat_multifile(xdffiles: List[FileName]):
     return files, origin, filedate
 
 
-def prepare_annotations_multfile(
+def prepare_annotations_multifile(
     files,
     origin,
     filedate,
@@ -424,7 +424,7 @@ def prepare_annotations_multfile(
                 old_xcorr = new_xcorr
                 fr += 1
                 to += 1
-        if len(selection) !+ 720:
+        if len(selection) != 720:
             raise Exception("Did not find a good selection of good events")
 
         event_samples = drop_selection(event_samples, selection)
