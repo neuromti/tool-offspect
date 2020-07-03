@@ -34,6 +34,19 @@ def cachefile0inconsistent():
 @pytest.fixture(scope="module")
 def cachefile1():
     "create a temporary cachefile1, different to, but fully consistent with cachefile0"
+    settings = get_cachefile_template()[2]
+    with tempfile.NamedTemporaryFile(suffix=".hdf5") as _tf:
+        tf = Path(_tf.name)
+        tf.unlink()
+        assert tf.exists() == False
+        create_test_cachefile(tf, settings)
+        yield tf, settings
+    assert tf.exists() == False
+
+
+@pytest.fixture(scope="module")
+def cachefile2():
+    "create a temporary cachefile2, different to, but fully consistent with cachefile0 and cachefile1"
     settings = get_cachefile_template()[1]
     with tempfile.NamedTemporaryFile(suffix=".hdf5") as _tf:
         tf = Path(_tf.name)

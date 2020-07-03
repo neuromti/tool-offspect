@@ -536,9 +536,24 @@ def recover_parts(cf: CacheFile) -> Tuple[List[Annotations], List[List[TraceData
                 trace_attrs.append(parse_traceattrs(dset.attrs))
                 trace_data.append(parse_tracedata(dset))
             yml["traces"] = trace_attrs
-        events.append(yml)
-        traces.append(trace_data)
+            events.append(yml)
+            traces.append(trace_data)
     return events, traces
+
+
+def recover_origins(cf: CacheFile) -> List[Annotations]:
+    """"recover for each origin the data and attrs from the cachefile
+    args
+    ----
+    cf: CacheFile
+        the cachefile from which to recover
+    returns
+    -------
+    annotations: List[Annotations]
+        a list of annotations, where annotations are the collapsed metadata of all sourcefiles in the cachefile organized as [sourcesfiles][Annotations] :class:`~.offspect.cache.file.Annotations`
+    """
+
+    anno = recover_annotations(cf)
 
 
 def populate(

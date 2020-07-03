@@ -109,3 +109,59 @@ traces:
       comment: "",
       examiner: "HiWi",
     }
+---
+origin: template_R003.xdf
+attrs:
+  {
+    filedate: "1970-01-01 23:59:59",
+    subject: VnNn,
+    samplingrate: 1000,
+    samples_pre_event: 100,
+    samples_post_event: 100,
+    channel_labels: [EDC_L],
+    channel_of_interest: EDC_L,
+    readout: "cmep",
+    readin: "tms",
+    global_comment: "",
+    history: "",
+    version: "0.0.1",
+  }
+traces:
+  - {
+      id: 0,
+      event_name: "[S  1]",
+      event_sample: 3333,
+      event_time: 3.3330,
+      xyz_coords: [37.0, 52.9, 21.2],
+      time_since_last_pulse_in_s,
+      stimulation_intensity_mso: 54,
+      stimulation_intensity_didt: 36,
+      neg_peak_magnitude_uv: -22.8,
+      neg_peak_latency_ms: 17.2,
+      pos_peak_magnitude_uv: 36.6,
+      pos_peak_latency_ms: 22.7,
+      zcr_latency_ms: 12.4,
+      onset_shift: 0,
+      reject: False,
+      comment: "",
+      examiner: "algorithm_findpeaks",
+    }
+  - {
+      id: 1,
+      event_name: "[S  1]",
+      event_sample: 9999,
+      event_time: 9.9990,
+      time_since_last_pulse_in_s: 6.6660,
+      xyz_coords: [38.2, 22.9, 57.3],
+      stimulation_intensity_mso: 54,
+      stimulation_intensity_didt: 36,
+      neg_peak_magnitude_uv: -26.3,
+      neg_peak_latency_ms: 16.7,
+      pos_peak_magnitude_uv: 34.1,
+      pos_peak_latency_ms: 32.5,
+      zcr_latency_ms: 22.1,
+      onset_shift: -2,
+      reject: False,
+      comment: "",
+      examiner: "HiWi",
+    }
