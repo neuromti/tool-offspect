@@ -1,5 +1,5 @@
 import numpy as np
-from offspect.cache.attrs import decode
+from offspect.cache.attrs import decode, encode
 from offspect.cache.file import TraceAttributes, TraceData
 
 # %%
@@ -79,3 +79,4 @@ def process_data(
         if verbose:
             print("No processing steps cached")
     return data
+

@@ -32,6 +32,32 @@ def open_tmpdir():
     return tmpdir
 
 
+def _menu_load(self):
+    load = QtWidgets.QAction("&Open", self)
+    load.setShortcut("Ctrl+O")
+    load.setToolTip("Open a new CacheFile")
+    load.triggered.connect(lambda: self.load_cache_file(None, 0))
+    return load
+
+
+def _menu_apply(self):
+    apply = QtWidgets.QAction("&Apply", self)
+    apply.setShortcut("Ctrl+A")
+    apply.setToolTip(
+        "Applies all preprocessing steps to this trace and writes them permanently into the CacheFile"
+    )
+    apply.triggered.connect(self.save_tracedata)
+    return apply
+
+
+def _menu_plot(self):
+    menu = QtWidgets.QAction("&Plot", self)
+    menu.setShortcut("Ctrl+P")
+    menu.setToolTip("plot a map for all points in this file")
+    menu.triggered.connect(self.plot_map)
+    return menu
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None, idx: int = 0):
         super(MainWindow, self).__init__(parent)
@@ -41,22 +67,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu("&File")
+        plotMenu = mainMenu.addMenu("&Plot")
 
-        apply = QtWidgets.QAction("&Apply", self)
-        apply.setShortcut("Ctrl+A")
-        apply.setToolTip(
-            "Applies all preprocessing steps to this trace and writes them permanently into the CacheFile"
-        )
-        apply.triggered.connect(self.save_tracedata)
-
-        load = QtWidgets.QAction("&Open", self)
-        load.setShortcut("Ctrl+O")
-        load.setToolTip("Open a new CacheFile")
-        load.triggered.connect(lambda: self.load_cache_file(None, 0))
+        load = _menu_load(self)
+        apply = _menu_apply(self)
 
         fileMenu.addAction(apply)
         fileMenu.addAction(load)
-        fileMenu.setToolTipsVisible(True)
+
+        plotMenu.addAction(_menu_plot(self))
+
+        for menu in [fileMenu, plotMenu]:
+            menu.setToolTipsVisible(True)
 
     def load_cache_file(self, filename=None, idx: int = 0):
         if filename is None:
@@ -88,6 +110,12 @@ class MainWindow(QtWidgets.QMainWindow):
             "APPLY: Applied all preprocessing steps and wrote them into the CacheFile for trace#",
             idx,
         )
+
+    def plot_map(self):
+        from offspect.cache.plot import plot_map
+
+        display = plot_map([self.cf])
+        display.show()
 
     def refresh(self):
         print("GUI: Refreshing GUI for new trace")

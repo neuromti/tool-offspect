@@ -105,11 +105,11 @@ offspect plot
 ~~~~~~~~~~~~~
 .. code-block:: none
 
-   usage: offspect plot [-h] -f CFNAME [-t SFNAME] [--kwargs KWARGS]
+   usage: offspect plot [-h] -f CFNAME [CFNAME ...] [-t SFNAME] [--kwargs KWARGS]
    
    optional arguments:
      -h, --help            show this help message and exit
-     -f CFNAME, --filename CFNAME
+     -f CFNAME [CFNAME ...], --filename CFNAME [CFNAME ...]
                            Which cachefile to plot
      -t SFNAME, --figname SFNAME
                            The name of the imagefile to save the plot
