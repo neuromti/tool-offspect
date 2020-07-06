@@ -271,7 +271,9 @@ def get_glass_bg(tmpdir: Path):
     return im
 
 
-def plot_map(cachefiles: List[CacheFile], foo=lambda x: x, ignore_rejected=True, **kwargs):
+def plot_map(
+    cachefiles: List[CacheFile], foo=lambda x: x, ignore_rejected=True, **kwargs
+):
     """plot the whole map for a complete cachefile
 
     args
@@ -296,7 +298,9 @@ def plot_map(cachefiles: List[CacheFile], foo=lambda x: x, ignore_rejected=True,
     coords = []
     values = []
     uninspected = 0.0
+    total = 0.0
     for cf in cachefiles:
+        total += len(cf)
         for trace, tattr in cf:
             if not ignore_rejected or not decode(tattr["reject"]):
                 npk = decode(tattr["neg_peak_magnitude_uv"])
@@ -311,8 +315,8 @@ def plot_map(cachefiles: List[CacheFile], foo=lambda x: x, ignore_rejected=True,
                 coords.append(xyz)
                 values.append(val)
 
-    rejected = len(cf) - len(values)
-    print(f"This plot is based on {len(values)}/{len(cf)} traces.")
+    rejected = total - len(values)
+    print(f"This plot is based on {len(values)}/{total:3.0f} traces.")
     print(f"{rejected:3.0f} traces were rejected.")
     print(f"{uninspected:3.0f} traces were not inspected.")
     values = list(map(foo, values))
