@@ -65,28 +65,29 @@ def calculate_translation(hotspots: Union[List[Coordinate], None] = None):
         right = M1s[1]
         left = M1s[0]
     else:
-        right, left = [], []
+        rights: List[List[float]] = []
+        lefts: List[List[float]] = []
         for point in hotspots:
             if point[0] < 0:
-                left.append(point)
+                lefts.append(point)
             elif point[0] > 0:
-                right.append(point)
+                rights.append(point)
             else:
                 raise ValueError(
                     f"Hotspot {point} lies on the vertex. Please select on with a clear lateralization"
                 )
-        if len(right) > 1 or len(left) > 1:
+        if len(rights) > 1 or len(lefts) > 1:
             raise ValueError(
                 "Please specify not more than two hotspots, and only one per hemisphere"
             )
         else:
             try:
-                right = right.pop()
+                right = rights.pop()
             except IndexError:
                 print("No right hotspot defined. Using default")
                 right = M1s[1]
             try:
-                left = left.pop()
+                left = lefts.pop()
             except IndexError:
                 print("No left hotspot defined. Using default")
                 left = M1s[0]
