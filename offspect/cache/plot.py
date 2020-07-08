@@ -3,6 +3,7 @@ from nibabel import Nifti1Image
 from nilearn import plotting, image
 import numpy as np
 from itertools import chain
+from numpy.core.numeric import NaN
 from numpy.linalg import pinv
 import matplotlib.pyplot as plt
 from offspect.cache.attrs import decode
@@ -225,6 +226,8 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
             f"COORDS:xyz_coordinates {coords} are invalid, as they are not a list of floats"
         )
     for pos in coords:
+        if pos == NaN or pos == nan:
+            print("pos is nan")
         if type(pos) not in [int, float]:
             raise Exception(
                 f"COORDS:xyz_coordinates {coords} are invalid, as they are not a list of floats"
@@ -237,8 +240,12 @@ def plot_glass_on(axes, coords, tmpdir, width=10):
     wpx = int(width * scale[0] / 2)
     wpy = int(width * scale[1] / 2)
     wlen = ((2 * wpx), (2 * wpy))
-    xp = int(origin[0] + scale[0] * x)
-    yp = int(origin[1] - scale[1] * y)
+    try:
+        xp = int(origin[0] + scale[0] * x)
+        yp = int(origin[1] - scale[1] * y)
+    except Exception as e:
+        raise Exception(f"Coords:xyz_coordinates {coords} invalid: {e}")
+
     try:
         for xnum, xpos in enumerate(range(xp - wpx, xp + wpx)):
             for ynum, ypos in enumerate(range(yp - wpy, yp + wpy)):

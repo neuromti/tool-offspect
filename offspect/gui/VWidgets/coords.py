@@ -42,7 +42,15 @@ class InvalidCoordsDialog(QDialog):
         super(InvalidCoordsDialog, self).__init__(*args, **kwargs)
         self.cf = cf
         self.idx = idx
-        kind, msg = message.split(":")
+        parts = message.split(":")
+        if len(parts) == 2:
+            kind, msg = parts
+        elif len(parts) == 3:
+            kind, a, b = parts
+            msg = ":".join((a, b))
+        else:
+            raise Exception(f"{message} has to many parts")
+
         print(message)
         prv = QPushButton(text="Replace with previous")
         prv.clicked.connect(partial(self.replace, which=idx - 1))
