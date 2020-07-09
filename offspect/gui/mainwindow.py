@@ -14,6 +14,7 @@ from tempfile import mkdtemp
 from pathlib import Path
 from offspect.cache.steps import process_data
 from offspect.cache.file import write_tracedata, encode
+import confuse
 
 
 def close_tmpdir(tmpdir):
@@ -58,9 +59,19 @@ def _menu_plot(self):
     return menu
 
 
+def load_config():
+    config = confuse.LazyConfig("offspect", __name__)
+    config_filename = Path(config.config_dir()) / confuse.CONFIG_FILENAME
+    print("CONFIG: configuration file is", config_filename)
+    print("CONFIG: search window is", config["search_window"].get())
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None, idx: int = 0):
         super(MainWindow, self).__init__(parent)
+
+        self.config = load_config()
+
         self.tmpdir = open_tmpdir()
         self.load_cache_file(filename, idx)
         self.setWindowTitle(str(filename))

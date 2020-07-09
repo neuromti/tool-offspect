@@ -8,5 +8,5 @@ liesl
 PyQt5<5.13
 nibabel
 nilearn
-
+confuse
 

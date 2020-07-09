@@ -302,13 +302,14 @@ def plot_map(
         
 
     """
+
     coords = []
     values = []
     uninspected = 0.0
     total = 0.0
     for cf in cachefiles:
         total += len(cf)
-        for trace, tattr in cf:
+        for _, tattr in cf:
             if not ignore_rejected or not decode(tattr["reject"]):
                 npk = decode(tattr["neg_peak_magnitude_uv"])
                 ppk = decode(tattr["pos_peak_magnitude_uv"])
