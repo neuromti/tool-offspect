@@ -3,6 +3,24 @@ from offspect.types import TraceAttributes, TraceData, Coordinate
 from typing import List, Union
 import numpy as np
 
+# M1 coordinates are based on Mayka, M. A., Corcos, D. M., Leurgans, S. E.
+# , & Vaillancourt, D. E. (2006): Three-dimensional locations and
+# boundaries of motor and premotor cortices as defined by functional brain
+# imaging: a meta-analysis. NeuroImage, 31(4), 14531474. https://doi.org/
+# 10.1016/j.neuroimage.2006.02.004
+# Consider that any MNI coordinates not reported in Talairach space were
+# converted using the transformation equations for above the AC line (z >
+# 0): xV = 0.9900x yV = 0.9688y + 0.0460z, zV = -0.0485y + 0.9189z
+# xyz_in_Tailarach    = [-37, -21, 58];
+# Tailarach2MNI       = [0.9900,0,0;0,0.9688,0.0460;0,-0.0485,0.9189];
+# xyz_in_MNI          = (Tailarach2MNI*xyz_in_Tailarach')';
+# Result as literals for speed
+# See also
+# https://neuroimage.usc.edu/brainstorm/CoordinateSystems
+# https://www.brainvoyager.com/bv/doc/UsersGuide/CoordsAndTransforms/
+# CoordinateSystems.html
+M1s = [[-36.6300, -17.6768, 54.3147], [36.6300, -17.6768, 54.3147]]
+
 
 def rescale_coords(
     attrs: TraceAttributes, scaling_factor: float = 1.0
@@ -15,16 +33,41 @@ def rescale_coords(
 
 
 def translate_coords(
-    attrs: TraceAttributes, translation: List[float] = [0.0, 0.0, 0.0]
+    attrs: TraceAttributes,
+    translation: List[List[float]] = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]],
 ) -> TraceAttributes:
     """move the coordinates of this trace by a translation"""
-    coords = decode(attrs["xyz_coords"])
-    coords = [c - t for c, t in zip(coords, translation)]
-    attrs["xyz_coords"] = encode(coords)
+    old = decode(attrs["xyz_coords"])
+    if old[0] < 0:  # left
+        new = [c - t for c, t in zip(old, translation[0])]
+    elif old[0] > 0:  # right
+        new = [round(c - t, 2) for c, t in zip(old, translation[1])]
+    else:
+        new = old
+    attrs["xyz_coords"] = encode(new)
     return attrs
 
 
-def calculate_translation(hotspots: Union[List[Coordinate], None] = None):
+def calculate_cog(cf: CacheFile) -> List[List[float]]:
+    "calculate the center of gravity for each hemisphere"
+    key = "xyz_coords"
+    coords = [decode(attrs[key]) for data, attrs in cf]
+    left, right, vertex = [], [], []
+    for pos in coords:
+        if pos[0] < 0:
+            left.append(pos)
+        elif pos[0] > 0:
+            right.append(pos)
+        else:
+            vertex.append(pos)
+    left_cog = np.mean(left, 0).tolist() if len(left) > 0 else M1s[0]
+    right_cog = np.mean(right, 0).tolist() if len(right) > 0 else M1s[1]
+    return left_cog, right_cog
+
+
+def calculate_translation(
+    hotspots: Union[List[Coordinate], None] = None
+) -> List[List[float]]:
     """calculate the correction translation and scaling     
     args
     ----
@@ -41,24 +84,6 @@ def calculate_translation(hotspots: Union[List[Coordinate], None] = None):
         For each hemisphere, we did usually perform a fast estimation of the hotspot. This hotspot was used as seed coordinate for a mapping. But it is not known whether the grid was centered on the hotspot, or in case it was, whether the mapping had to be aborted. Therefore, it can not be know for sure just by looking at all coordinates from a mapping, where the origin was. It is therefore necessary for the user to set the hotspot.
 
     """
-
-    # M1 coordinates are based on Mayka, M. A., Corcos, D. M., Leurgans, S. E.
-    # , & Vaillancourt, D. E. (2006): Three-dimensional locations and
-    # boundaries of motor and premotor cortices as defined by functional brain
-    # imaging: a meta-analysis. NeuroImage, 31(4), 14531474. https://doi.org/
-    # 10.1016/j.neuroimage.2006.02.004
-    # Consider that any MNI coordinates not reported in Talairach space were
-    # converted using the transformation equations for above the AC line (z >
-    # 0): xV = 0.9900x yV = 0.9688y + 0.0460z, zV = -0.0485y + 0.9189z
-    # xyz_in_Tailarach    = [-37, -21, 58];
-    # Tailarach2MNI       = [0.9900,0,0;0,0.9688,0.0460;0,-0.0485,0.9189];
-    # xyz_in_MNI          = (Tailarach2MNI*xyz_in_Tailarach')';
-    # Result as literals for speed
-    # See also
-    # https://neuroimage.usc.edu/brainstorm/CoordinateSystems
-    # https://www.brainvoyager.com/bv/doc/UsersGuide/CoordsAndTransforms/
-    # CoordinateSystems.html
-    M1s = [[-36.6300, -17.6768, 54.3147], [36.6300, -17.6768, 54.3147]]
 
     # determine the hotspots, either from grid
     if hotspots is None:
