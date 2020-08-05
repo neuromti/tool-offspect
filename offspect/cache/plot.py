@@ -69,9 +69,11 @@ def project_into_nifti(
     base = np.zeros(shape)
     reps = np.zeros(shape)
     out_of_scope = 0.0
-    for pos, val in zip(coords, values):
-        apos = pinv(affine).dot(list(chain(pos, [1])))
+    unusable = []
+    for ix, (pos, val) in enumerate(zip(coords, values)):
+        # print(pos, type(pos))
         try:
+            apos = pinv(affine).dot(list(chain(pos, [1])))
             x, y, z, s = (int(p) for p in apos)
             base[x, y, z] += val
             reps[x, y, z] += 1
@@ -79,11 +81,19 @@ def project_into_nifti(
         except IndexError:
             out_of_scope += 1
             continue
+        except TypeError:
+            unusable.append(ix + 1)
+            continue
     # print("Valid", pos, "->", x, y, z, val)
 
     if out_of_scope > 0:
         print(
             f"{out_of_scope:3.0f} values were ignored because their coords are outside of the plot"
+        )
+
+    if len(unusable) > 0:
+        print(
+            f"{len(unusable):3.0f} coordinates from traces {unusable} could not be used"
         )
 
     reps[reps == 0] = 1
