@@ -62,7 +62,7 @@ def calculate_cog(cf: CacheFile) -> List[List[float]]:
             vertex.append(pos)
     left_cog = np.mean(left, 0).tolist() if len(left) > 0 else M1s[0]
     right_cog = np.mean(right, 0).tolist() if len(right) > 0 else M1s[1]
-    return left_cog, right_cog
+    return [left_cog, right_cog]
 
 
 def calculate_translation(
