@@ -15,4 +15,5 @@ valid_keys = [
     "estimation_method",
     "xyz_coords",
     "channel_of_interest",
+    "target_phase",
 ]  #: valid keys for tms-imep
