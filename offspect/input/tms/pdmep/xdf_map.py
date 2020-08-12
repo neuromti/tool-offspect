@@ -209,7 +209,7 @@ def prepare_annotations_multifile(
 
     # global fields
     fs = datastream.nominal_srate
-    anno = AnnotationFactory(readin="tms", readout="cmep", origin=origin)
+    anno = AnnotationFactory(readin="tms", readout="pdmep", origin=origin)
     anno.set("filedate", filedate)
     anno.set("subject", "")  # TODO parse from correctly organized file
     anno.set("samplingrate", fs)
@@ -262,10 +262,20 @@ def prepare_annotations_multifile(
             "time_since_last_pulse_in_s": time_since_last_pulse[idx],
             "stimulation_intensity_mso": stimulation_intensity_mso[idx],
             "stimulation_intensity_didt": stimulation_intensity_didt[idx],
-            "target_phase": str(target_phase[idx]),
+            "measured_phase": str(np.rad2deg(target_phase[idx])),
+            "target_phase": str(get_closest_target_phase(target_phase[idx])),
         }
         anno.append_trace_attr(tattr)
     return anno.anno
+
+
+def get_closest_target_phase(
+    phase_in_rad: float,
+    target_phases: List[int] = [-180, -135, -90, -45, 0, 45, 90, 135],
+) -> int:
+    deg = np.rad2deg(phase_in_rad)
+    idx = np.argmin([abs(deg - targ) for targ in target_phases])
+    return target_phases[idx]
 
 
 def cut_traces_multifile(files, annotation: Annotations) -> List[TraceData]:

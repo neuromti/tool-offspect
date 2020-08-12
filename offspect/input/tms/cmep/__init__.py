@@ -14,4 +14,5 @@ valid_keys = [
     "pos_peak_latency_ms",
     "zcr_latency_ms",
     "xyz_coords",
+    "channel_of_interest",
 ]  #: valid keys for tms-cmep (formerly know as 'contralateral-mep')
