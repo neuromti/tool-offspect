@@ -10,6 +10,55 @@ from offspect.cache.steps import process_data
 import numpy as np
 from datetime import datetime
 
+def _change_latency(self, step:int=0):
+    window = (15, 120)
+    idx = self.trace_idx
+    data = self.cf.get_trace_data(idx)
+    tattrs = self.cf.get_trace_attrs(idx)
+    data = process_data(data, tattrs, key="_log")
+    pre = decode(tattrs["samples_pre_event"])
+    shift = decode(tattrs["onset_shift"]) or 0
+    onset = pre - shift
+    fs = decode(tattrs["samplingrate"])
+    print(shift, fs)
+    minlat = int(window[0] * fs / 1000)
+    maxlat = int(window[1] * fs / 1000)
+    a = onset + minlat
+    b = onset + maxlat
+    mep = data[a:b]    
+    nlat = int((decode(tattrs["neg_peak_latency_ms"]) or 0) * fs / 1000) + step
+    plat = int((decode(tattrs["pos_peak_latency_ms"]) or 0) * fs / 1000) + step
+    # MEP negative trials
+    if nlat == plat:
+        print("MEP negative or identical latencies", nlat, plat)
+        tattrs["neg_peak_latency_ms"] = encode(0)
+        tattrs["pos_peak_latency_ms"] = encode(0)
+        tattrs["neg_peak_magnitude_uv"] = encode(0)
+        tattrs["pos_peak_magnitude_uv"] = encode(0)
+    else:
+        pre = decode(tattrs["samples_pre_event"])
+        shift = decode(tattrs["onset_shift"]) or 0
+        namp = float(data[nlat + pre + shift])
+        pamp = float(data[plat + pre + shift])
+        nlat = mep.argmin() * 1000 / fs
+        plat = mep.argmax() * 1000 / fs
+        print("Estimating latencies to be", nlat, plat)
+        print("Estimating amplitudes to be", namp, pamp)
+        tattrs["neg_peak_latency_ms"] = encode(float(nlat + window[0]))
+        tattrs["neg_peak_magnitude_uv"] = encode(namp)
+        tattrs["pos_peak_latency_ms"] = encode(float(plat + window[0]))
+        tattrs["pos_peak_magnitude_uv"] = encode(pamp)
+
+    self.cf.set_trace_attrs(idx, tattrs)
+    self.draw_hasmep_button()
+    self.callback()
+
+def _inc_latency(self):
+    menu = QtWidgets.QAction("&Inc", self)
+    menu.setShortcut("Ctrl+I")
+    menu.setToolTip("increase latency by one")
+    menu.triggered.connect(lambda:  _change_latency(self, 1))
+    return menu
 
 class IntegerAttribute(QtWidgets.QWidget):
     def read(self):
@@ -151,6 +200,7 @@ class ControlWidget(QtWidgets.QWidget):
         layout.addLayout(self.manipulatelayout)
         layout.addLayout(self.estimatelayout)
         layout.addItem(verticalSpacer)
+        
         self.setLayout(layout)
         self.trace_idx = idx
 

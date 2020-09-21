@@ -32,6 +32,7 @@ from offspect.types import (
     Annotations,
     TraceData,
 )
+from numpy import ndarray
 from pathlib import Path
 from math import nan, inf
 import time
@@ -114,8 +115,8 @@ def prepare_annotations_multifile(
     # later
     time_stamps = []
     lucky_phase = []
-    data_series = None
-    data_stamps = None
+    data_series:ndarray = None
+    data_stamps:ndarray = None
     # if in all files there is a localite-marker stream then initalize
     # collection over those files
 
@@ -295,8 +296,8 @@ def cut_traces_multifile(files, annotation: Annotations) -> List[TraceData]:
     channel = decode(annotation["attrs"]["channel_of_interest"])
     print("Selecting traces for channel", channel)
 
-    data_series = None
-    data_stamps = None
+    data_series:ndarray = None
+    data_stamps:ndarray = None
     for streams in files:
         datastream = pick_stream_with_channel(channel, streams)
         cix = datastream.channel_labels.index(channel)

@@ -7,6 +7,7 @@ from .textedit import VTextEdit
 from offspect.gui.io import save
 
 
+
 class TattrWidget(QtWidgets.QWidget):
     """Widget listing all TraceAttributes
         
@@ -45,7 +46,6 @@ class TattrWidget(QtWidgets.QWidget):
         line.editingFinished.connect(trig)
         layout.addWidget(label, row, 0)
         layout.addWidget(line, row, 1)
-
         self.setLayout(layout)
 
     def get_cleaned_tattrs(self, cf, idx):
