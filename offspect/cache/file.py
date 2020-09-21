@@ -276,12 +276,15 @@ class CacheFile:
 
     @lru_cache(maxsize=1)
     def __len__(self) -> int:
-        cnt = 0
+        cnt = 0        
         with read_file(self.fname) as f:
             for origin in f.keys():
+                idx = None
                 for idx, _ in enumerate(f[origin]["traces"], start=cnt + 1):
                     pass
-                cnt = idx
+                if idx is None:
+                    print(f'WARNING: Origin {f[origin].name} had zero traces')
+                cnt = idx or cnt
         return int(cnt)
 
     def __iter__(self):
