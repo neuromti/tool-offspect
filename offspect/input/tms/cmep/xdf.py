@@ -135,9 +135,9 @@ def prepare_annotations(
     # even then, it can happen that these RDA markers are badly recorded, i.e.
     # they do not span at least a second
     if rda_stamps is not None:
-        if np.ptp(rda_stamps) < 1:
+        if np.ptp(rda_stamps) < 30:
             print(
-                "RDA 'S  2' are all dense within only a second. Using constant shift of 45ms"
+                "RDA 'S  2' are all dense within 30 seconds. Using constant shift of 45ms"
             )
             time_stamps = [t + 0.045 for t in time_stamps]
         elif len(rda_stamps) >= len(time_stamps):
