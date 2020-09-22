@@ -117,17 +117,44 @@ def prepare_annotations(
     else:
         comments = ["" for c in time_stamps]
 
-    if "BrainVision RDA Markers" in streams:
+    # it can happen, that two streams were recorded, and we only want the one from the correct machine , which has the hostname SEPHYS-CTRL
+    rda_stamps = None
+    if (
+        "BrainVision RDA Markers" in streams
+        and streams["BrainVision RDA Markers"].hostname == "SEPHYS-CTRL"
+    ):
         rda_stamps = list(yield_timestamps(streams["BrainVision RDA Markers"], "S  2"))
         print(f"Found {len(rda_stamps)} 'S  2' for {event_count} events")
-        if len(rda_stamps) >= len(time_stamps):
+    if (
+        "BrainVision RDA Markers2" in streams
+        and streams["BrainVision RDA Markers2"].hostname == "SEPHYS-CTRL"
+    ):
+        rda_stamps = list(yield_timestamps(streams["BrainVision RDA Markers2"], "S  2"))
+        print(f"Found {len(rda_stamps)} 'S  2' for {event_count} events")
+
+    # even then, it can happen that these RDA markers are badly recorded, i.e.
+    # they do not span at least a second
+    if rda_stamps is not None:
+        if np.ptp(rda_stamps) < 1:
+            print(
+                "RDA 'S  2' are all dense within only a second. Using constant shift of 45ms"
+            )
+            time_stamps = [t + 0.045 for t in time_stamps]
+        elif len(rda_stamps) >= len(time_stamps):
             time_stamps = [find_closest(ts, rda_stamps) for ts in time_stamps]
             print("Corrected event timestamps for RDA 'S  2'")
         else:
             print("Count mismatch between RDA and Localite events")
 
-        if "BrainVision RDA" in streams:
+        if (
+            "BrainVision RDA" in streams
+            and streams["BrainVision RDA"].hostname == "SEPHYS-CTRL"
+        ):
             bvr = streams["BrainVision RDA"]
+            time_stamps = correct_tkeo(bvr, time_stamps)
+            print("Corrected event timestamps for TMS artifact")
+        else:
+            bvr = streams["BrainVision RDA2"]
             time_stamps = correct_tkeo(bvr, time_stamps)
             print("Corrected event timestamps for TMS artifact")
 

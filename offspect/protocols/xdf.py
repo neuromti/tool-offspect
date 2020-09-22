@@ -18,10 +18,13 @@ def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDF
     chans: List[str] = []
     datastream = None
     for stream in streams.values():
-        if stream.channel_labels is not None:
+        if stream.channel_labels is not None and stream.hostname == "SEPHYS-CTRL":
             chans.extend(stream.channel_labels)
             if channel in stream.channel_labels:
-                datastream = stream
+                if datastream is None:
+                    datastream = stream
+                else:
+                    raise Exception("Too many EEG streams have this channel!")
 
     if datastream is None:
         raise IndexError(
@@ -33,7 +36,10 @@ def pick_stream_with_channel(channel: str, streams: Dict[str, XDFStream]) -> XDF
 def find_closest_samples(stream: XDFStream, tstamps: List[float]) -> List[int]:
     event_samples = []
     for ts in tstamps:
-        idx = int(np.argmin(np.abs(stream.time_stamps - ts)))
+        tdelta = np.abs(stream.time_stamps - ts)
+        idx = int(np.argmin(tdelta))
+        if tdelta[idx] > 0.5:
+            print(f"Warning: Closest sample has a high time delta {tdelta[idx]:3.5f}s")
         event_samples.append(idx)
     return event_samples
 
@@ -50,7 +56,10 @@ def find_closest_idx(ts: float, timestamps: List[float], relative: str = "closes
         rt = [t - ts for t in timestamps if t >= ts]
     else:  # closest in time
         rt = [t - ts for t in timestamps]
-    idx = np.argmin(np.abs(rt))
+    td = np.abs(rt)
+    idx = np.argmin(td)
+    if td[idx] > 0.1:
+        print(f"Warning: Closest sample has a high time delta {td[idx]:3.5f}s")
     return idx
 
 
@@ -222,7 +231,7 @@ def yield_timestamps_localite(stream, event_mark="coil_0_didt"):
 
 def yield_timestamps(stream: XDFStream, event_mark: Union[str, int]):
     "go through all triggers and  yield the timestamps of the events"
-    if stream.name == "BrainVision RDA Markers":
+    if stream.name == "BrainVision RDA Markers" and stream.hostname == "SEPHYS-CTRL":
         yield from yield_timestamps_brainvision_rda_marker(stream, event_mark)
     elif stream.name == "Spongebob-Data":
         yield from yield_timestamps_spongebob(stream, event_mark)
