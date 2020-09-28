@@ -14,6 +14,7 @@ from tempfile import mkdtemp
 from pathlib import Path
 from offspect.cache.steps import process_data
 from offspect.cache.file import write_tracedata, encode
+from PyQt5.QtWidgets import QErrorMessage
 
 
 def close_tmpdir(tmpdir):
@@ -58,6 +59,12 @@ def _menu_plot(self):
     return menu
 
 
+def show_error(msg: str):
+    error_dialog = QtWidgets.QErrorMessage()
+    error_dialog.showMessage(msg)
+    error_dialog.exec_()
+
+
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, filename=None, idx: int = 0):
         super(MainWindow, self).__init__(parent)
@@ -81,21 +88,44 @@ class MainWindow(QtWidgets.QMainWindow):
             menu.setToolTipsVisible(True)
 
     def load_cache_file(self, filename=None, idx: int = 0):
+        _fname = ""
         if filename is None:
             filename, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open file", "/", "CacheFiles (*.hdf5)"
             )
             if filename != "":
-                self.filename = filename
+                _fname = filename
         else:
-            self.filename = filename
-        print("Opening", self.filename)
-        self.cf = CacheFile(self.filename)
+            _fname = filename
+        print("Opening", _fname)
+        # try loading
+        try:
+            cf = CacheFile(_fname)
+        except FileNotFoundError:
+            print(f"FILE: {_fname} not found")
+            if not hasattr(self, "cf"):
+                quit()
+            else:
+                show_error(f"File not found. Loading failed. \n {_fname}")
+            return
 
+        # loading was successful, check whether file is valud
+        if len(cf) < 1:
+            print(f"FILE: {_fname} has zero traces")
+            print(f"GUI: {_fname} loading failure")
+            if not hasattr(self, "cf"):
+                quit()
+            else:
+                show_error(f"File has zero traces. Loading failed. \n {_fname}")
+            return
+
+        # loading success, file valid
+        self.filename = _fname
+        self.cf = cf
         self.ctrl = VWidgets.ControlWidget(cf=self.cf, idx=idx)
         self.ctrl.callback = self.refresh
         self.refresh()
-        print(f"GUI: Loading {self.filename}")
+        print(f"GUI: {self.filename} loading success")
 
     def save_tracedata(self):
         idx = self.ctrl.trace_idx
